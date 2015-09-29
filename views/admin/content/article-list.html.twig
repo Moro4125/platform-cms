@@ -1,0 +1,25 @@
+{% extends "@PlatformCMS/admin/content/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-content-articles-update",  {id: 777}) %}
+	{% set setTopUrl = url("admin-content-articles-set-top", {id: 777}) %}
+	{% set deleteUrl = url("admin-content-articles-delete",  {id: 777}) %}
+	{% set icon_col_width = 80 %}
+	{{ parent() }}
+{% endblock %}
+
+
+{% block list_column_icon %}
+	<td>
+		{% if item.icon %}
+			<img src="{{ app.url('image', {hash: item.icon, width: 154, height: 96}) }}" width="77" height="48" />
+		{% endif %}
+	</td>
+{% endblock %}
+
+
+{% block list_column_name__tags %}
+	<span class="label label-info">{{ item.code }}</span>
+	{{- parent() -}}
+{% endblock %}

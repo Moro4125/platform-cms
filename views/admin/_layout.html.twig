@@ -1,0 +1,56 @@
+{% extends "@PlatformCMS/admin.html5.twig" %}
+
+{% block layout %}
+	<nav class="navbar navbar-inverse">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://{{ app.request.host }}/" style="padding-top: 5px;" title="Перейти в публичную часть сайта.">
+					<img alt="Platform CMS" src="{{ app.getOption('admin.logotype') }}" class="admin-small-logo">
+				</a>
+			</div>
+			<div id="navbar" class="collapse navbar-collapse">
+				{{ knp_menu_render('admin_main', {style: 'navbar', class: 'collapse navbar-collapse'}, 'twig') }}
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		{% set close = true %}
+		{% include '@SaxulumBootstrapProvider/flash.html.twig' %}
+
+		{% block content %}
+		{% endblock content %}
+	</div>
+
+	<div id="markdown" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+			</div>{# /.modal-content #}
+		</div>{# /.modal-dialog #}
+	</div>{# /.modal #}
+
+	<script id="templateSelect2Image" type="text/x-mustache">{{ block("templateSelect2Image") }}</script>
+{% endblock %}
+
+{%- block templateSelect2Image -%}
+	<div class="m-select2-image{{ '{{#isList}}' }} m-select2-image_view_list{{ '{{/isList}}' }} clearfix">
+		<div class="m-select2-image__icon">
+			<img src="{{ '{{ icon }}' }}">
+		</div>
+		<div class="m-select2-image__name">
+			{{- '{{ name }}' -}}
+			{{- '{{^isList}}' -}}
+				<br/>
+				{{- '{{#tags}}' -}}
+					<span class="label label-default">{{ '{{ . }}' }}</span>
+				{{- '{{/tags}}' -}}
+			{{- '{{/isList}}' -}}
+		</div>
+	</div>
+{%- endblock -%}

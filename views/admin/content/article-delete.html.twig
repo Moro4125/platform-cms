@@ -1,0 +1,17 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+
+{% block workarea %}
+	<h1 class="text-center">Удаление</h1>
+	{{ form_start(form) }}
+	<hr/>
+	<div class="row">
+		<div class="col col-xs-4 col-xs-push-4 text-center">
+			<div class="btn-group">
+				{{ form_widget(form.delete) }}
+				{{ form_widget(form.cancel) }}
+			</div>
+		</div>
+	</div>
+	{{ form_end(form) }}
+{% endblock %}

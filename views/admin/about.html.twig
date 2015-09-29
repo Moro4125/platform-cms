@@ -1,0 +1,72 @@
+{% extends "@PlatformCMS/admin/_layout.html.twig" %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-md-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<span>Статистика</span>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item">
+						<span class="badge">{{ app.serviceRoutes.count }}</span>
+						<span>Страницы</span>
+					</li>
+					<li class="list-group-item">
+						<span class="badge">{{ app.serviceContent.count }}</span>
+						<span>Материалы</span>
+					</li>
+					<li class="list-group-item">
+						<span class="badge">{{ app.serviceFile.getCount("kind", "1x1") }}</span>
+						<span>Изображения</span>
+					</li>
+					{% if app.isGranted("ROLE_RELINK") %}
+					<li class="list-group-item">
+						<span class="badge">{{ app.serviceRelink.getCount() }}</span>
+						<span>Правил перелинковки</span>
+					</li>
+					{% endif %}
+					<li class="list-group-item">
+						<span class="badge">{{ app.serviceTags.getCount() }}</span>
+						<span>Ярлыков</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<span>Об Административной панели сайта</span>
+				</div>
+				<div class="panel-body">
+					<p>
+						<span>Изменить информацию в «шапке» или «подвале» сайта возможно в разделе «</span>
+						<a href="{{ url('admin-options') }}">Настройки</a>
+						<span>». На той же странице располагается и контактная информация.</span>
+					</p>
+					<p>
+						<span>Для работы с контентом сайта предназначен раздел «</span>
+						<a href="{{ url('admin-content-articles') }}">Материалы</a>
+						<span>». Он состоит из списков </span>
+						<a href="{{ url('admin-content-articles') }}">статей</a>{{- ", " -}}
+						<a href="{{ url('admin-content-images') }}">изображений</a>{{- ", " -}}
+						<a href="{{ url('admin-content-tags') }}">ярлыков</a>
+						<span> и страниц редактирования конкретных записей этих сущностей.</span>
+					</p>
+					<p>
+						<span>Раздел «<!--suppress HtmlUnknownTarget --><a href="index.html">Предпросмотр</a>» </span>
+						<span>предназначен для проверки </span>
+						<span>страниц сайта. Только после посещения новой страницы сайта в данном разделе её </span>
+						<span>можно будет скомпилировать. После чего эта страница станет доступна пользователям.</span>
+					</p>
+					<p>
+						<span>Для того чтобы изменения на странице сайта стали доступны для обычных пользователей, </span>
+						<span>необходимо эту страницу <strong>скомпилировать</strong>. Сделать это возможно в разделе «</span>
+						<a href="{{ url('admin-compile-list') }}">Публикация</a>
+						<span>» или при предпросмотре конкретной страницы, в соответствующем разделе.</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

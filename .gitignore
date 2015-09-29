@@ -1,0 +1,10 @@
+/.*
+/library
+/logs
+/vendor
+/temporary
+composer.phar
+composer.lock
+!/.gitignore
+# Add by migration "moro/team-migrations-common:update.vcs.ignore".
+storage/

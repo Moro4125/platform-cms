@@ -1,0 +1,13 @@
+.alert.alert-success {
+    background:#e6efc2;color:#264409;border-color:#c6d880;
+}
+
+.error button, .alert button, .notice button, .success button, .info button {
+    float: right;
+    color: inherit;
+    background: transparent;
+    border: none;
+    font-size: 150%;
+    padding: 0;
+    cursor: pointer;
+}

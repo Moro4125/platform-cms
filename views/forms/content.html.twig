@@ -1,0 +1,60 @@
+{% extends '@PlatformCMS/forms/fields.html.twig' %}
+
+{% block _form_commit_widget %}
+	{% set attr = attr|merge({ class: "btn btn-success"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> {{ label|trans({}, translation_domain) -}}
+	</button>
+{% endblock %}
+
+{% block _admin_update_commit_widget %}
+	{% set attr = attr|merge({ class: "btn btn-success"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> {{ label|trans({}, translation_domain) -}}
+	</button>
+{% endblock %}
+
+{% block _admin_update_apply_widget %}
+	{% set attr = attr|merge({ class: "btn btn-warning"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> {{ label|trans({}, translation_domain) -}}
+	</button>
+{% endblock %}
+
+{% block _admin_update_cancel_widget %}
+	{% set attr = attr|merge({ class: "btn btn-info"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{ label|trans({}, translation_domain) -}}
+	</button>
+{% endblock %}
+
+{% block _admin_update_delete_widget %}
+	{% set attr = attr|merge({ class: "btn btn-danger"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> {{ label|trans({}, translation_domain) -}}
+	</button>
+{% endblock %}
+
+{% block checkbox_widget %}
+	<label>
+		<input type="checkbox" class="sr-only" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+		<span class="glyphicon glyphicon-check"></span>
+		<span class="glyphicon glyphicon-unchecked"></span>
+		{% if label %}<span style="font-weight: normal;"> {{ label|trans }}</span>{% endif %}
+	</label>
+{% endblock %}
+
+{% block _form_delete_widget %}
+	{% set attr = attr|merge({ class: "btn btn-danger"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> {{ label|trans({}, translation_domain) }}
+	</button>
+{% endblock %}
+
+
+{% block _form_cancel_widget %}
+	{% set attr = attr|merge({ class: "btn btn-default"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		{{ label|trans({}, translation_domain) }}
+	</button>
+{% endblock %}

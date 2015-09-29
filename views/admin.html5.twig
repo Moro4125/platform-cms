@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% spaceless %}
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>{% block head_title %}{{ title|default(app.request.host) }}{% endblock %}</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+		<link rel="icon" href="/favicon.ico">
+		<link rel="stylesheet" href="/assets/bootstrap/bootstrap-built.css">
+		<link rel="stylesheet" href="/assets/bootstrap-fileinput/bootstrap-fileinput-built.css">
+		<link rel="stylesheet" href="/assets/bootstrap-cropper/bootstrap-cropper-built.css">
+		<link rel="stylesheet" href="/assets/select2/select2-built.css">
+		<link rel="stylesheet" href="/assets/platform/resources/styles/bootstrap.css">
+		{% block head_meta %}{% endblock %}
+	</head>
+	<body>
+		{% block layout_wrapper %}
+			{% block layout %}
+			{% endblock layout %}
+		{% endblock layout_wrapper %}
+		<script type="text/javascript" src="/assets/require.js"></script>
+		<script type="text/javascript" src="/assets/platform/resources/scripts/bootstrap.js"></script>
+	</body>
+</html>
+{% endspaceless %}

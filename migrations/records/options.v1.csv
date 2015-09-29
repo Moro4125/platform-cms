@@ -1,0 +1,8 @@
+; Used in task.0002.ini
+code          , type     , value , sort , block         , label      , validator
+org_locality  , text     , ""    , 10   , "Ревизиты"    , "Город"    , ""
+org_address   , text     , ""    , 20   , "Ревизиты"    , "Адрес"    , ""
+org_telephone , text     , ""    , 30   , "Ревизиты"    , "Телефон"  , ""
+org_email     , text     , ""    , 40   , "Ревизиты"    , "Эл.почта" , ""
+header_text   , textarea , ""    , 50   , "Колонтитулы" , "Шапка"    , ""
+footer_text   , textarea , ""    , 60   , "Колонтитулы" , "Подвал"   , ""

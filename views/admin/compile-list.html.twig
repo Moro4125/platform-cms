@@ -1,0 +1,82 @@
+{% extends "@PlatformCMS/admin/_layout.html.twig" %}
+
+{% block content %}
+	{% form_theme form _self %}
+	{{ form_start(form, {'method': 'POST'}) }}
+
+	<div class="panel panel-default">
+		<div class="panel-heading">Страницы сайта</div>
+
+		<table class="table with-highlight">
+			<colgroup>
+				{% if is_granted("ROLE_EDITOR") %}
+					<col width="64" />
+				{% endif %}
+				<col width="40%" />
+				<col width="60%" />
+			</colgroup>
+			<thead>
+				<tr>
+					{% if is_granted("ROLE_EDITOR") %}
+						<td><button type="submit" class="btn btn-xs btn-default" name="admin_routes[compile]" title="Скомпилировать выбранные страницы"><small>Запуск.</small></button></td>
+					{% endif %}
+					<td><strong>URL</strong> (скомпилированный)</td>
+					<td><strong>Заголовок</strong> (предпросмотр)</td>
+				</tr>
+			</thead>
+			<tbody>
+			{% set c_url = url('admin-compile', {id: '__ID__', back: app.request.uri}) %}
+			{% for code, route in routes %}
+				<tr{% if not route.hasTag("предпросмотр") and not route.isInner %} class="require-preview"{% endif %}>
+					{% if is_granted("ROLE_EDITOR") %}
+					<td>
+						{{ form_widget(form[code], {attr: {class: "sr-only"}}) }}
+						<div class="btn-group btn-group-xs tac-small">
+							<label class="btn btn-default" for="admin_routes_{{ code }}">
+								<span title="Снять флаг выбора" class="glyphicon glyphicon-check" aria-hidden="true"></span>
+								<span title="Выбрать" class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>
+							</label>
+							<a title="Скомпилировать" href="{{ c_url|replace({ "__ID__": route.id }) }}" type="button" class="btn btn-default">
+								<span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+							</a>
+						</div>
+					</td>
+					{% endif %}
+					{% if not route.isInner %}
+						<td>
+							<a href="{{ route.uri }}" title="Перейти к странице сайта." target="_blank">
+								<span>{{ route.uri }}</span>
+							</a>
+						</td>
+						<td>
+							<a href="{{ route.adminUri }}" title="Перейти к препросмотру страницы.">
+								<span>{{ route.title }}</span>
+							</a>
+						</td>
+					{% else %}
+						<td colspan="2">
+							<span>{{ route.uri }}</span>
+						</td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+			</tbody>
+			{% if is_granted("ROLE_EDITOR") %}
+				<tfoot>
+					<tr>
+						<td colspan="3" class="panel-footer">
+							<div class="btn-group" role="group" aria-label="Действия">
+								{{ form_widget(form.compile, {attr: {class: 'btn btn-warning'}}) }}
+								<button type="reset" class="btn btn-default">Отмена</button>
+							</div>
+						</td>
+					</tr>
+				</tfoot>
+			{% else %}
+				{% do form.compile.setRendered %}
+			{% endif %}
+		</table>
+	</div>
+
+	{{ form_end(form) }}
+{% endblock %}

@@ -1,0 +1,314 @@
+<?php
+/**
+ * Trait TagsServiceTrait
+ */
+namespace Moro\Platform\Model\Accessory\Parameters\Tags;
+use \Moro\Platform\Model\AbstractService;
+
+
+use \PDO;
+
+/**
+ * Trait TagsServiceTrait
+ * @package Model\Accessory\Parameters\Tags
+ *
+ * @property string $_table
+ * @property \Doctrine\DBAL\Connection $_connection
+ */
+trait TagsServiceTrait
+{
+	/**
+	 * @var int
+	 */
+	protected $_tagsAliasNumber = 0;
+
+	/**
+	 * @param null|string|array $tags
+	 * @param null|bool $useNamespace
+	 * @return array
+	 */
+	public function selectActiveTags($tags = null, $useNamespace = null)
+	{
+		assert(!$tags || is_string($tags) || is_array($tags) && count($tags) == count(array_filter($tags, 'is_string')));
+
+		$result = [];
+		$table = $this->_table;
+		$tags = $tags ?( is_string($tags) ? explode(',', rtrim($tags, '.')) : (array)$tags): [];
+		$search = rtrim(implode(', ', array_map('trim', $tags)), '.').($tags ? ', ' : '');
+		$recordsCount = 0;
+		$hideTop = null;
+
+		if (isset($this->_connection))
+		{
+			$builder1 = $this->_connection->createQueryBuilder();
+			$builder1->select('a.tag, COUNT(a.tag) as cnt')->from($table.'_tags', 'a')->groupBy('tag');
+			$builder1->orderBy('cnt', 'desc')->setMaxResults(50);
+
+			$builder1->leftJoin('a', 'content_tags', 'ct', 'a.tag = ct.code');
+			$builder1->addSelect('ct.name, ct.parameters');
+			$parameters = null;
+
+			if ($tags)
+			{
+				$builder2 = $this->_connection->createQueryBuilder();
+				$builder2->select('m.id')->from($table, 'm');
+				$parameters = $this->_tagsSelectEntities($builder2, 'tag', $tags, ':t');
+
+				$builder1->where('a.target IN ('.$builder2->getSQL().')');
+			}
+
+			$statement1 = $this->_connection->prepare($builder1->getSQL());
+
+			foreach ($statement1->execute($parameters) ? $statement1->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
+			{
+				if ($parameters && in_array($record['tag'], $parameters))
+				{
+					$hideTop = max((int)$hideTop, (int)$record['cnt']);
+				}
+				elseif (!empty($record['tag']))
+				{
+					$temp = isset($record['parameters']) ?( @json_decode($record['parameters'], true) ?: [] ): [];
+					$name = empty($record['name']) ? $record['tag'] : $record['name'];
+					$recordsCount += (int)$record['cnt'];
+					$result[] = [
+						'cnt' => (int)$record['cnt'],
+						'name' => $name,
+						'code' => $record['tag'],
+						'lead' => empty($temp['lead']) ? '' : $temp['lead'],
+						'href' => '?search='.$search.$name.'.',
+					];
+				}
+			}
+		}
+
+		if ($hideTop)
+		{
+			while (($record = reset($result)) && $record['cnt'] == $hideTop)
+			{
+				array_shift($result);
+			}
+		}
+
+		$count = count($result);
+		$chunk = $count / 10;
+		$lastWeight = 0;
+		$lastCount = 0;
+
+		foreach ($result as $index => &$meta)
+		{
+			if ($lastCount == $meta['cnt'])
+			{
+				$meta['weight'] = $lastWeight;
+			}
+			else
+			{
+				$meta['weight'] = $lastWeight = max($lastWeight - 1, (int)ceil(10 - $index / $chunk));
+				$lastCount = $meta['cnt'];
+			}
+		}
+
+		usort($result, function($a, $b) {
+			return strcmp($a['code'], $b['code']);
+		});
+
+		if ($useNamespace)
+		{
+			$nsList = [];
+
+			foreach ($result as $item)
+			{
+				$ns = ($pos = strpos($item['code'], ':'))
+					? substr($item['code'], 0, $pos)
+					: '';
+				$item['alias'] = trim(substr($item['name'], $ns ? strpos($item['name'], ':') + 1 : 0));
+
+				if (mb_strlen($item['alias']) == 1)
+				{
+					$item['alias'] = mb_strtoupper($item['alias']);
+				}
+
+				$nsList[$ns][] = $item;
+			}
+
+			$result = [];
+
+			foreach ($nsList as $ns => $items)
+			{
+				$ns && $ns = trim(explode(':', reset($items)['name'])[0]);
+				$ns && $ns = mb_strtoupper(mb_substr($ns, 0, 1, 'UTF-8'), 'UTF-8').mb_substr($ns, 1, null, 'UTF-8');
+				$result[$ns] = $items;
+			}
+
+			uksort($result, function($a, $b) {
+				return strcmp(mb_strtolower($a), mb_strtolower($b));
+			});
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function ___initTraitTags()
+	{
+		return [
+			AbstractService::STATE_SELECT_ENTITIES => '_tagsSelectEntities',
+			AbstractService::STATE_COMMIT_FINISHED => '_tagsCommitFinished',
+			AbstractService::STATE_DELETE_FINISHED => '_tagsDeleteFinished',
+		];
+	}
+
+	/**
+	 * @param \Doctrine\DBAL\Query\QueryBuilder $builder
+	 * @param string $field
+	 * @param string $value
+	 * @param string $place
+	 * @return mixed
+	 */
+	protected function _tagsSelectEntities($builder, $field, $value, $place)
+	{
+		assert(isset($this->_table));
+
+		if ($field === 'tag' || $field === '~tag')
+		{
+			$table = $this->_table;
+			$alias = 'tags'.(++$this->_tagsAliasNumber);
+
+			if (is_string($value) ? strpos($value, ',') : is_array($value))
+			{
+				$strict = is_array($value) ?: substr($value = trim($value), -1) == '.';
+
+				$value = is_array($value) ? $value : explode(',', rtrim($value, '.'));
+				$value = array_map('normalizeTag', $value);
+				$value = array_unique(array_filter($value));
+
+				if (!$strict && ($v = end($value)) && !$this->_tagsCount($table, $v) && $this->_tagsNearest($table, $v))
+				{
+					array_pop($value);
+				}
+
+				$place = array_map(function($index) use ($place) { return $place.'i'.$index; }, array_keys($value));
+
+				if ($field[0] === '~')
+				{
+					$order = $builder->getQueryPart('orderBy') ?: [];
+					array_unshift($order, 'count(m.id) DESC');
+					$builder->resetQueryPart('orderBy');
+
+					foreach ($order as $temp)
+					{
+						list($field, $vector) = explode(' ', $temp, 2);
+						$builder->addOrderBy($field, $vector);
+					}
+				}
+				else
+				{
+					$builder->andHaving('count(m.id) >= '.count($value));
+				}
+
+				$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
+				$builder->andWhere("$alias.tag in (".implode(',', $place).")");
+				$builder->groupBy('m.id');
+
+				return array_combine($place, $value);
+			}
+			else
+			{
+				$suffix = (substr($value = trim($value), -1) != '.' && $field[0] == '~') ? '%' : '';
+				$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
+				$builder->andWhere($alias.".tag ".($suffix ? "like " : "= ").$place);
+
+				return normalizeTag(rtrim($value, '.')).$suffix;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param \Moro\Platform\Model\EntityInterface|string|int $entity
+	 * @param string $table
+	 */
+	protected function _tagsCommitFinished($entity, $table)
+	{
+		$parameters = $entity->getProperty('parameters');
+		$tags = array_map('normalizeTag', empty($parameters['tags']) ? ['флаг: без ярлыков'] : $parameters['tags']);
+
+		if (isset($this->_connection) && $id = $entity->getId())
+		{
+			$this->_tagsDeleteFinished($entity, $table);
+
+			if ($this instanceof AbstractService)
+			{
+				$result = $this->notify(TagsServiceInterface::STATE_TAGS_GENERATE, $tags, clone $entity);
+				is_array($result) && $tags = $result;
+			}
+
+			/** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
+			$builder = $this->_connection->createQueryBuilder();
+			$sqlQuery = $builder->insert($table.'_tags')->values(['target' => '?', 'tag' => '?'])->getSQL();
+			$statement = $this->_connection->prepare($sqlQuery);
+
+			foreach ($tags as $tag)
+			{
+				$statement->execute([ $id, $tag ]);
+			}
+		}
+	}
+
+	/**
+	 * @param \Moro\Platform\Model\EntityInterface|string|int $entity
+	 * @param string $table
+	 */
+	protected function _tagsDeleteFinished($entity, $table)
+	{
+		if (isset($this->_connection) && $id = $entity->getId())
+		{
+			/** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
+			$builder = $this->_connection->createQueryBuilder();
+			$sqlQuery = $builder->delete($table.'_tags')->where('target = ?')->getSQL();
+			$statement = $this->_connection->prepare($sqlQuery);
+			$statement->execute([ $id ]);
+		}
+	}
+
+	/**
+	 * @param string $table
+	 * @param null|string $tag
+	 * @return int
+	 */
+	protected function _tagsCount($table, $tag = null)
+	{
+		if (isset($this->_connection))
+		{
+			$builder = $this->_connection->createQueryBuilder();
+			$builder->select('count(*)')->from($table.'_tags');
+			$tag && $builder->where('tag = ?');
+			$statement = $this->_connection->prepare($builder->getSQL());
+
+			return $statement->execute($tag ? [$tag] : null) ? (int)$statement->fetchColumn() : 0;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param string $table
+	 * @param string $tag
+	 * @return integer
+	 */
+	protected function _tagsNearest($table, $tag)
+	{
+		if (isset($this->_connection))
+		{
+			$builder = $this->_connection->createQueryBuilder();
+			$sqlQuery = $builder->select('count(*)')->from($table.'_tags')->where('tag like ?')->getSQL();
+			$statement = $this->_connection->prepare($sqlQuery);
+
+			return $statement->execute([ $tag.'%' ]) ? (int)$statement->fetchColumn() : 0;
+		}
+
+		return 0;
+	}
+}

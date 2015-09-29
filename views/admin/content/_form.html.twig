@@ -1,0 +1,9 @@
+{% extends "@PlatformCMS/admin/content.html.twig" %}
+
+{% block content %}
+	{% form_theme form '@PlatformCMS/forms/content.html.twig' %}
+	{% block workarea %}
+	{% endblock %}
+	<br/>
+	{{ parent() }}
+{% endblock %}

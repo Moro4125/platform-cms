@@ -1,0 +1,32 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+
+{% block workarea %}
+	<h1 class="text-center">Удаление</h1>
+	{{ form_start(form) }}
+	<hr/><br/>
+	<div class="row">
+		{% set remember = list|length > 3 %}
+		{% set size = remember ? 96 : 292 %}
+		{% set classes = remember
+			?( list|length > 6 ? "col col-xs-1" : "col col-xs-2"
+			):( list|length > 2 ?( "col col-xs-4" ): list|length > 1 ? "col col-xs-4 col-xs-push-2" : "col col-xs-4 col-xs-push-4" )%}
+		{% for item in list %}
+			<div class="{{ classes }}">
+				<div class="thumbnail">
+					<img src="{{ app.url("image", {hash: item.hash, width: size, height: size, remember: remember}) }}" >
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	<hr/>
+	<div class="row">
+		<div class="col col-xs-4 col-xs-push-4 text-center">
+			<div class="btn-group">
+				{{ form_widget(form.delete) }}
+				{{ form_widget(form.cancel) }}
+			</div>
+		</div>
+	</div>
+	{{ form_end(form) }}
+{% endblock %}

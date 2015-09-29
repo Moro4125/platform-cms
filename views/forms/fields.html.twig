@@ -1,0 +1,41 @@
+{% extends 'bootstrap_3_horizontal_layout.html.twig' %}
+
+{% block form_widget_compound %}
+	<div {{ block('widget_container_attributes') }}>
+		{% if form.parent is empty %}
+			{{ form_errors(form) }}
+		{% endif %}
+		{% if form.vars.groups is defined %}
+			<div class="row">
+			{% for group,items in form.vars.groups %}
+				{% if loop.index % 2 %}
+					</div>
+					<div class="row">
+				{% endif %}
+				<div class="col-lg-6 col-md-12">
+					<fieldset>
+						<legend>{{ group|title|trans({}, translation_domain) }}</legend>
+						{% for item in items %}
+							{{ form_row(form[item]) }}
+						{% endfor %}
+					</fieldset>
+				</div>
+			{% endfor %}
+			</div>
+		{% endif %}
+		{{ form_rest(form) }}
+	</div>
+{% endblock form_widget_compound %}
+
+{% block choice_widget_collapsed -%}
+	{% set attr = attr|merge({class: (attr.class|default('') ~ ' m-select2')|trim}) %}
+	{{- parent() -}}
+{%- endblock %}
+
+{% block textarea_widget -%}
+	{% set attr = attr|merge({class: (attr.class|default('') ~ ' form-control')|trim}) %}
+	{{- parent() -}}
+	<a style="position: absolute; top: 2px; right: 18px;" data-toggle="modal" href="/assets/platform/resources/markdown.html" data-target="#markdown">
+		<span title="Используется формат текста Markdown" class="glyphicon glyphicon-info-sign"></span>
+	</a>
+{%- endblock textarea_widget %}

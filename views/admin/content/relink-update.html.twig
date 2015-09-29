@@ -1,0 +1,35 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+
+	<div class="row">
+		<div class="col-md-5 col-sm-12 col-xs-12">
+			{{ form_row(form.name) }}
+		</div>
+		<div class="col-md-2 col-md-push-0 col-sm-10 col-sm-push-2">
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-sm visible-xs"/>
+				{{ form_widget(form.commit) }}
+				{{ form_widget(form.apply) }}
+				{{ form_widget(form.cancel) }}
+				{{ form_widget(form.delete) }}
+				<span class="visible-sm"><br/>&nbsp;</span>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<br class="visible-sm visible-xs"/>
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+	<hr/>
+
+	{{ form_widget(form) }}
+	{{ form_end(form) }}
+
+	<br/><hr/>
+{% endblock %}

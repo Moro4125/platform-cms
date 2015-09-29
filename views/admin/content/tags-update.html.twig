@@ -1,0 +1,50 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+	<div class="has-error">
+		{{ form_errors(form.code) }}
+	</div>
+
+	<div class="row">
+		<div class="col-md-5 col-sm-12 col-xs-12">
+			{{ form_row(form.name) }}
+		</div>
+		<div class="col-md-2 col-md-push-0 col-sm-10 col-sm-push-2">
+			{{ form_widget(form.kind) }}
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-sm visible-xs"/>
+				{% if is_granted("ROLE_EDITOR") %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
+				<span class="visible-sm"><br/>&nbsp;</span>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<br class="visible-sm visible-xs"/>
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+	<br/>
+	<div class="row">
+		<div class="col-md-12">
+			{{ form_widget(form.lead, {attr: {placeholder: "Пояснение"}}) }}
+		</div>
+	</div>
+
+	{{ form_end(form) }}
+
+	<br/><hr/>
+{% endblock %}

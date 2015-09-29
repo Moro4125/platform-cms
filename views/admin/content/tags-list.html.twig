@@ -1,0 +1,25 @@
+{% extends "@PlatformCMS/admin/content/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-content-tags-update", {id: 777}) %}
+	{% set deleteUrl = url("admin-content-tags-delete", {id: 777}) %}
+	{{ parent() }}
+{% endblock %}
+
+
+{% block list_column_name__info %}
+	<span class="glyphicon glyphicon-tag"></span>
+	{{- "&nbsp;"|raw -}}
+	{{- parent() -}}
+{% endblock %}
+
+
+{% block list_column_name__tags %}
+	{% if item.kind == 1 %}
+		<span class="label label-info">синоним</span>
+	{% elseif item.kind == 2 %}
+		<span class="label label-warning">системный</span>
+	{% endif %}
+	{{- parent() -}}
+{% endblock %}

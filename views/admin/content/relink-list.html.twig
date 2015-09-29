@@ -1,0 +1,18 @@
+{% extends "@PlatformCMS/admin/content/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-content-relink-update", {id: 777}) %}
+	{% set deleteUrl = url("admin-content-relink-delete", {id: 777}) %}
+	{{ parent() }}
+{% endblock %}
+
+
+{% block list_column_name__info %}
+	<span class="glyphicon glyphicon-link"></span>
+	{{- " " -}}
+	{{- item.name -}}
+	{%- if item.href -%}
+		<small class="text-muted">  ●  {{ item.href }}</small>
+	{%- endif -%}
+{% endblock %}

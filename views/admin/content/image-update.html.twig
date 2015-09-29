@@ -1,0 +1,96 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+
+	<div class="row">
+		<div class="col-md-5 col-sm-8 col-xs-12">
+			{{ form_row(form.name) }}
+
+		</div>
+		<div class="col-md-2 col-sm-4">
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-xs"/>
+				{% if is_granted("ROLE_EDITOR") %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
+				<br/>&nbsp;
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+	<br/>
+	<div id="img-cropper" class="img-cropper" role="tabpanel">
+		<ul class="nav nav-tabs" role="tablist">
+			{% for kind, ratio in kinds %}
+				<li role="presentation" class="{% if loop.first %}first{% endif %}">
+					<a href="#tab{{ kind }}" data-kind="{{ kind }}" data-ratio="{{ ratio }}" data-id-prefix="admin_update_crop{{ kind }}" aria-controls="tab{{ kind }}" role="tab" data-toggle="tab">
+						{{ form_widget(form["crop" ~ kind ~ "_a"], {attr: {disabled: loop.first}}) }}
+						<span> {{ kind }}</span>
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+		<br/>
+		<div class="row row-img-cropper">
+			<div class="col-md-8">
+				<div class="thumbnail img-container">
+					<img class="cropper" src="{{ app.url('image', {hash: item.hash, width: 0, height: 0, remember: false}) }}" >
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="panel panel-default clearfix">
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-6">
+								<span class="label label-default"></span>
+							</div>
+							<div class="col-xs-6 text-right">
+								<span class="label label-info"></span>
+							</div>
+						</div>
+					</div>
+					<div class="img-preview-container">
+						<div class="img-preview"></div>
+					</div>
+				</div>
+				<div class="tab-content">
+					{% for kind, ratio in kinds %}
+						<div role="tabpanel" class="tab-pane row" id="tab{{ kind }}">
+							<div class="col-xs-12">
+								{{ form_row(form["watermark" ~ kind]) }}
+							</div>
+							<div class="col-xs-8">
+								{{ form_widget(form["hide_mask" ~ kind]) }}
+							</div>
+							<div class="col-xs-4 text-right">
+								<div class="btn-group btn-group-xs" role="group">
+									{{ form_widget(form["copy" ~ kind]) }}
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<hr/>
+
+	{{ form_end(form) }}
+{% endblock %}

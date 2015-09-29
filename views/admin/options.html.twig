@@ -1,0 +1,18 @@
+{% extends "@PlatformCMS/admin/_layout.html.twig" %}
+
+{% block content %}
+	<form action="{{ app.request.uri }}" class="form-horizontal" method="post" enctype="multipart/form-data">
+		{% form_theme form '@PlatformCMS/forms/fields.html.twig' %}
+
+		{{ form_widget(form) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<hr/>
+				{% if is_granted("ROLE_EDITOR") %}
+					<button type="submit" class="btn-default btn">Сохранить</button>
+				{% endif %}
+			</div>
+		</div>
+		<br/>
+	</form>
+{% endblock %}
