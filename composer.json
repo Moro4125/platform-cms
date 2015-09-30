@@ -23,11 +23,11 @@
       "type": "package",
       "package": {
         "name": "fengyuanchen/cropperp",
-        "version": "0.9.3",
+        "version": "0.11.1",
         "source": {
           "url": "git@github.com:fengyuanchen/cropper.git",
           "type": "git",
-          "reference": "tags/v0.9.3"
+          "reference": "tags/v0.11.1"
         }
       }
     },
@@ -74,7 +74,7 @@
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.4",
     "robloach/component-installer": "~0.2",
-    "fengyuanchen/cropperp": "~0.9.3",
+    "fengyuanchen/cropperp": "0.11.1",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
     "saxulum/saxulum-bootstrap-provider": "~1.0",
