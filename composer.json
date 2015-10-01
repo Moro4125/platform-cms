@@ -170,12 +170,10 @@
         }
       },
       "mustache/mustache-js": {
-        "component": {
-          "name": "mustache",
-          "scripts": [
-            "mustache.js"
-          ]
-        }
+        "name": "mustache",
+        "scripts": [
+          "mustache.js"
+        ]
       },
       "jackmoore/autosize": {
         "name": "textarea_autosize",
