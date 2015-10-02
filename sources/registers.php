@@ -45,31 +45,52 @@ Application::getInstance(function (Application $app)
 		? '^/admin'
 		: '^.*';
 
+	// Read users from INI file (section "access").
+	$users = $app->getOptions('access');
+
+	if (count($users) > 1)
+	{
+		unset($users['singleton']);
+	}
+
+	foreach ($users as &$user)
+	{
+		$rights = explode(',', $user);
+		$secret = array_pop($rights);
+		$user = [$rights, $secret];
+	}
+
+	// Read groups hierarchy from INI file (section "groups").
+	$groups = $app->getOptions('groups');
+
+	foreach ($groups as &$group)
+	{
+		$group = array_map('trim', explode(',', $group));
+	}
+
 	// Security Provider.
 	$app->register(new SecurityServiceProvider(), [
 		'security.firewalls' => [
 			'admin' => [
 				'pattern' => $adminPrefix,
 				'http' => true,
-				'users' => [
-					'morozkin' => ['ROLE_ADMIN',  "+r7u2o9zOMbdVKxZ0eB5b1QVN9nBWO3YyUfqnrPWZJOvh6woVC+5pp2TKM81RQyGyJ3wh3hJS2jva6n9X4y/5A=="],
-					'nevolin'  => ['ROLE_EDITOR', "7Cd5mhu+f/1YDBdp3rDoscAjJJoYcxdSUXYAMoCt/Yb0/yTuHt6y9L8msXmRZ9sTKpXmOYz13G9LHtMCh0Hjog=="],
-					'avdey'    => ['ROLE_EDITOR', "K8CM82b0IJPAL3ffi8jnZRghe2iTRPvpnZLTQZY1jfZy+AOfW5MRdEbMcwYw3NWhYnnqX8nCeXbBniJvym65fA=="],
-					'ghost'    => ['ROLE_GHOST',  "IMnO8KlIblPktymVVsl5MhGvX09+PhTiFmbnNDMSLRq+oscDRfywLbdmvEmXUajal0c2EaMsOYlZMjoXp5LmVw=="],
-				],
+				'users' => $users,
 			],
 			'public' => [
 				'pattern'   => '^.*$',
 				'anonymous' => true,
 			]
 		],
-		'security.role_hierarchy' => [
-			'ROLE_ADMIN'  => ['ROLE_EDITOR', 'ROLE_RELINK', 'ROLE_USER'],
-			'ROLE_EDITOR' => ['ROLE_USER'],
-		],
+		'security.role_hierarchy' => $groups,
 		'security.access_rules' => [
-			[$adminPrefix.'/panel/security', 'ROLE_ADMIN'],
-			[$adminPrefix.'/.*',             ['ROLE_EDITOR', 'ROLE_GHOST']],
+			[$adminPrefix.'/panel$',                  'ROLE_USER'],
+			[$adminPrefix.'/panel/options',           'ROLE_RS_OPTIONS'],
+			[$adminPrefix.'/panel/content/articles?', 'ROLE_RS_ARTICLES'],
+			[$adminPrefix.'/panel/content/images?',   'ROLE_RS_IMAGES'],
+			[$adminPrefix.'/panel/content/relink',    'ROLE_RS_RELINK'],
+			[$adminPrefix.'/panel/content/tags?',     'ROLE_RS_TAGS'],
+			[$adminPrefix.'/panel/pages',             'ROLE_USER'],
+			[$adminPrefix.'/panel',                   'ROLE_ADMIN'],
 		],
 	]);
 
@@ -255,22 +276,51 @@ Application::getInstance(function (Application $app)
 Application::getInstance(function (Application $app)
 {
 	$app['admin_main_menu'] = function() use ($app) {
+		$access = $app->getServiceSecurityAcl();
 		$menu = $app->getServiceMenuFactory()->createItem('root');
 
-		$menu->addChild('Информация',     ['route' => 'admin-about']);
-		$menu->addChild('Настройки',      ['route' => 'admin-options']);
+		$menu->addChild('Информация', ['route' => 'admin-about']);
+
+		if ($access->isGranted('ROLE_RS_OPTIONS'))
+		{
+			$menu->addChild('Настройки', ['route' => 'admin-options']);
+		}
 
 		$item = $menu->addChild('Материалы', ['route' => 'admin-content-articles']);
-		$item->addChild('Статьи', [
-			'route' => 'admin-content-articles',
-			'display' => true
-		]);
-		$item->addChild('Изображения', [
-			'route' => 'admin-content-images',
-			'display' => true
-		]);
 
-		if ($app->getServiceSecurityAcl()->isGranted('ROLE_RELINK'))
+		if ($access->isGranted('ROLE_RS_ARTICLES'))
+		{
+			$item->addChild('Статьи', [
+				'route' => 'admin-content-articles',
+				'display' => true
+			]);
+
+			$item->addChild('Редактирование материала', [
+				'route' => 'admin-content-articles-update',
+				'routeParameters' => [
+					'id' => (int)$app['request']->attributes->get('id', 0)
+				],
+				'display' => false
+			]);
+		}
+
+		if ($access->isGranted('ROLE_RS_IMAGES'))
+		{
+			$item->addChild('Изображения', [
+				'route' => 'admin-content-images',
+				'display' => true
+			]);
+
+			$item->addChild('Редактирование изображения', [
+				'route' => 'admin-content-images-update',
+				'routeParameters' => [
+					'id' => (int)$app['request']->attributes->get('id', 0)
+				],
+				'display' => false
+			]);
+		}
+
+		if ($access->isGranted('ROLE_RS_RELINK'))
 		{
 			$item->addChild('Перелинковка', [
 				'route' => 'admin-content-relink',
@@ -286,31 +336,21 @@ Application::getInstance(function (Application $app)
 			]);
 		}
 
-		$item->addChild('Ярлыки', [
-			'route' => 'admin-content-tags',
-			'display' => true
-		]);
-		$item->addChild('Редактирование материала', [
-			'route' => 'admin-content-articles-update',
-			'routeParameters' => [
-				'id' => (int)$app['request']->attributes->get('id', 0)
-			],
-			'display' => false
-		]);
-		$item->addChild('Редактирование изображения', [
-			'route' => 'admin-content-images-update',
-			'routeParameters' => [
-				'id' => (int)$app['request']->attributes->get('id', 0)
-			],
-			'display' => false
-		]);
-		$item->addChild('Редактирование ярлыка', [
-			'route' => 'admin-content-tags-update',
-			'routeParameters' => [
-				'id' => (int)$app['request']->attributes->get('id', 0)
-			],
-			'display' => false
-		]);
+		if ($access->isGranted('ROLE_RS_TAGS'))
+		{
+			$item->addChild('Ярлыки', [
+				'route' => 'admin-content-tags',
+				'display' => true
+			]);
+
+			$item->addChild('Редактирование ярлыка', [
+				'route' => 'admin-content-tags-update',
+				'routeParameters' => [
+					'id' => (int)$app['request']->attributes->get('id', 0)
+				],
+				'display' => false
+			]);
+		}
 
 		$menu->addChild('Предпросмотр',   ['uri' => '/admin/index.php/index.html']);
 		$menu->addChild('Публикация',     ['route' => 'admin-compile-list']);

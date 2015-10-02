@@ -17,7 +17,7 @@ Application::getInstance(function(Application $app) {
 		if (strncmp($request->headers->get('Content-Type'), 'application/json', 16) === 0)
 		{
 			$data = json_decode($request->getContent(), true);
-			$request->request->replace(is_array($data) ? $data : [] );
+			$request->request->replace(is_array($data) ? $data : []);
 		}
 	});
 
@@ -25,7 +25,12 @@ Application::getInstance(function(Application $app) {
 	$app->after(function(Request $request, Response $response) use ($app) {
 		$contentType = $response->headers->get('Content-Type');
 
-		if ($request && $response->getStatusCode() == 401 && strncmp($contentType, 'text/html', 9) === 0)
+		if (strncmp('/admin/', $request->getUri(), 7))
+		{
+			return;
+		}
+
+		if ($response->getStatusCode() == 401 && strncmp($contentType, 'text/html', 9) === 0)
 		{
 			$filePath = implode(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'resources', 'error401.html']);
 			$response->setContent(file_get_contents($filePath));
