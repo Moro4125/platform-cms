@@ -186,7 +186,6 @@
   "archive": {
     "exclude": [
       ".gitignore",
-      "bootstrap.php",
       "http"
     ]
   }

@@ -1,0 +1,14 @@
+User-agent: Googlebot
+Disallow: /admin
+Disallow: /assets
+Disallow: /images
+
+User-agent: Yandex
+Disallow: /admin
+Disallow: /assets
+Disallow: /images
+
+User-agent: *
+Disallow: /admin
+Disallow: /assets
+Disallow: /images

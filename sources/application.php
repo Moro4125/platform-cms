@@ -203,7 +203,7 @@ class Application extends CApplication
 			$projectPath = null;
 
 			// Загрузка настроек приложения из INI файлов рабочего окружения.
-			self::$_instance->_options = [];
+			self::$_instance->_options = ['' => '%'];
 			$path = dirname(__DIR__);
 
 			foreach (array('platform', 'application', getenv('ENVIRONMENT') ?: 'production') as $environment)
