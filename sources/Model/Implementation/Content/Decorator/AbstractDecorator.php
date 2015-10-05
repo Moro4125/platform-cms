@@ -109,15 +109,17 @@ class AbstractDecorator extends CDecorator implements ContentInterface
 		if ($this->_heading === null)
 		{
 			$this->_heading = '';
+			$prefix = 'раздел:';
+			$length = strlen($prefix);
 
 			foreach ($this->getTags() as $tag)
 			{
-				if (false === strpos($normalizedTag = normalizeTag($tag), 'раздел:'))
+				if (strncmp($normalizedTag = normalizeTag($tag), $prefix, $length) !== 0)
 				{
 					continue;
 				}
 
-				$this->_headingName = trim(mb_substr($tag, 7));
+				$this->_headingName = trim(substr($tag, $length));
 
 				if (isset(self::$_cacheHeading[$normalizedTag]))
 				{
