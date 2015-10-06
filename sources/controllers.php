@@ -67,7 +67,7 @@ Application::getInstance(function (Application $app)
 	foreach ($actionRules as $route => list($pattern, $class))
 	{
 		$class = $app->offsetGet($route.'.action.class', ($class[0] == '\\') ? $class : __NAMESPACE__.'\\'.$class);
-		$controller = $admin->match(($pattern[0] == '/') ? $pattern : '/panel'.$pattern, $class)->bind($route);
+		$controller = $admin->match(($pattern[0] == '/') ? $pattern : '/panel/'.$pattern, $class)->bind($route);
 		preg_match_all('{\\{(.+?)\\}}', $pattern, $matches, PREG_PATTERN_ORDER);
 
 		foreach ($matches[1] as $parameter)
