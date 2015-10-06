@@ -310,7 +310,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 		{
 			if (count($list))
 			{
-				return $app->redirect($app->url($this->routeBindTags, ['id' => implode(',', $list)]));
+				return $app->redirect($app->url($this->routeBindTags, ['ids' => implode(',', $list)]));
 			}
 
 			$app->getServiceFlash()->alert('Для назначения ярлыков нужно выбрать одну или более записей.');
