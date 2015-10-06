@@ -76,7 +76,9 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		{
 			foreach ($tags as $tag)
 			{
-				if (strcmp('раздел:', mb_substr(mb_strtolower($tag), 0, 7)) === 0)
+				$tag = mb_strtolower($tag);
+
+				if (strcmp('раздел:', mb_substr($tag, 0, 7)) === 0 || strcmp('материал:', mb_substr($tag, 0, 9)) === 0 )
 				{
 					break 2;
 				}

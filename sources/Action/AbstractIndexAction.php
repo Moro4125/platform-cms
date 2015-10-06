@@ -280,7 +280,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			elseif ($this->routeDelete)
 			{
 				return $app->redirect($app->url($this->routeDelete, [
-					'id' => implode(',', $list),
+					'ids' => implode(',', $list),
 					'back' => $request->getRequestUri(),
 					'next' => $request->getRequestUri(),
 				]));

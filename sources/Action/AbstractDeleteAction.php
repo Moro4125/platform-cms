@@ -32,10 +32,10 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	/**
 	 * @param Application|SilexApplication $app
 	 * @param Request $request
-	 * @param string $id
+	 * @param string $ids
 	 * @return Response
 	 */
-	public function __invoke(SilexApplication $app, Request $request, $id)
+	public function __invoke(SilexApplication $app, Request $request, $ids)
 	{
 		assert(!empty($this->serviceCode));
 		assert(!empty($this->template));
@@ -46,7 +46,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 		$this->setRequest($request);
 		$service = $this->getService();
 
-		$list = array_filter(array_map('str_to_int', explode(',', $id)));
+		$list = array_filter(array_map('str_to_int', explode(',', $ids)));
 		$this->_setEntities(array_filter(array_map(function($id) use ($service) {
 			return $service->getEntityById($id, true);
 		}, $list)));
@@ -54,7 +54,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 		if (!$request->query->has('back'))
 		{
 			return $app->redirect($app->url($this->route, [
-				'id'   => $request->attributes->get('id'),
+				'ids'  => $request->attributes->get('ids'),
 				'back' => ($request->headers->has('Referer') && $request->headers->get('Referer'))
 					? $request->headers->get('Referer')
 					: 0,

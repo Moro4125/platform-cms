@@ -4,7 +4,7 @@
 {% block workarea %}
 	{% set updateUrl = url("admin-content-articles-update",  {id: 777}) %}
 	{% set setTopUrl = url("admin-content-articles-set-top", {id: 777}) %}
-	{% set deleteUrl = url("admin-content-articles-delete",  {id: 777}) %}
+	{% set deleteUrl = url("admin-content-articles-delete",  {ids: 777}) %}
 	{% set icon_col_width = 80 %}
 	{{ parent() }}
 {% endblock %}

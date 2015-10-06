@@ -443,6 +443,28 @@ class Application extends CApplication
 	}
 
 	/**
+	 * @param string $id
+	 * @param null $default
+	 * @return mixed
+	 */
+	public function offsetGet($id, $default = null)
+	{
+		if ($default === null)
+		{
+			return parent::offsetGet($id);
+		}
+
+		$result = null;
+
+		if ($this->offsetExists($id))
+		{
+			$result = parent::offsetGet($id);
+		}
+
+		return ($result === null) ? $default : $result;
+	}
+
+	/**
 	 * @return \Silex\ControllerCollection
 	 */
 	public function getServiceControllersFactory()

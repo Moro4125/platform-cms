@@ -73,7 +73,6 @@ class TagsServiceBehavior extends AbstractBehavior
 		{
 			foreach ($userTags as $tagCode)
 			{
-				/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $tag */
 				foreach ($this->_service->selectEntities(0, 10, null, ['tag', 'kind'], [$tagCode, TagsInterface::KIND_SYNONYM]) as $tag)
 				{
 					if (!in_array($tag->getCode(), $userTags))
@@ -83,7 +82,6 @@ class TagsServiceBehavior extends AbstractBehavior
 				}
 			}
 
-			/** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
 			$builder = $this->_connection->createQueryBuilder();
 			$sqlQuery = $builder->insert($table.'_tags')->values(['target' => '?', 'tag' => '?'])->getSQL();
 			$statement = $this->_connection->prepare($sqlQuery);

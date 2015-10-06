@@ -205,7 +205,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 				$next = $this->getRequest()->query->get('back') ?: $application->url($this->routeIndex, $query);
 				$back = $this->getRequest()->getRequestUri();
-				$query = ['id' => $id, 'next' => $next, 'back' => $back];
+				$query = ['ids' => $id, 'next' => $next, 'back' => $back];
 
 				return $application->redirect($application->url($this->routeDelete, $query));
 			}

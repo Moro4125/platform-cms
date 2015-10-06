@@ -3,7 +3,7 @@
 
 {% block workarea %}
 	{% set updateUrl = url("admin-content-tags-update", {id: 777}) %}
-	{% set deleteUrl = url("admin-content-tags-delete", {id: 777}) %}
+	{% set deleteUrl = url("admin-content-tags-delete", {ids: 777}) %}
 	{{ parent() }}
 {% endblock %}
 

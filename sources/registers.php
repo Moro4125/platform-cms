@@ -83,13 +83,13 @@ Application::getInstance(function (Application $app)
 		],
 		'security.role_hierarchy' => $groups,
 		'security.access_rules' => [
-			[$adminPrefix.'/panel$',                  'ROLE_USER'],
 			[$adminPrefix.'/panel/options',           'ROLE_RS_OPTIONS'],
 			[$adminPrefix.'/panel/content/articles?', 'ROLE_RS_ARTICLES'],
 			[$adminPrefix.'/panel/content/images?',   'ROLE_RS_IMAGES'],
 			[$adminPrefix.'/panel/content/relink',    'ROLE_RS_RELINK'],
 			[$adminPrefix.'/panel/content/tags?',     'ROLE_RS_TAGS'],
 			[$adminPrefix.'/panel/pages',             'ROLE_USER'],
+			[$adminPrefix.'/panel$',                  'ROLE_USER'],
 			[$adminPrefix.'/panel',                   'ROLE_ADMIN'],
 		],
 	]);
@@ -210,29 +210,42 @@ Application::getInstance(function (Application $app)
 
 Application::getInstance(function (Application $app)
 {
+	$suffixClass = '.class';
+
 	// Model behavior TAGS.
-	$app[Application::BEHAVIOR_TAGS] = $app->share(function() use ($app) {
-		$behavior = new TagsServiceBehavior();
+	$app[Application::BEHAVIOR_TAGS] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::BEHAVIOR_TAGS.$suffixClass, TagsServiceBehavior::class);
+
+		/** @var TagsServiceBehavior $behavior */
+		$behavior = new $class();
 		$behavior->setTagsService($app->getServiceTags());
 		$behavior->setDbConnection($app->getServiceDataBase());
 		return $behavior;
 	});
 
 	// Service ROUTES.
-	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app) {
-		return new ServiceRoutes($app->getServiceDataBase());
+	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
+
+		return new $class($app->getServiceDataBase());
 	});
 
 	// Service OPTIONS.
-	$app[Application::SERVICE_OPTIONS] = $app->share(function() use ($app) {
-		$service = new ServiceOptions($app->getServiceDataBase());
+	$app[Application::SERVICE_OPTIONS] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_OPTIONS.$suffixClass, ServiceOptions::class);
+
+		/** @var ServiceOptions $service */
+		$service = new $class($app->getServiceDataBase());
 		$service->setLogger($app->getServiceLogger());
 		return $service;
 	});
 
 	// Service CONTENT.
-	$app[Application::SERVICE_CONTENT] = $app->share(function() use ($app) {
-		$service = new ServiceContent($app->getServiceDataBase());
+	$app[Application::SERVICE_CONTENT] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_CONTENT.$suffixClass, ServiceContent::class);
+
+		/** @var ServiceContent $service */
+		$service = new $class($app->getServiceDataBase());
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
@@ -240,8 +253,11 @@ Application::getInstance(function (Application $app)
 	});
 
 	// Service FILE.
-	$app[Application::SERVICE_FILE] = $app->share(function() use ($app) {
-		$service = new ServiceFile($app->getServiceDataBase());
+	$app[Application::SERVICE_FILE] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_FILE.$suffixClass, ServiceFile::class);
+
+		/** @var ServiceFile $service */
+		$service = new $class($app->getServiceDataBase());
 		$service->setLogger($app->getServiceLogger());
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setStoragePath($app->getOption('path.data'));
@@ -250,23 +266,33 @@ Application::getInstance(function (Application $app)
 	});
 
 	// Service RELINK.
-	$app[Application::SERVICE_RELINK] = $app->share(function() use ($app) {
-		$service = new ServiceRelink($app->getServiceDataBase());
+	$app[Application::SERVICE_RELINK] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_RELINK.$suffixClass, ServiceRelink::class);
+
+		/** @var ServiceRelink $service */
+		$service = new $class($app->getServiceDataBase());
 		$service->setLogger($app->getServiceLogger());
 		$service->setServiceUser($app->getServiceSecurityToken());
+		$service->attach($app[Application::BEHAVIOR_TAGS]);
 		return $service;
 	});
 
 	// Service RELINK TOOL.
-	$app[Application::SERVICE_RELINK_TOOL] = $app->share(function() use ($app) {
-		$service = new Relink();
+	$app[Application::SERVICE_RELINK_TOOL] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_RELINK_TOOL.$suffixClass, Relink::class);
+
+		/** @var Relink $service */
+		$service = new $class();
 		$service->setLinks($app->getServiceRelink()->getLinks());
 		return $service;
 	});
 
 	// Service TAGS.
-	$app[Application::SERVICE_TAGS] = $app->share(function() use ($app) {
-		$service = new ServiceTags($app->getServiceDataBase());
+	$app[Application::SERVICE_TAGS] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_TAGS.$suffixClass, ServiceTags::class);
+
+		/** @var ServiceTags $service */
+		$service = new $class($app->getServiceDataBase());
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
 		return $service;
@@ -286,7 +312,15 @@ Application::getInstance(function (Application $app)
 			$menu->addChild('Настройки', ['route' => 'admin-options']);
 		}
 
-		$item = $menu->addChild('Материалы', ['route' => 'admin-content-articles']);
+		$flag = $access->isGranted('ROLE_RS_ARTICLES');
+		$flag|= $access->isGranted('ROLE_RS_IMAGES');
+		$flag|= $access->isGranted('ROLE_RS_RELINK');
+		$flag|= $access->isGranted('ROLE_RS_TAGS');
+
+		$item = $menu->addChild('Материалы', [
+			'route' => 'admin-content-articles',
+			'display' => $flag,
+		]);
 
 		if ($access->isGranted('ROLE_RS_ARTICLES'))
 		{
