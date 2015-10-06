@@ -57,7 +57,7 @@ class AbstractSetTagAction extends AbstractContentAction
 		if (!$request->query->has('back'))
 		{
 			return $app->redirect($app->url($this->route, [
-				'id'   => $request->attributes->get('id'),
+				'ids'  => $request->attributes->get('ids'),
 				'back' => ($request->headers->has('Referer') && $request->headers->get('Referer'))
 					? $request->headers->get('Referer')
 					: 0,
