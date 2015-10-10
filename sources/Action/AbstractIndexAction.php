@@ -150,11 +150,13 @@ abstract class AbstractIndexAction extends AbstractContentAction
 
 		$search = trim($this->getRequest()->query->get('search', ''));
 		$searchTags = [];
+		$searchTagsMeta = [];
 
 		if ($this->_tags)
 		{
 			$search = '';
 			$tagsList = array_map('trim', explode(',', rtrim($this->_tags, '.')));
+			$tagsService = $this->_application->getServiceTags();
 
 			foreach ($tagsList as $tag)
 			{
@@ -162,6 +164,11 @@ abstract class AbstractIndexAction extends AbstractContentAction
 					'page'   => null,
 					'search' => ltrim(implode(', ', array_diff($tagsList, [$tag])).'.', '.') ?: null,
 				], [], [], $_SERVER)->getUri();
+
+				if ($tagEntity = $tagsService->getEntityByCode(normalizeTag($tag), true))
+				{
+					$searchTagsMeta[$tag] = $tagEntity;
+				}
 			}
 		}
 
@@ -172,8 +179,9 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			'offset' => $offset,
 			'count'  => $count,
 			'total'  => $total,
-			'search' => $search,
-			'searchTags' => $searchTags,
+			'search'         => $search,
+			'searchTags'     => $searchTags,
+			'searchTagsMeta' => $searchTagsMeta,
 			'tags' => $service instanceof TagsServiceInterface ? $service->selectActiveTags($this->_tags, true) : [],
 			'next' => ($offset + $count < $total) ? $next->getRequestUri() : false,
 			'prev' => ($page > 1) ? $prev->getRequestUri() : false,

@@ -53,7 +53,7 @@
 											<span class="glyphicon glyphicon-remove"></span>
 										</a>
 										{% for tag, url in searchTags %}
-											<span class="btn btn-tag-rm">
+											<span class="btn btn-tag-rm" title="{{ (searchTagsMeta[tag]|default({parameters:{lead:""}})).parameters.lead }}">
 												{{ tag }}
 												<a href="{{ url }}" title="Убрать ярлык из условия фильтрации">
 													<span class="glyphicon glyphicon-remove"></span>
@@ -310,7 +310,7 @@
 {% block list_column_name__info %}
 	{{- item.name -}}
 	{%- if item.parameters.lead|default("") -%}
-		<small class="text-muted">  ●  {{ item.parameters.lead }}</small>
+		<small class="text-muted">  ●  {{ item.parameters.lead|striptags }}</small>
 	{%- endif -%}
 {% endblock %}
 

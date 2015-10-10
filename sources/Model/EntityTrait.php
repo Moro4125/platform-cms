@@ -255,6 +255,35 @@ trait EntityTrait
 	}
 
 	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	public function addFlag($flag)
+	{
+		$this->_flags |= $flag;
+		return $this;
+	}
+
+	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	public function delFlag($flag)
+	{
+		$this->_flags &= ~$flag;
+		return $this;
+	}
+
+	/**
+	 * @param int $flag
+	 * @return bool
+	 */
+	public function hasFlag($flag)
+	{
+		return ($this->_flags & $flag) === $flag;
+	}
+
+	/**
 	 * @return int
 	 */
 	public function getCreatedAt()

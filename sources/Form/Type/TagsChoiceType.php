@@ -75,7 +75,7 @@ class TagsChoiceType extends AbstractType
 	public function buildView(FormView $view, FormInterface $form, array $options)
 	{
 		$service = $this->_application->getServiceTags();
-		$list = $service->selectEntities(0, 100, 'code', '!'.TagsInterface::PROP_KIND, TagsInterface::KIND_SYSTEM);
+		$list = $service->selectEntities(0, 100, 'code', TagsInterface::PROP_KIND, TagsInterface::KIND_STANDARD);
 
 		/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $entity */
 		foreach ($list as $entity)

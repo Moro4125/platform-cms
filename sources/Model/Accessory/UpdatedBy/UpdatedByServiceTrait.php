@@ -56,7 +56,7 @@ trait UpdatedByServiceTrait
 	{
 		$list = [];
 
-		if ($this->_userToken)
+		if ($this->_userToken && ($insert || !$entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES)))
 		{
 			$user = $this->_userToken->getUsername();
 

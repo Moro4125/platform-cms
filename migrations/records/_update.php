@@ -35,6 +35,7 @@ if (isset($arguments['service']) && isset($container[$arguments['service']]))
 				foreach ($list as $entity)
 				{
 					$lastId = $entity->getId();
+					$entity->addFlag(\Moro\Platform\Model\EntityInterface::FLAG_SYSTEM_CHANGES);
 					$manager->commit($entity);
 				}
 

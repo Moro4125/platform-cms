@@ -133,7 +133,7 @@ Application::getInstance(function (Application $app)
 	// Monolog Service Provider.
 	$app->register(new MonologServiceProvider(), [
 		'monolog.name'       => $app->getName(),
-		'monolog.logfile'    => $app->getOption('path.logs').DIRECTORY_SEPARATOR.'app-'.date("Y-m-d").'.log',
+		'monolog.logfile'    => $app->getOption('path.logs').DIRECTORY_SEPARATOR.php_sapi_name().'-'.date("Y-m-d").'.log',
 		'monolog.level'      => $app->getOption('debug') ? Logger::DEBUG : Logger::INFO,
 		'monolog.processors' => [
 			new RequestProcessor($app),
@@ -266,7 +266,6 @@ Application::getInstance(function (Application $app)
 		{
 			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
 			$service->appendDecorator(new HeadingDecorator($app));
-			$service->appendDecorator(new \Moro\Platform\Model\Implementation\Content\Decorator\AbstractDecorator($app));
 		}
 
 		return $service;

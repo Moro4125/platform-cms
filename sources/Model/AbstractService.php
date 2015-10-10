@@ -418,18 +418,21 @@ abstract class AbstractService implements SplSubject
 	{
 		$fields = [];
 
-		if ($insert && $entity->hasProperty(EntityInterface::PROP_CREATED_AT))
+		if ($insert || !$entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES))
 		{
-			$nowExpression = $this->_connection->getDriver()->getDatabasePlatform()->getNowExpression();
-			$fields[EntityInterface::PROP_CREATED_AT] = $nowExpression;
-		}
+			if ($insert && $entity->hasProperty(EntityInterface::PROP_CREATED_AT))
+			{
+				$nowExpression = $this->_connection->getDriver()->getDatabasePlatform()->getNowExpression();
+				$fields[EntityInterface::PROP_CREATED_AT] = $nowExpression;
+			}
 
-		if ($entity->hasProperty(EntityInterface::PROP_UPDATED_AT))
-		{
-			$nowExpression = empty($nowExpression)
-				? $this->_connection->getDriver()->getDatabasePlatform()->getNowExpression()
-				: $nowExpression;
-			$fields[EntityInterface::PROP_UPDATED_AT] = $nowExpression;
+			if ($entity->hasProperty(EntityInterface::PROP_UPDATED_AT))
+			{
+				$nowExpression = empty($nowExpression)
+					? $this->_connection->getDriver()->getDatabasePlatform()->getNowExpression()
+					: $nowExpression;
+				$fields[EntityInterface::PROP_UPDATED_AT] = $nowExpression;
+			}
 		}
 
 		return $fields;

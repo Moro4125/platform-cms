@@ -19,6 +19,7 @@ interface EntityInterface extends JsonSerializable
 	const FLAG_CLONED              = 1;
 	const FLAG_DATABASE            = 2;
 	const FLAG_TIMESTAMP_CONVERTED = 4;
+	const FLAG_SYSTEM_CHANGES      = 8;
 
 	/**
 	 * @param string $name
@@ -74,6 +75,24 @@ interface EntityInterface extends JsonSerializable
 	 * @return $this
 	 */
 	function setFlags($flags);
+
+	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	function addFlag($flag);
+
+	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	function delFlag($flag);
+
+	/**
+	 * @param int $flag
+	 * @return bool
+	 */
+	function hasFlag($flag);
 
 	/**
 	 * @return int

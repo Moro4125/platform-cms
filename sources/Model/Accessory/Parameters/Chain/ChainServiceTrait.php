@@ -3,11 +3,11 @@
  * Class ChainServiceTrait
  */
 namespace Moro\Platform\Model\Accessory\Parameters\Chain;
+use \Moro\Platform\Model\AbstractDecorator;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \ArrayObject;
-
 use \PDO;
 
 /**
@@ -74,6 +74,11 @@ trait ChainServiceTrait
 
 		if ($entity instanceof ParametersInterface && empty($this->_chainWorkIds[$id]) && count($this->_chainWorkIds) < 16)
 		{
+			if ($entity instanceof AbstractDecorator)
+			{
+				$entity = $entity->decorate(false);
+			}
+
 			$this->_chainWorkIds[$id] = [$id];
 
 			$parameters = $entity->getParameters();
@@ -160,6 +165,7 @@ trait ChainServiceTrait
 				foreach ($this->_chainWorkIds[$id] as $workId)
 				{
 					$tempEntity = $this->getEntityById($workId, true);
+					$tempEntity && $tempEntity->addFlag(EntityInterface::FLAG_SYSTEM_CHANGES);
 					$tempEntity && $this->commit($tempEntity);
 				}
 			}

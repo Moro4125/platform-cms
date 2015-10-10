@@ -423,3 +423,11 @@ form > table.table {
 .form-group label.col-sm-2 {
     font-size: 85%;
 }
+
+.content-no-icon {
+    width: 77px;
+    height: 48px;
+    margin: -4px -8px -8px -8px;
+    padding: 0;
+    background-color: #f0f0f0;
+}

@@ -215,6 +215,35 @@ abstract class AbstractDecorator implements ArrayAccess
 	}
 
 	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	public function addFlag($flag)
+	{
+		$this->_entity->addFlag($flag);
+		return $this;
+	}
+
+	/**
+	 * @param int $flag
+	 * @return $this
+	 */
+	public function delFlag($flag)
+	{
+		$this->_entity->delFlag($flag);
+		return $this;
+	}
+
+	/**
+	 * @param int $flag
+	 * @return bool
+	 */
+	public function hasFlag($flag)
+	{
+		return $this->_entity->hasFlag($flag);
+	}
+
+	/**
 	 * @return int
 	 */
 	public function getCreatedAt()
