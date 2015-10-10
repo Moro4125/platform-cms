@@ -29,10 +29,12 @@ use \Moro\Platform\Provider\FormServiceProvider;
 use \Moro\Platform\Provider\HttpCacheServiceProvider;
 use \Moro\Platform\Provider\Twig\ApplicationExtension;
 use \Moro\Platform\Provider\Twig\MarkdownExtension;
+use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior;
 use \Moro\Platform\Model\Implementation\Routes\ServiceRoutes;
 use \Moro\Platform\Model\Implementation\Options\ServiceOptions;
 use \Moro\Platform\Model\Implementation\Content\ServiceContent;
+use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator;
 use \Moro\Platform\Model\Implementation\File\ServiceFile;
 use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
@@ -223,6 +225,16 @@ Application::getInstance(function (Application $app)
 		return $behavior;
 	});
 
+	// Model behavior HEADINGS.
+	$app[Application::BEHAVIOR_HEADINGS] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::BEHAVIOR_HEADINGS.$suffixClass, HeadingBehavior::class);
+
+		/** @var HeadingBehavior $behavior */
+		$behavior = new $class();
+		$behavior->setServiceTags($app->getServiceTags());
+		return $behavior;
+	});
+
 	// Service ROUTES.
 	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
@@ -249,6 +261,14 @@ Application::getInstance(function (Application $app)
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
+
+		if ($app->getOption('content.headings'))
+		{
+			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
+			$service->appendDecorator(new HeadingDecorator($app));
+			$service->appendDecorator(new \Moro\Platform\Model\Implementation\Content\Decorator\AbstractDecorator($app));
+		}
+
 		return $service;
 	});
 

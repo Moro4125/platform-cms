@@ -59,10 +59,15 @@ abstract class AbstractDecorator implements ArrayAccess
 
 	public function __clone()
 	{
-		if ($this->_entity instanceof EntityInterface)
+		if ($this->_entity)
 		{
 			$this->_entity = clone $this->_entity;
 		}
+	}
+
+	public function __call($method, $args)
+	{
+		return call_user_func_array([$this->_entity, $method], $args);
 	}
 
 	/**
@@ -295,26 +300,43 @@ abstract class AbstractDecorator implements ArrayAccess
 		}
 		elseif ($entity === null)
 		{
-			$result = null;
-
-			if ($this->_entity instanceof EntityInterface)
-			{
-				$result = $this->_entity;
-			}
-
+			$result = $this->_entity;
 			$this->_entity = null;
 		}
 		elseif ($entity instanceof EntityInterface)
 		{
 			$result = $this;
 
-			if ($entity instanceof AbstractDecorator && $entity->getDecoratorPriority() > $this->getDecoratorPriority())
+			if ($entity instanceof AbstractDecorator)
 			{
-				/** @noinspection PhpParamsInspection */
-				return $entity->decorate($this->decorate($entity->decorate(null)));
+				if ($entity->getDecoratorPriority() > $this->getDecoratorPriority())
+				{
+					if ($chain = $entity->decorate(null))
+					{
+						$result = $entity->decorate($this->decorate($chain));
+					}
+					else
+					{
+						$result = $entity->decorate($this);
+					}
+				}
+				elseif ($this->_entity instanceof AbstractDecorator)
+				{
+					$this->_entity = $this->_entity->decorate($entity);
+				}
+				else
+				{
+					$this->_entity = $entity;
+				}
 			}
-
-			$this->_entity = $entity;
+			elseif ($this->_entity instanceof AbstractDecorator)
+			{
+				$this->_entity->decorate($entity);
+			}
+			else
+			{
+				$this->_entity = $entity;
+			}
 		}
 		else
 		{

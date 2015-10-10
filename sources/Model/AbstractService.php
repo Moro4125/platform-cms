@@ -25,18 +25,19 @@ abstract class AbstractService implements SplSubject
 	const STATE_STOP_NOTIFY     =  0;
 	const STATE_ATTACH_BEHAVIOR =  1;
 	const STATE_DETACH_BEHAVIOR =  2;
-	const STATE_SELECT_ENTITIES =  3;
-	const STATE_PREPARE_ENTITY  =  4;
-	const STATE_COMMIT_STARTED  =  5;
-	const STATE_PREPARE_COMMIT  =  6;
-	const STATE_COMMIT_FINISHED =  7;
-	const STATE_COMMIT_SUCCESS  =  8;
-	const STATE_COMMIT_FAILED   =  9;
-	const STATE_DELETE_STARTED  = 10;
-	const STATE_DELETE_FINISHED = 11;
-	const STATE_DELETE_SUCCESS  = 12;
-	const STATE_DELETE_FAILED   = 13;
-	const STATE_BEHAVIOR_METHOD = 14;
+	const STATE_BEFORE_SELECT   =  3;
+	const STATE_SELECT_ENTITIES =  4;
+	const STATE_PREPARE_ENTITY  =  5;
+	const STATE_COMMIT_STARTED  =  6;
+	const STATE_PREPARE_COMMIT  =  7;
+	const STATE_COMMIT_FINISHED =  8;
+	const STATE_COMMIT_SUCCESS  =  9;
+	const STATE_COMMIT_FAILED   = 10;
+	const STATE_DELETE_STARTED  = 11;
+	const STATE_DELETE_FINISHED = 12;
+	const STATE_DELETE_SUCCESS  = 13;
+	const STATE_DELETE_FAILED   = 14;
+	const STATE_BEHAVIOR_METHOD = 15;
 
 	/**
 	 * @var Connection
@@ -125,9 +126,9 @@ abstract class AbstractService implements SplSubject
 
 		foreach ((new ReflectionObject($this))->getMethods() as $method)
 		{
-			if (preg_match('{^___initTrait(.+)$}', $method->getName(), $match))
+			if (strncmp('___initTrait', $name = $method->getName(), 12) === 0)
 			{
-				$this->_traits[strtolower($match[1])] = call_user_func([$this, $match[0]]);
+				$this->_traits[strtolower(substr($name, 12))] = call_user_func([$this, $name]);
 			}
 		}
 	}
@@ -208,8 +209,6 @@ abstract class AbstractService implements SplSubject
 				}
 			}
 
-			array_unshift($args, $this);
-
 			foreach ($this->_observers as $observer)
 			{
 				if ($this->_state == self::STATE_STOP_NOTIFY)
@@ -218,7 +217,7 @@ abstract class AbstractService implements SplSubject
 				}
 
 				/** @noinspection PhpVoidFunctionResultUsedInspection */
-				if (null !== $result = call_user_func_array([$observer, 'update'], $args))
+				if (null !== $result = call_user_func([$observer, 'update'], $this, $args))
 				{
 					$return = (is_array($result) && is_array($return)) ? array_merge($return, $result) : $result;
 				}
@@ -309,7 +308,7 @@ abstract class AbstractService implements SplSubject
 	public function appendDecorator(AbstractDecorator $decorator)
 	{
 		$this->_decorator = $this->_decorator
-			? $this->_decorator->decorate($decorator)
+			? $decorator->decorate($this->_decorator)
 			: $decorator;
 
 		return $this;
@@ -452,6 +451,11 @@ abstract class AbstractService implements SplSubject
 			$builder = $this->_connection->createQueryBuilder()->select('m.*')->from($this->_table, 'm');
 			$values = [];
 
+			if (null !== $args = $this->notify(self::STATE_BEFORE_SELECT, $offset, $count, $orderBy, $filter, $value))
+			{
+				list($offset, $count, $orderBy, $filter, $value) = $args;
+			}
+
 			$offset !== null && $builder->setFirstResult((int)$offset);
 			(intval($count) || $offset !== null) && $builder->setMaxResults(intval($count) ?: 1024);
 
@@ -460,10 +464,12 @@ abstract class AbstractService implements SplSubject
 				$builder->addOrderBy(ltrim($field, '!'), ($field[0] == '!') ? 'DESC' : 'ASC');
 			}
 
+			$isArray = is_array($filter) && is_array($value);
+
 			foreach ((array)$filter as $index => $field)
 			{
 				$place = ':w'.$index;
-				$temporary = (is_array($filter) && is_array($value)) ? array_shift($value) : $value;
+				$temporary = $isArray ? array_shift($value) : $value;
 
 				if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 				{
@@ -755,10 +761,18 @@ abstract class AbstractService implements SplSubject
 		$builder = $this->_connection->createQueryBuilder()->select('COUNT(m.id)')->from($this->_table, 'm');
 		$values = [];
 
+		if (null !== $args = $this->notify(self::STATE_BEFORE_SELECT, null, null, null, $filter, $value))
+		{
+			list($offset, $count, $orderBy, $filter, $value) = $args;
+			unset($offset, $count, $orderBy);
+		}
+
+		$isArray = is_array($filter) && is_array($value);
+
 		foreach ((array)$filter as $index => $field)
 		{
 			$place = ':w'.$index;
-			$temporary = (is_array($filter) && is_array($value)) ? array_shift($value) : $value;
+			$temporary = $isArray ? array_shift($value) : $value;
 
 			if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 			{

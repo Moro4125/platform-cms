@@ -316,7 +316,7 @@
 
 
 {% block list_column_name__tags %}
-	{% for tag in item.parameters.tags|default([]) %}
+	{% for tag in item.tags|default([])|sort if tag|first != '-' %}
 		<span class="label label-default">{{ tag }}</span>
 	{% else %}
 		{{- " " -}}

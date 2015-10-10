@@ -234,6 +234,7 @@ trait TagsServiceTrait
 	{
 		$parameters = $entity->getProperty('parameters');
 		$tags = array_map('normalizeTag', empty($parameters['tags']) ? ['флаг: без ярлыков'] : $parameters['tags']);
+		$ignore = [''];
 
 		if (isset($this->_connection) && $id = $entity->getId())
 		{
@@ -245,12 +246,21 @@ trait TagsServiceTrait
 				is_array($result) && $tags = $result;
 			}
 
+			foreach ($tags as $tag)
+			{
+				if ($tag && $tag[0] === '-')
+				{
+					$ignore[] = $tag;
+					$ignore[] = substr($tag, 1);
+				}
+			}
+
 			/** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
 			$builder = $this->_connection->createQueryBuilder();
 			$sqlQuery = $builder->insert($table.'_tags')->values(['target' => '?', 'tag' => '?'])->getSQL();
 			$statement = $this->_connection->prepare($sqlQuery);
 
-			foreach ($tags as $tag)
+			foreach (array_diff(array_unique($tags), $ignore) as $tag)
 			{
 				$statement->execute([ $id, $tag ]);
 			}

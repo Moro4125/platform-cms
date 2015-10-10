@@ -42,7 +42,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	{
 		parent::_initialization();
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
-		$this->_traits[static::class][self::STATE_BUILD_CHAIN_QUERY] = '_chainGeneration';
 	}
 
 	/**
@@ -72,52 +71,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			}
 		}
 
-		while (true)
-		{
-			foreach ($tags as $tag)
-			{
-				$tag = mb_strtolower($tag);
-
-				if (strcmp('раздел:', mb_substr($tag, 0, 7)) === 0 || strcmp('материал:', mb_substr($tag, 0, 9)) === 0 )
-				{
-					break 2;
-				}
-			}
-
-			$tags[] = normalizeTag('флаг: черновик');
-
-			break;
-		}
-
 		return $tags;
-	}
-
-	/**
-	 * @param \Doctrine\DBAL\Query\QueryBuilder $builder
-	 * @param \ArrayObject $args
-	 * @param ContentInterface $entity
-	 * @param bool $nextFlag
-	 * @return bool
-	 */
-	protected function _chainGeneration($builder, $args, $entity, $nextFlag)
-	{
-		foreach ($entity->getTags() as $tag)
-		{
-			$tag = normalizeTag($tag);
-
-			if (strcmp('раздел:', mb_substr($tag, 0, 7)) === 0)
-			{
-				$args[':heading'] = $tag;
-
-				$builder->innerJoin('m', $this->_table.'_tags', 't', 't.target = m.id');
-				$builder->andWhere('t.tag = :heading');
-				$builder->groupBy('m.id');
-				return true;
-			}
-		}
-
-		unset($nextFlag);
-		return false;
 	}
 
 	/**

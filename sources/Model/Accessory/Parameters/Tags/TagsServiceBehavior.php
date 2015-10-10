@@ -56,11 +56,10 @@ class TagsServiceBehavior extends AbstractBehavior
 	}
 
 	/**
-	 * @param \Moro\Platform\Model\AbstractService $owner
 	 * @param \Moro\Platform\Model\EntityInterface|\Moro\Platform\Model\Accessory\Parameters\ParametersInterface $entity
 	 * @param string $table
 	 */
-	protected function _handlerCommitFinished($owner, $entity, $table)
+	protected function _handlerCommitFinished($entity, $table)
 	{
 		$tags = [];
 		$id = $entity->getId();
@@ -91,7 +90,5 @@ class TagsServiceBehavior extends AbstractBehavior
 				$statement->execute([ $id, $tag ]);
 			}
 		}
-
-		unset($owner);
 	}
 }

@@ -48,6 +48,7 @@ class Application extends CApplication
 	const SERVICE_IMAGINE             = 'imagine';
 
 	const BEHAVIOR_TAGS               = 'app.behavior.tags';
+	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
 
 	/**
 	 * @var Application
@@ -439,6 +440,20 @@ class Application extends CApplication
 	public function finish($callback, $priority = 0)
 	{
 		parent::finish($callback, $priority);
+		return $this;
+	}
+
+	/**
+	 * @param string $id
+	 * @param string $class
+	 * @param null|callable $callback
+	 * @return $this
+	 */
+	public function update($id, $class, callable $callback = null)
+	{
+		$class    && $this->offsetSet($id.'.class', $class);
+		$callback && $this->offsetSet($id, $this->share($this->extend($id, $callback)));
+
 		return $this;
 	}
 

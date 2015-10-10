@@ -14,6 +14,7 @@ use \SplSubject;
 abstract class AbstractBehavior implements SplObserver
 {
 	const KEY_HANDLERS = 'handlers';
+	const KEY_SUBJECT  = 'subject';
 
 	/**
 	 * @var AbstractService
@@ -44,15 +45,16 @@ abstract class AbstractBehavior implements SplObserver
 
 	/**
 	 * @param SplSubject|AbstractService $subject
+	 * @param null|array $args
 	 * @return mixed
 	 */
-	public function update(SplSubject $subject)
+	public function update(SplSubject $subject, array $args = null)
 	{
-		$args  = func_get_args();
+		$args  = (array)$args;
 		$code  = $subject->getServiceCode();
 		$state = $subject->getState();
 
-		if (AbstractService::STATE_ATTACH_BEHAVIOR === $state && isset($args[1]) && $args[1] === $this)
+		if (AbstractService::STATE_ATTACH_BEHAVIOR === $state && isset($args[0]) && $args[0] === $this)
 		{
 			try
 			{
@@ -71,7 +73,7 @@ abstract class AbstractBehavior implements SplObserver
 			return null;
 		}
 
-		if (AbstractService::STATE_DETACH_BEHAVIOR === $state && isset($args[1]) && $args[1] === $this)
+		if (AbstractService::STATE_DETACH_BEHAVIOR === $state && isset($args[0]) && $args[0] === $this)
 		{
 			try
 			{
@@ -90,13 +92,13 @@ abstract class AbstractBehavior implements SplObserver
 			return null;
 		}
 
-		if (AbstractService::STATE_BEHAVIOR_METHOD === $state && method_exists($this, $args[1]) && $args[1][0] !== '_')
+		if (AbstractService::STATE_BEHAVIOR_METHOD === $state && method_exists($this, $args[0]) && $args[0][0] !== '_')
 		{
 			try
 			{
 				$subject->stopNotify();
 				$this->_context = $this->_subjects[$code];
-				return call_user_func_array([$this, $args[1]], $args[2]);
+				return call_user_func_array([$this, $args[0]], $args[1]);
 			}
 			finally
 			{
@@ -110,10 +112,12 @@ abstract class AbstractBehavior implements SplObserver
 			try
 			{
 				$this->_context = $this->_subjects[$code];
+				$this->_context[self::KEY_SUBJECT] = $subject;
 				return call_user_func_array([$this, $this->_subjects[$code][self::KEY_HANDLERS][$state]], $args);
 			}
 			finally
 			{
+				unset($this->_context[self::KEY_SUBJECT]);
 				$this->_subjects[$code] = $this->_context;
 				$this->_context = null;
 			}
