@@ -6,7 +6,6 @@ namespace Moro\Platform\Action;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
-
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -65,7 +64,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		$this->setRequest($request);
 		$service = $this->getService();
 
-		if (!$request->query->has('back'))
+		if (!$request->query->has('back') && !$request->isXmlHttpRequest())
 		{
 			return $app->redirect($app->url($this->route, [
 				'id'   => $id,
@@ -82,10 +81,21 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		}
 
 		$this->_setEntity($entity);
+		$lockedBy = false;
+
+		if ($request->query->has('lock'))
+		{
+			$result = ($request->query->get('lock') == 'Y')
+				? $service->tryLock($entity)
+				: $service->tryUnlock($entity);
+
+			return new Response('', $result ? Response::HTTP_ACCEPTED : Response::HTTP_CONFLICT);
+		}
 
 		if ($request->isMethod('POST') && $form = $this->getForm())
 		{
 			$form->handleRequest($request);
+			$service->tryUnlock($entity);
 
 			if ($this->_ignoreValidation() || $form->isValid())
 			{
@@ -104,8 +114,19 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 				$app->getServiceFlash()->error('Не все поля формы заполнены корректно.');
 			}
 		}
+		else
+		{
+			if ($lockedBy = $service->isLocked($entity))
+			{
+				$app->getServiceFlash()->alert(sprintf('Запись заблокирована пользователем "%1$s".', $lockedBy));
+			}
+			elseif (!$service->tryLock($entity))
+			{
+				$app->getServiceFlash()->error('Не удалось заблокировать запись для монопольного редактирования.');
+			}
+		}
 
-		return $app->render($this->template, $this->_getViewParameters());
+		return $app->render($this->template, array_merge(['locked' => (bool)$lockedBy] ,$this->_getViewParameters()));
 	}
 
 	/**

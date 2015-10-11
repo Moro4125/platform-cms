@@ -27,8 +27,9 @@ use \PDO;
 class ServiceTags extends AbstractService implements ContentActionsInterface, TagsServiceInterface
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
-	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
+	use \Moro\Platform\Model\Accessory\LockServiceTrait;
+	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
 	/**
 	 * @var string

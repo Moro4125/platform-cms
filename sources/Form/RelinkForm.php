@@ -3,7 +3,6 @@
  * Class RelinkForm
  */
 namespace Moro\Platform\Form;
-use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -12,7 +11,7 @@ use \Symfony\Component\Validator\Constraints\NotBlank;
  * Class RelinkForm
  * @package Form
  */
-class RelinkForm extends AbstractType
+class RelinkForm extends AbstractContent
 {
 	/**
 	 * @var integer
@@ -119,20 +118,6 @@ class RelinkForm extends AbstractType
 		}
 
 
-		$builder->add('commit', 'submit', [
-			'label' => 'Сохранить',
-		]);
-
-		$builder->add('apply', 'submit', [
-			'label' => 'Применить',
-		]);
-
-		$builder->add('cancel', 'submit', [
-			'label' => 'Отмена',
-		]);
-
-		$builder->add('delete', 'submit', [
-			'label' => 'Удалить',
-		]);
+		parent::buildForm($builder, $options);
 	}
 }

@@ -12,7 +12,7 @@ use \Symfony\Component\HttpFoundation\Request;
  * Interface ContentActionsInterface
  * @package Model\Accessory
  */
-interface ContentActionsInterface
+interface ContentActionsInterface extends LockInterface
 {
 	/**
 	 * @return \Moro\Platform\Model\EntityInterface

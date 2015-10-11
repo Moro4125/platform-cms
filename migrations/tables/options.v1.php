@@ -6,9 +6,10 @@
 use \Doctrine\DBAL\Types\Type;
 
 $name = 'options';
+$result = [$name];
 $schema = $service->getSchema();
 
-if (!$schema->hasTable($name))
+if (!$schema->hasTable($name) || !$table = $schema->getTable($name))
 {
 	$table = $schema->createTable($name);
 	$table->addColumn('id',        Type::INTEGER) ->setAutoincrement(true);
@@ -20,11 +21,21 @@ if (!$schema->hasTable($name))
 	$table->addColumn('validator', Type::STRING)  ->setNotnull(false);
 	$table->addColumn('sort',      Type::INTEGER) ->setNotnull(true)->setDefault(0);
 
-	$table->setPrimaryKey(['id'], 'idx_options');
-	$table->addIndex(['code'],    'idx_options__code');
-	$table->addIndex(['sort'],    'idx_options__sort');
-
-	$service->writeln("Table \"$name\" created.");
+	$table->setPrimaryKey(['id'], 'idx_'.$name);
+	$service->writeln("Table \"$name\" is created.");
 }
 
-return [$name, 'idx_options__code', 'idx_options__sort'];
+foreach (['code' => true, 'sort' => false] as $fields => $unique)
+{
+	$fields = explode(',', $fields);
+	$idxName = 'idx_'.$name.'__'.implode('_', $fields);
+
+	if (!$table->hasIndex($idxName))
+	{
+		$result[] = $idxName;
+		$unique ? $table->addUniqueIndex($fields, $idxName) : $table->addIndex($fields, $idxName);
+		$service->writeln("Index \"$idxName\" is created.");
+	}
+}
+
+return $result;

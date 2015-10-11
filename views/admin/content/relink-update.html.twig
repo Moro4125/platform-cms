@@ -12,10 +12,17 @@
 		<div class="col-md-5 col-sm-12 text-right">
 			<div class="btn-group btn-group-sm" role="group">
 				<br class="visible-sm visible-xs"/>
-				{{ form_widget(form.commit) }}
-				{{ form_widget(form.apply) }}
-				{{ form_widget(form.cancel) }}
-				{{ form_widget(form.delete) }}
+				{% if is_granted("ROLE_EDITOR") and not locked %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
 				<span class="visible-sm"><br/>&nbsp;</span>
 			</div>
 		</div>

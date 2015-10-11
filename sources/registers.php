@@ -213,6 +213,7 @@ Application::getInstance(function (Application $app)
 Application::getInstance(function (Application $app)
 {
 	$suffixClass = '.class';
+	$lockTime = $app->getOption('content.lock-time');
 
 	// Model behavior TAGS.
 	$app[Application::BEHAVIOR_TAGS] = $app->share(function() use ($app, $suffixClass) {
@@ -253,14 +254,17 @@ Application::getInstance(function (Application $app)
 	});
 
 	// Service CONTENT.
-	$app[Application::SERVICE_CONTENT] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_CONTENT] = $app->share(function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_CONTENT.$suffixClass, ServiceContent::class);
 
 		/** @var ServiceContent $service */
 		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_CONTENT);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
+
+		$service->setLockTime($lockTime);
 
 		if ($app->getOption('content.headings'))
 		{
@@ -272,27 +276,35 @@ Application::getInstance(function (Application $app)
 	});
 
 	// Service FILE.
-	$app[Application::SERVICE_FILE] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_FILE] = $app->share(function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_FILE.$suffixClass, ServiceFile::class);
 
 		/** @var ServiceFile $service */
 		$service = new $class($app->getServiceDataBase());
-		$service->setLogger($app->getServiceLogger());
+		$service->setServiceCode(Application::SERVICE_FILE);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setStoragePath($app->getOption('path.data'));
+		$service->setLogger($app->getServiceLogger());
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
+
+		$service->setLockTime($lockTime);
+
 		return $service;
 	});
 
 	// Service RELINK.
-	$app[Application::SERVICE_RELINK] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_RELINK] = $app->share(function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_RELINK.$suffixClass, ServiceRelink::class);
 
 		/** @var ServiceRelink $service */
 		$service = new $class($app->getServiceDataBase());
-		$service->setLogger($app->getServiceLogger());
+		$service->setServiceCode(Application::SERVICE_RELINK);
 		$service->setServiceUser($app->getServiceSecurityToken());
+		$service->setLogger($app->getServiceLogger());
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
+
+		$service->setLockTime($lockTime);
+
 		return $service;
 	});
 
@@ -307,13 +319,17 @@ Application::getInstance(function (Application $app)
 	});
 
 	// Service TAGS.
-	$app[Application::SERVICE_TAGS] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_TAGS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_TAGS.$suffixClass, ServiceTags::class);
 
 		/** @var ServiceTags $service */
 		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_TAGS);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
+
+		$service->setLockTime($lockTime);
+
 		return $service;
 	});
 });

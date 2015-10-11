@@ -3,7 +3,6 @@
  * Class ContentForm
  */
 namespace Moro\Platform\Form;
-use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Moro\Platform\Model\Implementation\Content\EntityContent;
 use \Symfony\Component\Validator\Constraints\NotBlank;
@@ -15,7 +14,7 @@ use \Moro\Platform\Application;
  * Class ContentForm
  * @package Form
  */
-class ContentForm extends AbstractType
+class ContentForm extends AbstractContent
 {
 	/**
 	 * @var integer
@@ -113,20 +112,6 @@ class ContentForm extends AbstractType
 			'required'    => false,
 		]);
 
-		$builder->add('commit', 'submit', [
-			'label' => 'Сохранить',
-		]);
-
-		$builder->add('apply', 'submit', [
-			'label' => 'Применить',
-		]);
-
-		$builder->add('cancel', 'submit', [
-			'label' => 'Отмена',
-		]);
-
-		$builder->add('delete', 'submit', [
-			'label' => 'Удалить',
-		]);
+		parent::buildForm($builder, $options);
 	}
 }

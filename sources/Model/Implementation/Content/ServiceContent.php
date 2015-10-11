@@ -26,9 +26,10 @@ use \Exception;
 class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
-	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Chain\ChainServiceTrait;
+	use \Moro\Platform\Model\Accessory\LockServiceTrait;
+	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
 	/**
 	 * @var string

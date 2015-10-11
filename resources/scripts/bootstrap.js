@@ -241,4 +241,31 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			});
 		});
 	});
+
+	jQuery("*[data-lock]:first").each(function() {
+		var handler,
+			check = function() {
+			jQuery.ajax({
+				url: window.location.href.split('?', 1)[0] + "?lock=Y"
+			}).done(function() {
+				handler = setTimeout(check, 15000);
+			}).fail(function() {
+				handler = null;
+				alert("Блокировка с материала снята!");
+			});
+		};
+
+		handler = setTimeout(function() {
+			check();
+		}, 15000);
+
+		$(window).unload(function() {
+			handler && clearTimeout(handler);
+			handler = null;
+			jQuery.ajax({
+				async: false,
+				url: window.location.href.split('?', 1)[0] + "?lock=N"
+			})
+		});
+	});
 });

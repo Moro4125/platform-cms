@@ -3,14 +3,13 @@
  * Class ImageUpdateForm
  */
 namespace Moro\Platform\Form;
-use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
  * Class ImageUpdateForm
  * @package Form
  */
-class ImageUpdateForm extends AbstractType
+class ImageUpdateForm extends AbstractContent
 {
 	/**
 	 * @var array
@@ -98,20 +97,7 @@ class ImageUpdateForm extends AbstractType
 			]);
 		}
 
-		$builder->add('commit', 'submit', [
-			'label' => 'Сохранить',
-		]);
 
-		$builder->add('apply', 'submit', [
-			'label' => 'Применить',
-		]);
-
-		$builder->add('cancel', 'submit', [
-			'label' => 'Отмена',
-		]);
-
-		$builder->add('delete', 'submit', [
-			'label' => 'Удалить',
-		]);
+		parent::buildForm($builder, $options);
 	}
 }

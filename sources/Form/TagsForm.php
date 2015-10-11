@@ -3,7 +3,6 @@
  * Class TagsForm
  */
 namespace Moro\Platform\Form;
-use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Symfony\Component\Validator\Constraints\Regex;
@@ -15,7 +14,7 @@ use \Moro\Platform\Application;
  * Class TagsForm
  * @package Form
  */
-class TagsForm extends AbstractType
+class TagsForm extends AbstractContent
 {
 	/**
 	 * @var integer
@@ -100,20 +99,7 @@ class TagsForm extends AbstractType
 			'choices'  => array_combine($this->_tags, $this->_tags),
 		]);
 
-		$builder->add('commit', 'submit', [
-			'label' => 'Сохранить',
-		]);
 
-		$builder->add('apply', 'submit', [
-			'label' => 'Применить',
-		]);
-
-		$builder->add('cancel', 'submit', [
-			'label' => 'Отмена',
-		]);
-
-		$builder->add('delete', 'submit', [
-			'label' => 'Удалить',
-		]);
+		parent::buildForm($builder, $options);
 	}
 }
