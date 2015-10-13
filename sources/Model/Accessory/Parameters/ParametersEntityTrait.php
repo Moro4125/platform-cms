@@ -50,4 +50,21 @@ trait ParametersEntityTrait
 
 		return $this;
 	}
+
+	/**
+	 * @param string $name
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function selectParameter($name, $default = null)
+	{
+		$parameters = $this->getParameters();
+
+		if (is_array($parameters) && array_key_exists($name, $parameters))
+		{
+			return $parameters[$name];
+		}
+
+		return $default;
+	}
 }

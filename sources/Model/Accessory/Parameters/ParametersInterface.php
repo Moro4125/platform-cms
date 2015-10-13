@@ -22,4 +22,11 @@ interface ParametersInterface
 	 * @return $this
 	 */
 	function setParameters($parameters);
+
+	/**
+	 * @param string $name
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	function selectParameter($name, $default = null);
 }

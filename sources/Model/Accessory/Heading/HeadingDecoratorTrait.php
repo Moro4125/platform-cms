@@ -3,6 +3,7 @@
  * Trait HeadingDecoratorTrait
  */
 namespace Moro\Platform\Model\Accessory\Heading;
+use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 
 /**
  * Trait HeadingDecoratorTrait
@@ -33,13 +34,14 @@ trait HeadingDecoratorTrait
 	 */
 	public function getHeading()
 	{
-		if ($this->_heading === null)
+		if ($this->_heading === null && isset($this->_application))
 		{
+			/** @var self|ParametersInterface $this */
 			$this->_heading = '';
 			$prefix = 'раздел:';
 			$length = strlen($prefix);
 
-			foreach ($this->getTags() as $tag)
+			foreach ($this->selectParameter('tags', []) as $tag)
 			{
 				if (strncmp($normalizedTag = normalizeTag($tag), $prefix, $length) !== 0)
 				{

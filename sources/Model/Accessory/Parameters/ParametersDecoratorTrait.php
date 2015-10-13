@@ -31,4 +31,14 @@ trait ParametersDecoratorTrait
 
 		return $this;
 	}
+
+	/**
+	 * @param string $name
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function selectParameter($name, $default = null)
+	{
+		return isset($this->_entity) ? $this->_entity->selectParameter($name, $default) : $default;
+	}
 }
