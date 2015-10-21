@@ -54,7 +54,7 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/Moro4125/component-installer"
+      "url": "https://github.com/Moro4125/platform-cms-installer"
     }
   ],
   "require": {
@@ -74,7 +74,7 @@
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.4",
-    "robloach/component-installer": "~1.0",
+    "moro/platform-cms-installer": "dev-master",
     "fengyuanchen/cropperp": "~0.11",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",

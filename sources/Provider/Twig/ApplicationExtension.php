@@ -16,15 +16,22 @@ class ApplicationExtension extends Twig_Extension
 	/**
 	 * @var array
 	 */
-	protected $_rules = [
+	protected $_rules = [ 'default' => [
 		// A - number of active page, C - count of page.
-		// Maximum  Active page:      Flags:           Show pages:    Flags:
-		//  pages.     From, to.      First, ....      left, right,   ...,  Last.
-		array( 13,        0,      0,      0,   0,     'A-1',  'C-A',    0,     0),
-		array(  0,        1,      9,      0,   0,     'A-1', '11-A',    1,     1),
-		array(  0,       10,  'C-5',      1,   1,         6,      2,    1,     1),
-		array(  0,    'C-4',      0,      1,   1,  '10-C+A',  'C-A',    0,     0),
-	];
+		// Pages     Active page:      Flags:           Show pages:    Flags:
+		// min, max.    From, to.      First, ....      left, right,   ...,  Last.
+		array(0, 13,           0,      0,      0,   0,     'A-1',  'C-A',    0,     0),
+		array(0,  0,           1,      9,      0,   0,     'A-1', '11-A',    1,     1),
+		array(0,  0,          10,  'C-5',      1,   1,         6,      2,    1,     1),
+		array(0,  0,       'C-4',      0,      1,   1,  '10-C+A',  'C-A',    0,     0),
+	]];
+
+	/**
+	 * @var array
+	 */
+	protected $_rulesMeta = ['default' => [
+		'useArrows' => false,
+	]];
 
 	/**
 	 * @return string
@@ -66,6 +73,19 @@ class ApplicationExtension extends Twig_Extension
 	}
 
 	/**
+	 * @param string $name
+	 * @param array $rules
+	 * @param null|array $meta
+	 * @return $this
+	 */
+	public function addRules($name, array $rules, array $meta = null)
+	{
+		$this->_rules[$name] = $rules;
+		$this->_rulesMeta[$name] = $meta ?: $this->_rulesMeta['default'];
+		return $this;
+	}
+
+	/**
 	 * @param mixed $url
 	 * @return string
 	 */
@@ -88,35 +108,37 @@ class ApplicationExtension extends Twig_Extension
 	public function filterHardDash($text)
 	{
 		return implode(' ', array_map(
-			function($chunk)
-			{
-				if (strpos($chunk, '-'))
+				function($chunk)
 				{
-					$chunk = '<nobr>'.htmlspecialchars($chunk).'</nobr>';
-				}
-				else
-				{
-					$chunk = htmlspecialchars($chunk);
-				}
+					if (strpos($chunk, '-'))
+					{
+						$chunk = '<nobr>'.htmlspecialchars($chunk).'</nobr>';
+					}
+					else
+					{
+						$chunk = htmlspecialchars($chunk);
+					}
 
-				return $chunk;
-			},
-			explode(' ', $text))
+					return $chunk;
+				},
+				explode(' ', $text))
 		);
 	}
 
 	/**
 	 * @param int $page
 	 * @param int $count
+	 * @param null|string $kind
 	 * @return array
 	 */
-	public function doPager($page, $count)
+	public function doPager($page, $count, $kind = null)
 	{
 		$C = max(1, (int)$count ?: 1);
 		$A = max(1, min($C, (int)$page ?: 1));
 		$active = $showFirst = $showPDots = $prevCount = $nextCount = $showNDots = $showLast = $vector = false;
+		$result = $this->_rulesMeta[$kind ?: 'default'];
 
-		foreach ($this->_rules as $index => $rule)
+		foreach ($this->_rules[$kind ?: 'default'] as $index => $rule)
 		{
 			foreach ($rule as &$cell)
 			{
@@ -140,23 +162,28 @@ class ApplicationExtension extends Twig_Extension
 				}
 			}
 
-			if ((empty($rule[0]) || $rule[0] >= $C) && (empty($rule[1]) || $rule[1] <= $A) && (empty($rule[2]) || $rule[2] >= $A))
+			if ((empty($rule[0]) || $rule[0] <= $C) && (empty($rule[1]) || $rule[1] >= $C))
 			{
-				list($showFirst, $showPDots, $prevCount, $nextCount, $showNDots, $showLast) = array_slice($rule, 3);
-				$active = true;
-				break;
+				if ((empty($rule[2]) || $rule[2] <= $A) && (empty($rule[3]) || $rule[3] >= $A))
+				{
+					list($showFirst, $showPDots, $prevCount, $nextCount, $showNDots, $showLast) = array_slice($rule, 4);
+					$active = true;
+					break;
+				}
 			}
 		}
 
-		return [
+		return array_merge($result, [
 			'active'    => $active ? $A : 0,
+			'findPrev'  => ($page ?: 1) - 1,
 			'showFirst' => $showFirst,
 			'showPDots' => $showPDots,
 			'prevCount' => $prevCount,
 			'nextCount' => $nextCount,
 			'showNDots' => $showNDots,
 			'showLast'  => $showLast,
+			'findNext'  => ($page < $C) ? $page + 1 : 0,
 			'count'     => $C,
-		];
+		]);
 	}
 }
