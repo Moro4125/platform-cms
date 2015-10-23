@@ -9,6 +9,7 @@ use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpKernel\HttpKernelInterface;
 use \Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use \Moro\Platform\Model\Implementation\Routes\Decorator\AdminDecorator;
+use \Moro\Platform\Model\Implementation\Routes\RoutesInterface;
 use \Exception;
 
 /**
@@ -134,12 +135,13 @@ class CompileRoutesAction
 		$service = $this->_service;
 		$replace = $this->_replace;
 		$uri = $entity->getUri();
+		$id = $entity->getId();
 
 		try
 		{
 			if (empty($uri) || false !== strpos($uri, '#') || false !== strpos($uri, '?'))
 			{
-				$service->deleteEntityById($entity->getId());
+				$service->deleteEntityById($id);
 			}
 			else
 			{
@@ -183,11 +185,19 @@ class CompileRoutesAction
 
 				if ($entity->getRoute() == 'admin-image')
 				{
-					$service->deleteEntityById($entity->getId());
+					$service->deleteEntityById($id);
 				}
 				else
 				{
 					$service->commit($entity);
+				}
+
+				foreach ($service->selectEntities(null, null, null, RoutesInterface::PROP_FILE, $uri) as $item)
+				{
+					if (($itemId = $item->getId()) != $id)
+					{
+						$service->deleteEntityById($itemId);
+					}
 				}
 			}
 		}

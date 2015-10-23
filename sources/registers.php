@@ -34,8 +34,9 @@ use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior;
 use \Moro\Platform\Model\Implementation\Routes\ServiceRoutes;
 use \Moro\Platform\Model\Implementation\Options\ServiceOptions;
 use \Moro\Platform\Model\Implementation\Content\ServiceContent;
-use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator;
+use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator as HeadingContentDecorator;
 use \Moro\Platform\Model\Implementation\File\ServiceFile;
+use \Moro\Platform\Model\Implementation\File\Decorator\HeadingDecorator as HeadingFileDecorator;
 use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
 use \Moro\Platform\Tools\Relink;
@@ -149,23 +150,20 @@ Application::getInstance(function (Application $app)
 	// Twig Service Provider.
 	$app->register(new TwigServiceProvider());
 
-	$app['twig'] = $app->share($app->extend('twig', function($twig, $application) {
-		/** @var \Twig_Environment $twig */
-		/** @var Application $application */
+	$app->update('twig', function(\Twig_Environment $twig, Application $application) {
 		$twig->setCache($application->getOption('path.temp').DIRECTORY_SEPARATOR.'twig');
 		$twig->addExtension(new MarkdownExtension(new MichelfMarkdownEngine()));
 		$twig->addExtension(new ApplicationExtension());
 
 		return $twig;
-	}));
+	});
 
-	$app['twig.loader.filesystem'] = $app->share($app->extend('twig.loader.filesystem',
-		function (\Twig_Loader_Filesystem $twigLoaderFilesystem) use ($app) {
+	$app->update('twig.loader.filesystem', function (\Twig_Loader_Filesystem $twigLoaderFilesystem) {
 			$twigLoaderFilesystem->addPath(dirname(__DIR__).DIRECTORY_SEPARATOR.'views', 'PlatformCMS');
 
 			return $twigLoaderFilesystem;
 		}
-	));
+	);
 
 	// KnpMenu Service Provider.
 	$app->register(new KnpMenuServiceProvider(), [
@@ -209,6 +207,7 @@ Application::getInstance(function (Application $app)
 	// Imagine Service Provider.
 	$app->register(new ImagineServiceProvider());
 });
+
 
 Application::getInstance(function (Application $app)
 {
@@ -269,7 +268,7 @@ Application::getInstance(function (Application $app)
 		if ($app->getOption('content.headings'))
 		{
 			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
-			$service->appendDecorator(new HeadingDecorator($app));
+			$service->appendDecorator(new HeadingContentDecorator($app));
 		}
 
 		return $service;
@@ -288,6 +287,12 @@ Application::getInstance(function (Application $app)
 		$service->attach($app[Application::BEHAVIOR_TAGS]);
 
 		$service->setLockTime($lockTime);
+
+		if ($app->getOption('content.headings'))
+		{
+			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
+			$service->appendDecorator(new HeadingFileDecorator($app));
+		}
 
 		return $service;
 	});

@@ -75,4 +75,12 @@ abstract class AbstractDecorator extends CAbstractDecorator implements FileInter
 		$this->_entity->setName($name);
 		return $this;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getSmallHash()
+	{
+		return $this->_entity->getSmallHash();
+	}
 }

@@ -451,7 +451,8 @@ class Application extends CApplication
 	 */
 	public function update($id, $class, callable $callback = null)
 	{
-		$class    && $this->offsetSet($id.'.class', $class);
+		is_string($class) && $this->offsetSet($id.'.class', $class);
+		is_object($class) && $callback === null && $callback = $class;
 		$callback && $this->offsetSet($id, $this->share($this->extend($id, $callback)));
 
 		return $this;

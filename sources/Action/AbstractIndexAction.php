@@ -173,9 +173,11 @@ abstract class AbstractIndexAction extends AbstractContentAction
 		}
 
 		return [
+			'route' => $this->route,
 			'form' => $this->getForm()->createView(),
 			'list' => $this->getService()->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value),
 			'page' => $page,
+			'pages' => ceil(($total ?: 1) / $count),
 			'offset' => $offset,
 			'count'  => $count,
 			'total'  => $total,

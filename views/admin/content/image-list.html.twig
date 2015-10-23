@@ -5,6 +5,7 @@
 	{% set updateUrl = url("admin-content-images-update",  {id: 777}) %}
 	{% set setTopUrl = url("admin-content-images-set-top", {id: 777}) %}
 	{% set deleteUrl = url("admin-content-images-delete",  {ids: 777}) %}
+	{% set headingFlag = app.getOption("content.headings") %}
 	{% set icon_col_width = 48 %}
 	{% set ignore_create = true %}
 
@@ -36,6 +37,14 @@
 
 {% block list_column_name__tags %}
 	<span class="label label-info">{{ item.parameters.width ~ "x" ~ item.parameters.height }}</span>
+	{% if headingFlag %}
+		{% set heading = item.getHeadingName() %}
+		{% if heading %}
+			<span class="label label-success">{{ heading }}</span>
+		{% elseif item.getIsDraft() %}
+			<span class="label label-danger">черновик</span>
+		{% endif %}
+	{% endif %}
 	{{- parent() -}}
 {% endblock %}
 

@@ -73,7 +73,7 @@ Application::getInstance(function(Application $app) {
 		{
 			$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
 			$parameters = array_filter($request->attributes->all(), 'is_scalar');
-			unset($parameters['_route']);
+			unset($parameters['_route'], $parameters['_controller']);
 
 			$service = $app->getServiceRoutes();
 			$entity = $service->getByRouteAndQuery($route, $parameters);

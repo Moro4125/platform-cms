@@ -51,4 +51,9 @@ interface FileInterface extends EntityInterface, UpdatedByInterface, ParametersI
 	 * @return $this
 	 */
 	function setName($name);
+
+	/**
+	 * @return string
+	 */
+	function getSmallHash();
 }

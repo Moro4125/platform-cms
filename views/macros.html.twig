@@ -1,0 +1,81 @@
+{# Вывод постраничной навигации. ← → #}
+{% macro pager_widget(page, pages, route, parameters = {}) %}
+	{% set pager = pager(page, pages) %}
+	{% if pager.active and pages > 1 %}
+		<nav>
+			<ul class="pagination pagination-sm" style="margin: 0;">
+				{% if pager.useArrows %}
+					<li>
+						{% if pager.findPrev %}
+							<a href="{{ app.url(route, parameters|merge({page: pager.findPrev})) }}">
+								<span aria-hidden="true">{{- "←" -}}</span>
+							</a>
+						{% else %}
+							<span>←</span>
+						{% endif %}
+					</li>
+				{% endif %}
+
+				{% if pager.showFirst %}
+					<li>
+						<a href="{{ app.url(route, parameters|merge({page: 1})) }}">
+							{{- "1" -}}
+						</a>
+					</li>
+				{% endif %}
+
+				{% if pager.showPDots %}
+					<li>
+						<span>&#133;</span>
+					</li>
+				{% endif %}
+
+				{% for i in range(1, pager.prevCount) if pager.prevCount %}
+					<li>
+						<a href="{{ app.url(route, parameters|merge({page: pager.active - pager.prevCount + i - 1})) }}">
+							{{- pager.active - pager.prevCount + i - 1 -}}
+						</a>
+					</li>
+				{% endfor %}
+
+				<li class="active">
+					<span>{{ pager.active }}</span>
+				</li>
+
+				{% for i in range(1, pager.nextCount) if pager.nextCount %}
+					<li>
+						<a href="{{ app.url(route, parameters|merge({page: pager.active + i })) }}">
+							{{- pager.active + i -}}
+						</a>
+					</li>
+				{% endfor %}
+
+				{% if pager.showNDots %}
+					<li>
+						<span>&#133;</span>
+					</li>
+				{% endif %}
+
+				{% if pager.showLast %}
+					<li>
+						<a href="{{ app.url(route, parameters|merge({page: pager.count})) }}">
+							{{- pager.count -}}
+						</a>
+					</li>
+				{% endif %}
+
+				{% if pager.useArrows %}
+					<li>
+						{% if pager.findNext %}
+							<a href="{{ app.url(route, parameters|merge({page: pager.findNext})) }}">
+								<span aria-hidden="true">{{- "→" -}}</span>
+							</a>
+						{% else %}
+							<span>→</span>
+						{% endif %}
+					</li>
+				{% endif %}
+			</ul>
+		</nav>
+	{% endif %}
+{% endmacro %}

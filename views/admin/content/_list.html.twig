@@ -1,4 +1,5 @@
 {% extends "@PlatformCMS/admin/content.html.twig" %}
+{% import "@PlatformCMS/macros.html.twig" as macros %}
 
 {% block _admin_list_create_widget %}
 	{%- set attr = attr|merge({ class: "btn btn-success"}) -%}
@@ -174,7 +175,7 @@
 			</table>
 			<div class="panel-footer">
 				<div class="row">
-					<div class="col col-md-6">
+					<div class="col col-md-5">
 						<div class="btn-group" role="group" aria-label="Действия">
 							{%- if not ignore_create %}
 								{{ form_widget(form.create) }}
@@ -189,7 +190,10 @@
 							{%- endif -%}
 						</div>
 					</div>
+					<div class="col col-md-1 col-sm-12">&nbsp;</div>
 					<div class="col col-md-6 text-right">
+						{{ macros.pager_widget(page, pages, route) }}
+						{#
 						<div class="btn-group" role="group" aria-label="Действия">
 							{%- if prev -%}
 								<a class="btn btn-primary" href="{{ prev }}" title="Перейти к предыдущей странице списка."><span class="glyphicon glyphicon-arrow-left"></span> Назад</a>
@@ -198,6 +202,7 @@
 								<a class="btn btn-primary" href="{{ next }}" title="Перейти к следющей странице списка." >Далее <span class="glyphicon glyphicon-arrow-right"></span></a>
 							{%- endif -%}
 						</div>
+						#}
 					</div>
 				</div>
 			</div>
