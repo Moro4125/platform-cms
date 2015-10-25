@@ -31,12 +31,12 @@ class OptionsAction
 			if ($application->isGranted('ROLE_EDITOR'))
 			{
 				$application->getServiceOptions()->commitAdminForm($application, $form);
-				$application->getServiceFlash()->success('Изменения сохранены');
+				$application->getServiceFlash()->success('РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹');
 				$application->getServiceRoutes()->setCompileFlagForTag('options');
 			}
 			else
 			{
-				$application->getServiceFlash()->error('У вас недостаточно прав для изменения настроек.');
+				$application->getServiceFlash()->error('РЈ РІР°СЃ РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє.');
 			}
 
 			return $application->redirect($request->getUri());
