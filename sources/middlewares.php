@@ -5,12 +5,14 @@
 use \Moro\Platform\Application;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
+use \Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 // ============================================== //
 //    Преобразование объектов запроса и ответа    //
 // ============================================== //
 Application::getInstance(function(Application $app) {
 	$lastRouteId = null;
+	$usedURI = [];
 
 	// === Обработка POST запроса с данными в формате "application/json".
 	$app->before(function(Request $request) {
@@ -42,7 +44,7 @@ Application::getInstance(function(Application $app) {
 		$route = $request->get('_route');
 		$contentType = $response->headers->get('Content-Type');
 
-		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'image/', 6) !== 0)
+		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'text/html', 9) === 0)
 		{
 			$service = $app->getServiceRelinkTool();
 			$content = $response->getContent();
@@ -59,6 +61,53 @@ Application::getInstance(function(Application $app) {
 				$content = $service->apply($content);
 				$response->setContent($content);
 				$response->headers->set('X-Cache-Tags', implode(',', $tags));
+			}
+		}
+	});
+
+	// === Проверка корректности ссылок на другие страницы сайта (для основного и внутренних запросов).
+	$app->behind(function(Request $request, Response $response) use ($app, &$usedURI) {
+		$route = $request->get('_route');
+		$host = preg_quote($request->getHost(), '}');
+		$contentType = $response->headers->get('Content-Type');
+
+		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'text/html', 9) === 0)
+		{
+			$service = $app->getServiceRoutes();
+			$rootPath = $app->getOption('path.root');
+			preg_match_all("{href=('|\")(?:https?://$host)?(/.*?)\\1}", $response->getContent(), $matches, PREG_SET_ORDER);
+
+			foreach ($matches as $match)
+			{
+				$uri = ($pos = strpos($match[2], 'index.php')) ? substr($match[2], $pos + 9) : $match[2];
+
+				if (isset($usedURI[$uri]))
+				{
+					continue;
+				}
+
+				$path = $rootPath.explode('?', $uri, 2)[0];
+
+				if ($usedURI[$uri] = (file_exists($path) || $service->getByFileName($uri)))
+				{
+					continue;
+				}
+
+				try
+				{
+					$parameters = $app["url_matcher"]->match($uri);
+					$route = $parameters['_route'];
+					unset($parameters['_route'], $parameters['_controller']);
+
+					$entity = $service->getByRouteAndQuery($route, $parameters);
+					$entity->setCompileFlag(true);
+					$entity->setTitle('~ требуется предпросмотр ~');
+					$service->commit($entity);
+				}
+				catch (ResourceNotFoundException $exception)
+				{
+					// Ignore it! Generated in $app["url_matcher"]->match($uri).
+				}
 			}
 		}
 	});
