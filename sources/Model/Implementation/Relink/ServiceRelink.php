@@ -23,7 +23,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
-	use \Moro\Platform\Model\Accessory\LockServiceTrait;
+	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
 	/**

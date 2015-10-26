@@ -12,7 +12,7 @@ use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Class LockServiceTrait
  * @package Moro\Platform\Model\Accessory
  */
-trait LockServiceTrait
+trait LockTrait
 {
 	/**
 	 * @var string
