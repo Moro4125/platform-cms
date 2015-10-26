@@ -179,9 +179,7 @@ Application::getInstance(function(Application $app) {
 			file_put_contents($tempImage = tempnam(dirname($path), 'img'), $response->getContent());
 			rename($tempImage, $path) && @chmod($path, 0644);
 
-			$service = $app->getServiceRoutes();
-			$routeEntity = $service->getByFileName($uri);
-			$routeEntity && $service->deleteEntityById($routeEntity->getId());
+			$app->getServiceRoutes()->deleteByFileName($uri);
 		}
 	});
 });

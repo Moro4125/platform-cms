@@ -185,6 +185,27 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	}
 
 	/**
+	 * @param string $fileName
+	 * @return int
+	 * @throws Exception
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function deleteByFileName($fileName)
+	{
+		$builder = $this->_connection->createQueryBuilder();
+		$builder->select('id')->from($this->_table)->where(EntityRoutes::PROP_FILE.'=?');
+
+		$statement = $this->_connection->prepare($builder->getSQL());
+
+		if ($statement->execute([$fileName]))
+		{
+			return $this->deleteEntitiesById($statement->fetchAll(PDO::FETCH_COLUMN));
+		}
+
+		return 0;
+	}
+
+	/**
 	 * @param \Moro\Platform\Application $application
 	 * @param RoutesInterface[] $list
 	 * @return Form
