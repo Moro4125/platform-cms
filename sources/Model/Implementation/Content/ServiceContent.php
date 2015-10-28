@@ -72,6 +72,19 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			}
 		}
 
+		if ($hash = $entity->getIcon())
+		{
+			$tags[] = '+img:'.$hash;
+		}
+
+		if (!empty($parameters['gallery']))
+		{
+			foreach ($parameters['gallery'] as $hash)
+			{
+				$tags[] = '+img:'.$hash;
+			}
+		}
+
 		return $tags;
 	}
 

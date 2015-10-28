@@ -5,6 +5,7 @@
 namespace Moro\Platform\Action\Articles;
 use \Moro\Platform\Action\AbstractUpdateAction;
 use \Moro\Platform\Model\EntityInterface;
+use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator;
 use \Moro\Platform\Application;
 
 /**
@@ -51,11 +52,10 @@ class UpdateArticlesAction extends AbstractUpdateAction
 		$application = $this->getApplication();
 		$entity = $this->getEntity();
 		$service = $this->getService();
-		$serviceTags = $application->getServiceTags();
 
 		// Выставление меток для обновления страниц, на которых был использован данный материал.
 		$routes = $application->getServiceRoutes();
-		$tags = ['art-'.$entity->getId(), 'rss'];
+		$tags = ['art-'.$entity->getId()];
 
 		$nextEntity = $service->getEntityByChain($entity, false);
 		$prevEntity = $service->getEntityByChain($entity, true);
@@ -75,12 +75,10 @@ class UpdateArticlesAction extends AbstractUpdateAction
 			$prevEntityId && ($tags[] = 'art-'.$prevEntityId);
 		}
 
-		foreach ($entity->getTags() as $tag)
+		if ($application->getOption('content.headings'))
 		{
-			if (false !== strpos($tag = normalizeTag($tag), 'раздел') && $tagEntity = $serviceTags->getEntityByCode($tag, true))
-			{
-				$tags = array_merge($tags, $tagEntity->getTags());
-			}
+			$decorator = HeadingDecorator::newInstance($application, $entity);
+			$tags[] = 'heading-'.($decorator->getHeading() ?: 'draft' );
 		}
 
 		$routes->setCompileFlagForTag(array_unique($tags));

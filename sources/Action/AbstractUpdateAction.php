@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action;
 use \Moro\Platform\Model\EntityInterface;
+use \Moro\Platform\Model\AbstractDecorator;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Symfony\Component\HttpFoundation\Request;
@@ -80,6 +81,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
 		}
 
+		$entity instanceof AbstractDecorator && $entity = $entity->decorate(false);
 		$this->_setEntity($entity);
 		$lockedBy = false;
 

@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action\Images;
 use \Moro\Platform\Action\AbstractUpdateAction;
+use \Moro\Platform\Model\Implementation\File\Decorator\HeadingDecorator;
 use \Moro\Platform\Application;
 
 /**
@@ -51,8 +52,13 @@ class UpdateImagesAction extends AbstractUpdateAction
 	 */
 	protected function _getViewParameters()
 	{
+		$entity = $this->getEntity();
+		$service = $this->getApplication()->getServiceContent();
+		$usedList = $service->selectEntities(null, null, '!created_at', 'tag', '+img:'.$entity->getHash());
+
 		return array_merge(parent::_getViewParameters(), [
 			'kinds' => $this->getService()->getKinds(),
+			'usedList' => $usedList,
 		]);
 	}
 
@@ -69,17 +75,12 @@ class UpdateImagesAction extends AbstractUpdateAction
 
 		// Выставление меток для обновления страниц, на которых был использовано данное изображение.
 		$routes = $application->getServiceRoutes();
-		$tags = ['img-'.substr($entity->getHash(), 0, 4)];
+		$tags = ['img-'.$entity->getSmallHash()];
 
-		foreach ($entity->getTags() as $tag)
+		if ($application->getOption('content.headings'))
 		{
-			if (false !== strpos($tag = normalizeTag($tag), 'раздел'))
-			{
-				foreach ($application->getServiceTags()->selectEntities(null, null, null, 'code', $tag) as $tagEntity)
-				{
-					$tags = array_merge($tags, $tagEntity->getTags());
-				}
-			}
+			$decorator = HeadingDecorator::newInstance($application, $entity);
+			$tags[] = 'heading-'.($decorator->getHeading() ?: 'draft' );
 		}
 
 		$routes->setCompileFlagForTag(array_unique($tags));

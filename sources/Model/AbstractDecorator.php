@@ -37,7 +37,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 * @param Application $application
 	 * @param null|EntityInterface $entity
 	 * @param null|float $priority
-	 * @return EntityInterface
+	 * @return static
 	 */
 	public static function newInstance(Application $application, EntityInterface $entity = null, $priority = null)
 	{
@@ -52,7 +52,11 @@ abstract class AbstractDecorator implements ArrayAccess
 	public function __construct(Application $application, $priority = null)
 	{
 		$this->_application = $application;
-		$this->_priority = (float)$priority;
+
+		if ($priority !== null || $this->_priority === null)
+		{
+			$this->_priority = (float)$priority;
+		}
 
 		$this->__constructEntityTrait();
 	}

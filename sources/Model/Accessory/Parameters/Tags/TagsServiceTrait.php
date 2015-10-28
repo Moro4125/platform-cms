@@ -44,6 +44,8 @@ trait TagsServiceTrait
 			$builder1->select('a.tag, COUNT(a.tag) as cnt')->from($table.'_tags', 'a')->groupBy('tag');
 			$builder1->orderBy('cnt', 'desc')->setMaxResults(50);
 
+			$builder1->where('a.tag > "+~"');
+
 			$builder1->leftJoin('a', 'content_tags', 'ct', 'a.tag = ct.code');
 			$builder1->addSelect('ct.name, ct.parameters');
 			$parameters = null;
