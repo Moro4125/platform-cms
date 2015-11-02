@@ -54,7 +54,7 @@
 											<span class="glyphicon glyphicon-remove"></span>
 										</a>
 										{% for tag, url in searchTags %}
-											<span class="btn btn-tag-rm" title="{{ (searchTagsMeta[tag]|default({parameters:{lead:""}})).parameters.lead }}">
+											<span class="btn btn-tag-rm" title="{{ (searchTagsMeta[tag]|default({parameters:{lead:""}})).parameters.lead|default("") }}">
 												{{ tag }}
 												<a href="{{ url }}" title="Убрать ярлык из условия фильтрации">
 													<span class="glyphicon glyphicon-remove"></span>
@@ -192,7 +192,7 @@
 					</div>
 					<div class="col col-md-1 col-sm-12">&nbsp;</div>
 					<div class="col col-md-6 text-right">
-						{{ macros.pager_widget(page, pages, route) }}
+						{{ macros.pager_widget(page, pages, route, app.request.query) }}
 						{#
 						<div class="btn-group" role="group" aria-label="Действия">
 							{%- if prev -%}

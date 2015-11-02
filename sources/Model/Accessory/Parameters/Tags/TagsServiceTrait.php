@@ -56,7 +56,7 @@ trait TagsServiceTrait
 				$builder2->select('m.id')->from($table, 'm');
 				$parameters = $this->_tagsSelectEntities($builder2, 'tag', $tags, ':t');
 
-				$builder1->where('a.target IN ('.$builder2->getSQL().')');
+				$builder1->andWhere('a.target IN ('.$builder2->getSQL().')');
 			}
 
 			$statement1 = $this->_connection->prepare($builder1->getSQL());
