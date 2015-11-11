@@ -73,7 +73,7 @@
     "knplabs/knp-menu": "~2.0",
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
-    "moro/team-migrations-silex": "~1.4",
+    "moro/team-migrations-silex": "~1.6",
     "moro/platform-cms-installer": "dev-master",
     "fengyuanchen/cropperp": "~0.11",
     "components/jquery": "~1.9",
@@ -85,7 +85,8 @@
     "imagine/imagine": "~0.6.2",
     "select2/select2": "~4.0",
     "mustache/mustache-js": "~2.0",
-    "jackmoore/autosize": "~3.0"
+    "jackmoore/autosize": "~3.0",
+    "symfony/doctrine-bridge": "^2.7"
   },
   "config": {
     "component-dir": "http/assets",

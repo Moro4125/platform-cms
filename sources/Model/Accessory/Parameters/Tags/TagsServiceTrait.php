@@ -170,62 +170,68 @@ trait TagsServiceTrait
 	 */
 	protected function _tagsSelectEntities($builder, $field, $value, $place)
 	{
-		assert(isset($this->_table));
-
-		if ($field === 'tag' || $field === '~tag')
+		if ($field !== 'tag' && $field !== '~tag')
 		{
-			$table = $this->_table;
-			$alias = 'tags'.(++$this->_tagsAliasNumber);
+			return null;
+		}
 
-			if (is_string($value) ? strpos($value, ',') : is_array($value))
+		assert(isset($this->_table));
+		$table = $this->_table;
+		$alias = 'tags'.(++$this->_tagsAliasNumber);
+
+		if (is_string($value) && !strpos($value, ','))
+		{
+			$suffix = (substr($value = trim($value), -1) != '.' && $field[0] == '~') ? '%' : '';
+			$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
+			$builder->andWhere($alias.".tag ".($suffix ? "like " : "= ").$place);
+
+			return normalizeTag(rtrim($value, '.')).$suffix;
+		}
+
+		$strict = is_array($value) ?: substr($value = trim($value), -1) == '.';
+
+		$value = is_array($value) ? $value : explode(',', rtrim($value, '.'));
+		$value = array_map('normalizeTag', $value);
+		$value = array_unique(array_filter($value));
+
+		if (!$strict && ($v = end($value)) && !$this->_tagsCount($table, $v) && $this->_tagsNearest($table, $v))
+		{
+			array_pop($value);
+		}
+
+		$places = array_map(function($index) use ($place) { return $place.'i'.$index; }, array_keys($value));
+
+		if ($field[0] === '~')
+		{
+			$order = $builder->getQueryPart('orderBy') ?: [];
+			array_unshift($order, 'count(m.id) DESC');
+			$builder->resetQueryPart('orderBy');
+
+			foreach ($order as $temp)
 			{
-				$strict = is_array($value) ?: substr($value = trim($value), -1) == '.';
-
-				$value = is_array($value) ? $value : explode(',', rtrim($value, '.'));
-				$value = array_map('normalizeTag', $value);
-				$value = array_unique(array_filter($value));
-
-				if (!$strict && ($v = end($value)) && !$this->_tagsCount($table, $v) && $this->_tagsNearest($table, $v))
-				{
-					array_pop($value);
-				}
-
-				$place = array_map(function($index) use ($place) { return $place.'i'.$index; }, array_keys($value));
-
-				if ($field[0] === '~')
-				{
-					$order = $builder->getQueryPart('orderBy') ?: [];
-					array_unshift($order, 'count(m.id) DESC');
-					$builder->resetQueryPart('orderBy');
-
-					foreach ($order as $temp)
-					{
-						list($field, $vector) = explode(' ', $temp, 2);
-						$builder->addOrderBy($field, $vector);
-					}
-				}
-				else
-				{
-					$builder->andHaving('count(m.id) >= '.count($value));
-				}
-
-				$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
-				$builder->andWhere("$alias.tag in (".implode(',', $place).")");
-				$builder->groupBy('m.id');
-
-				return array_combine($place, $value);
+				list($field, $vector) = explode(' ', $temp, 2);
+				$builder->addOrderBy($field, $vector);
 			}
-			else
-			{
-				$suffix = (substr($value = trim($value), -1) != '.' && $field[0] == '~') ? '%' : '';
-				$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
-				$builder->andWhere($alias.".tag ".($suffix ? "like " : "= ").$place);
 
-				return normalizeTag(rtrim($value, '.')).$suffix;
+			$builder->innerJoin('m', $table.'_tags', $alias, "$alias.target = m.id");
+			$builder->andWhere("$alias.tag in (".implode(',', $places).")");
+			$builder->groupBy('m.id');
+		}
+		else
+		{
+			$target = 'm.id';
+			$aliasF = 'm';
+
+			foreach ($places as $index => $placeholder)
+			{
+				$condition = "$alias$index.target = $target AND $alias$index.tag = $placeholder";
+				$builder->innerJoin($aliasF, $table.'_tags', $alias.$index, $condition);
+				$target = "$alias$index.target";
+				$aliasF = "$alias$index";
 			}
 		}
 
-		return null;
+		return array_combine($places, $value);
 	}
 
 	/**

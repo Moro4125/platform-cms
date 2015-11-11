@@ -71,7 +71,7 @@ class RelinkForm extends AbstractContent
 			'dativus'          => ['Кому/Чему', 'Кому или чему дать что-либо?' ],
 			'accusativus'      => ['Кого/Что',  'Кого или что винить в чём-либо?' ],
 			'instrumentalis'   => ['Кем/Чем',   'Кем или чем доволен?' ],
-			'praepositionalis' => ['О ком/чём', 'О ком или очём думаешь?' ],
+			'praepositionalis' => ['О ком/чём', 'О ком или о чём думаешь?' ],
 		];
 
 		foreach ($list as $code => $temp)

@@ -28,7 +28,7 @@ if (!$schema->hasTable($name) || !$table = $schema->getTable($name))
 	$service->writeln("Table \"$name\" is created.");
 }
 
-foreach (['code' => true] as $fields => $unique)
+foreach (['code' => true, 'name' => false, 'updated_at' => false, 'order_at' => false] as $fields => $unique)
 {
 	$fields = explode(',', $fields);
 	$idxName = 'idx_'.$name.'__'.implode('_', $fields);
