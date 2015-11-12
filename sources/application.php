@@ -252,6 +252,7 @@ class Application extends CApplication
 			}
 
 			self::$_instance->_options['path.project'] = $projectPath;
+			self::$_instance->_options['path.platform-cms'] = dirname(__DIR__);
 
 			// Установка флага отладки приложения.
 			self::$_instance['debug'] = !empty(self::$_instance->_options['debug']);

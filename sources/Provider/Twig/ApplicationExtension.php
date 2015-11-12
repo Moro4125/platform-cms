@@ -59,6 +59,7 @@ class ApplicationExtension extends Twig_Extension
 		return [
 			new Twig_SimpleFilter('canonical', [$this, 'filterCanonical']),
 			new Twig_SimpleFilter('hard_dash', [$this, 'filterHardDash'], ['is_safe' => ['html']]),
+			new Twig_SimpleFilter('hyphenate', [$this, 'filterHyphenate']),
 		];
 	}
 
@@ -185,5 +186,153 @@ class ApplicationExtension extends Twig_Extension
 			'findNext'  => ($page < $C) ? $page + 1 : 0,
 			'count'     => $C,
 		]);
+	}
+
+	/**
+	 * @var string
+	 */
+	protected $_texFilePath;
+
+	/**
+	 * @var array
+	 */
+	protected $_hypPatterns;
+
+	/**
+	 * @var string
+	 */
+	protected $_hypAlphabetU = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+
+	/**
+	 * @var string
+	 */
+	protected $_hypAlphabetL = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+
+	/**
+	 * @var array
+	 */
+	protected $_hypAlphabetU2L;
+
+	/**
+	 * @param string $path
+	 * @return $this
+	 */
+	public function setTexFilePath($path)
+	{
+		$this->_texFilePath = $path;
+		return $this;
+	}
+
+	/**
+	 * Инициализация паттернов расстановки переносов в словах.
+	 *
+	 * @see http://www.tug.org/docs/liang/
+	 *
+	 * @param string $patternsFile
+	 * @return void
+	 */
+	public function hyphenateInit($patternsFile)
+	{
+		preg_match_all('~.~u', $this->_hypAlphabetL, $matchL);
+		preg_match_all('~.~u', $this->_hypAlphabetU, $matchU);
+		$this->_hypAlphabetU2L = array_combine($matchU[0], $matchL[0]);
+
+		$lines = preg_split('~\\s*[%].*?\\r?\\n|\\r?\\n~', file_get_contents($patternsFile));
+		$meta = array();
+
+		while ($line = array_shift($lines))
+		{
+			list($key, $value) = explode(':', $line, 2);
+			$meta[strtolower($key)] = trim($value);
+		}
+
+		$encoding = empty($meta['content-encoding'])
+			?( (isset($meta['content-type']) && ($pos = strpos($meta['content-type'], 'charset=')))
+				? trim(rtrim(substr($meta['content-type'], $pos + 8), ';'))
+				: false
+			): $meta['content-encoding'];
+
+		strtolower($encoding) == 'utf-8' && $encoding = false;
+
+		foreach ($lines as $line)
+		{
+			if (empty($line))
+			{
+				continue;
+			}
+
+			$encoding && $line = iconv($encoding, 'utf-8', $line);
+			$key = str_replace('~', '', strtr($line, '0123456789', '~~~~~~~~~~'));
+
+			if (strlen($key) == strlen($line))
+			{
+				$key = ".$key.";
+				$line = '.'.strtr($line, '-0', '98').'.';
+			}
+
+			preg_match_all('~[0-9]?([^0-9]|$)~u', $line, $match);
+			$this->_hypPatterns[$key] = array_map('intval', $match[0]);
+		}
+	}
+
+	/**
+	 * Расстановка переносов в конкретном слове.
+	 *
+	 * @see http://www.tug.org/docs/liang/
+	 *
+	 * @param string $word
+	 * @return string
+	 */
+	public function hyphenateWord($word)
+	{
+		$this->_hypPatterns || $this->hyphenateInit($this->_texFilePath);
+		is_array($word) && $word = reset($word);
+
+		$len = preg_match_all('~.~u', ".$word.", $match);
+		$max = array_fill(0, $len + 1, 0);
+		$chars = $match[0];
+
+		isset($this->_hypAlphabetU2L[$chars[1]]) && $chars[1] = $this->_hypAlphabetU2L[$chars[1]];
+
+		for ($l = --$len - 1; $l >= 0; $l--)
+		{
+			for ($u = $l, $k = $chars[$u]; $u < $len; $u++, $k .= $chars[$u])
+			{
+				if (isset($this->_hypPatterns[$k]))
+				{
+					$i = $l;
+
+					foreach ($this->_hypPatterns[$k] as $v)
+					{
+						$max[$i++] < $v && $max[$i - 1] = $v;
+					}
+				}
+			}
+		}
+
+		$chars = array_slice($match[0], 1, -1, false);
+		$result = $chars[0].$chars[1];
+		$i = 2;
+
+		foreach (array_slice($max, 3, -3) as $v)
+		{
+			$result.= $v % 2 ? "\xC2\xAD".$chars[$i++] : $chars[$i++];
+		}
+
+		return $result.end($chars);
+	}
+
+	/**
+	 * Расстановка переносов в тексте.
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	public function filterHyphenate($text)
+	{
+		$pattern = "/(?<![!{$this->_hypAlphabetU}{$this->_hypAlphabetL}])"
+			."(?>[{$this->_hypAlphabetU}{$this->_hypAlphabetL}][$this->_hypAlphabetL]{3,})/u";
+
+		return preg_replace_callback($pattern, array($this, 'hyphenateWord'), $text);
 	}
 }
