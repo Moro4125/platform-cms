@@ -67,11 +67,11 @@ Application::getInstance(function(Application $app) {
 
 	// === Проверка корректности ссылок на другие страницы сайта (для основного и внутренних запросов).
 	$app->behind(function(Request $request, Response $response) use ($app, &$usedURI) {
-		$route = $request->get('_route');
 		$host = preg_quote($request->getHost(), '}');
-		$contentType = $response->headers->get('Content-Type');
+		$goodContentType = (strncmp($response->headers->get('Content-Type'), 'text/html', 9) === 0);
+		$ignore = ($response->headers->get(Application::HEADER_EXPERIMENTAL) != false);
 
-		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'text/html', 9) === 0)
+		if (!preg_match('{^(GET_|admin-|_)}', $request->get('_route')) && $goodContentType && !$ignore)
 		{
 			$service = $app->getServiceRoutes();
 			$rootPath = $app->getOption('path.root');
@@ -115,7 +115,7 @@ Application::getInstance(function(Application $app) {
 	// === Фиксирование используемого маршрута и его параметров при предпросмотре страниц сайта.
 	$app->after(function(Request $request, Response $response) use ($app, &$lastRouteId) {
 		$route = $request->get('_route');
-		$ignore = (bool)$request->query->get('compiled');
+		$ignore = ((bool)$request->query->get('compiled') || $response->headers->get(Application::HEADER_EXPERIMENTAL));
 		$type = $response->headers->get('Content-Type');
 
 		if ($app->isGranted('ROLE_EDITOR') && !preg_match('{^(GET_|admin-|_)}', $route) && strncmp($type, 'image/', 6))

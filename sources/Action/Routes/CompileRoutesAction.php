@@ -3,7 +3,7 @@
  * Class CompileRoutesAction
  */
 namespace Moro\Platform\Action\Routes;
-use \Silex\Application;
+use \Moro\Platform\Application;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -155,6 +155,13 @@ class CompileRoutesAction
 				if (200 != $statusCode = $response->getStatusCode())
 				{
 					throw new Exception('Действие по генерации страницы вернуло код '.$statusCode.'.');
+				}
+
+				if ($response->headers->get(Application::HEADER_EXPERIMENTAL) != false)
+				{
+					$message = 'Публикация страницы %1$s пропущена, т.к. она содержит экспериментальный функционал.';
+					$app->getServiceFlash()->alert(sprintf($message, $uri));
+					return $this->_workLimit > 0;
 				}
 
 				if ($response->headers->get('X-Use-Full-URL'))

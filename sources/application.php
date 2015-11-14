@@ -50,6 +50,8 @@ class Application extends CApplication
 	const BEHAVIOR_TAGS               = 'app.behavior.tags';
 	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
 
+	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
+
 	/**
 	 * @var Application
 	 */
