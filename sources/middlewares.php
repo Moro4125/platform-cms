@@ -100,7 +100,7 @@ Application::getInstance(function(Application $app) {
 					unset($parameters['_route'], $parameters['_controller']);
 
 					$entity = $service->getByRouteAndQuery($route, $parameters);
-					$entity->setCompileFlag(true);
+					$entity->setCompileFlag(2);
 					$entity->setTitle('~ требуется предпросмотр ~');
 					$service->commit($entity);
 				}
@@ -151,11 +151,13 @@ Application::getInstance(function(Application $app) {
 		{
 			$url1 = $app->url('admin-compile-list');
 			$url2 = $lastRouteId ? $app->url('admin-compile', ['back' => $back, 'id' => $lastRouteId]) : 0;
+			$url3 = $app->getServiceRoutes()->getUnwatchedHtmlUrl($app, $lastRouteId);
 
 			$bar = '$0<div class="b-admin-panel" style="position:fixed;top:0;width:100%;background:#eee;text-align:right;z-index:9999;">';
 			$bar.= '<div style="border:solid 1px;border-color:#fff gray gray #fff;font-size:12px;line-height:30px;font-family:sans-serif;">';
 			$bar.= '<div style="float:left;color:gray;padding:0 8px;">ПРЕДВАРИТЕЛЬНЫЙ ПРОСМОТР</div>';
 			$bar.= '<a style="padding-right:16px;" href="'.htmlspecialchars($url1).'">Административная панель</a>';
+			$bar.= $url3 ? '<a style="padding-right:16px;" href="'.htmlspecialchars($url3).'">Следующая страница</a>' : '';
 			$bar.= $url2 ? '<a style="padding-right:16px;" href="'.htmlspecialchars($url2).'">Скомпилировать страницу</a>' : '';
 			$bar.= '</div></div>';
 

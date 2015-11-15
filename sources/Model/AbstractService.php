@@ -233,20 +233,20 @@ abstract class AbstractService implements SplSubject
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function getIsHandled()
-	{
-		return (bool)$this->_handled;
-	}
-
-	/**
 	 * @return $this
 	 */
 	public function stopNotify()
 	{
 		$this->_state = self::STATE_STOP_NOTIFY;
 		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsHandled()
+	{
+		return (bool)$this->_handled;
 	}
 
 	/**
@@ -803,5 +803,31 @@ abstract class AbstractService implements SplSubject
 		return (strpos($sql, 'GROUP BY') || strpos($sql, 'group by'))
 			? count($statement->fetchAll(PDO::FETCH_ASSOC))
 			: (int)$statement->fetchColumn();
+	}
+
+	/**
+	 * @param EntityInterface $a
+	 * @param EntityInterface $b
+	 * @return array
+	 */
+	public function calculateDiff(EntityInterface $a, EntityInterface $b)
+	{
+		$result = [];
+
+		$a instanceof AbstractDecorator && $a = $a->decorate(false);
+		$b instanceof AbstractDecorator && $b = $b->decorate(false);
+
+		$a = $a->getProperties();
+		$b = $b->getProperties();
+
+		$a = array_merge($a, array_map('json_encode', array_filter($a, 'is_array')));
+		$b = array_merge($b, array_map('json_encode', array_filter($b, 'is_array')));
+
+		foreach (array_keys(array_diff_assoc($a, $b)) as $property)
+		{
+			$result[$property] = [$a[$property], $b[$property]];
+		}
+
+		return $result;
 	}
 }

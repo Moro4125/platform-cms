@@ -250,6 +250,7 @@ Application::getInstance(function (Application $app)
 
 		/** @var ServiceOptions $service */
 		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_OPTIONS);
 		$service->setLogger($app->getServiceLogger());
 		return $service;
 	});
@@ -263,13 +264,13 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_CONTENT);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
-		$service->attach($app[Application::BEHAVIOR_TAGS]);
+		$service->attach($app->getBehaviorTags());
 
 		$service->setLockTime($lockTime);
 
 		if ($app->getOption('content.headings'))
 		{
-			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
+			$service->attach($app->getBehaviorHeadings());
 			$service->appendDecorator(new HeadingContentDecorator($app));
 		}
 
@@ -286,13 +287,13 @@ Application::getInstance(function (Application $app)
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setStoragePath($app->getOption('path.data'));
 		$service->setLogger($app->getServiceLogger());
-		$service->attach($app[Application::BEHAVIOR_TAGS]);
+		$service->attach($app->getBehaviorTags());
 
 		$service->setLockTime($lockTime);
 
 		if ($app->getOption('content.headings'))
 		{
-			$service->attach($app[Application::BEHAVIOR_HEADINGS]);
+			$service->attach($app->getBehaviorHeadings());
 			$service->appendDecorator(new HeadingFileDecorator($app));
 		}
 
@@ -308,7 +309,7 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_RELINK);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
-		$service->attach($app[Application::BEHAVIOR_TAGS]);
+		$service->attach($app->getBehaviorTags());
 
 		$service->setLockTime($lockTime);
 

@@ -124,34 +124,13 @@ class AbstractSetTagAction extends AbstractContentAction
 		/** @noinspection PhpUndefinedMethodInspection */
 		if ($form->get('commit')->isClicked())
 		{
-			$service = $this->getService();
-
 			$data = $form->getData();
 			$add = $data['tags_add'] ?: [];
 			$del = $data['tags_del'] ?: [];
 
 			if ($add || $del)
 			{
-				$add = array_diff($add, $del);
-
-				/** @var TagsEntityInterface|EntityInterface $entity */
-				foreach ($this->getEntities() as $entity)
-				{
-					$add && $entity->addTags($add);
-					$del && $entity->delTags($del);
-					$service->commit($entity);
-				}
-
-				$add && $this->getApplication()->getServiceFlash()->success(
-					(count($add) == 1)
-						? 'Был добавлен ярлык '.reset($add)
-						: 'Были назначенны следующие ярлыки: '.implode(', ', $add)
-				);
-				$del && $this->getApplication()->getServiceFlash()->success(
-					(count($del) == 1)
-						? 'Был снят ярлык '.reset($del)
-						: 'Были убраны следующие ярлыки: '.implode(', ', $del)
-				);
+				$this->_doActionCommit($add, $del);
 			}
 			else
 			{
@@ -160,6 +139,36 @@ class AbstractSetTagAction extends AbstractContentAction
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array $add
+	 * @param array $del
+	 * @throws \Exception
+	 */
+	protected function _doActionCommit($add, $del)
+	{
+		$service = $this->getService();
+		$add = array_diff($add, $del);
+
+		/** @var TagsEntityInterface|EntityInterface $entity */
+		foreach ($this->getEntities() as $entity)
+		{
+			$add && $entity->addTags($add);
+			$del && $entity->delTags($del);
+			$service->commit($entity);
+		}
+
+		$add && $this->getApplication()->getServiceFlash()->success(
+			(count($add) == 1)
+				? 'Был добавлен ярлык '.reset($add)
+				: 'Были назначенны следующие ярлыки: '.implode(', ', $add)
+		);
+		$del && $this->getApplication()->getServiceFlash()->success(
+			(count($del) == 1)
+				? 'Был снят ярлык '.reset($del)
+				: 'Были убраны следующие ярлыки: '.implode(', ', $del)
+		);
 	}
 
 	/**

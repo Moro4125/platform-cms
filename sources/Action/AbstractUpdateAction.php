@@ -49,6 +49,11 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	protected $_entity;
 
 	/**
+	 * @var \Moro\Platform\Model\EntityInterface
+	 */
+	protected $_originalEntity;
+
+	/**
 	 * @param Application|SilexApplication $app
 	 * @param Request $request
 	 * @param integer $id
@@ -173,6 +178,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	protected function _setEntity(EntityInterface $entity)
 	{
 		$this->_entity = $entity;
+		$this->_originalEntity = clone $entity;
 		return $this;
 	}
 
@@ -182,6 +188,14 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	public function getEntity()
 	{
 		return $this->_entity;
+	}
+
+	/**
+	 * @return EntityInterface
+	 */
+	public function getOriginalEntity()
+	{
+		return $this->_originalEntity;
 	}
 
 	/**

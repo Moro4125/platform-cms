@@ -38,6 +38,34 @@ trait HeadingServiceTrait
 	}
 
 	/**
+	 * @param string $name
+	 * @return null|string
+	 */
+	public function getHeadingCodeByTagName($name)
+	{
+		assert('is_string($name)');
+		$name = normalizeTag($name);
+
+		if ('раздел:' === mb_substr($name, 0, 7))
+		{
+			if ($entity = $this->_traitHeadingTagsService->getEntityByCode($name, true))
+			{
+				foreach ($entity->getTags() as $tag)
+				{
+					$tag = normalizeTag($tag);
+
+					if (strncmp('heading:', $tag, 8) === 0)
+					{
+						return substr($tag, 8);
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function ___initTraitHeading()

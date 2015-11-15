@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action\Articles;
 use \Moro\Platform\Action\AbstractDeleteAction;
+use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator;
 use \Moro\Platform\Application;
 
 /**
@@ -27,29 +28,24 @@ class DeleteArticlesAction extends AbstractDeleteAction
 	{
 		// Выставление меток для обновления страниц, на которых были использованы удаляемые материалы.
 		$tags = [];
-		$headings = [];
 		$entities = $this->getEntities();
 		$application = $this->getApplication();
-		$serviceTags = $application->getServiceTags();
 
 		foreach ($entities as $entity)
 		{
 			$tags[] = 'art-'.$entity->getId();
-
-			foreach ($entity->getTags() as $tag)
-			{
-				if (false !== strpos($tag = normalizeTag($tag), 'раздел'))
-				{
-					$headings[] = $tag;
-				}
-			}
 		}
 
-		foreach (array_unique($headings) as $headingTag)
+		if ($application->getOption('content.headings'))
 		{
-			if ($tagEntity = $serviceTags->getEntityByCode($headingTag, true))
+			foreach ($entities as $entity)
 			{
-				$tags = array_merge($tags, $tagEntity->getTags());
+				$entity = HeadingDecorator::newInstance($application, $entity);
+
+				if ($heading = $entity->getHeading())
+				{
+					$tags[] = 'heading-'.$heading;
+				}
 			}
 		}
 

@@ -3,7 +3,6 @@
  * Trait EntityTrait
  */
 namespace Moro\Platform\Model;
-
 use \Moro\Platform\Model\Exception\ReadOnlyPropertyException;
 use \Moro\Platform\Model\Exception\UnknownPropertyException;
 use \ReflectionObject;

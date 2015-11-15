@@ -49,12 +49,14 @@ class UpdateArticlesAction extends AbstractUpdateAction
 	{
 		parent::_applyForm();
 
-		$application = $this->getApplication();
+		$app = $this->getApplication();
 		$entity = $this->getEntity();
 		$service = $this->getService();
+		$original = $this->getOriginalEntity();
+		$changes = $this->getService()->calculateDiff($original, $entity);
 
 		// Выставление меток для обновления страниц, на которых был использован данный материал.
-		$routes = $application->getServiceRoutes();
+		$routes = $app->getServiceRoutes();
 		$tags = ['art-'.$entity->getId()];
 
 		$nextEntity = $service->getEntityByChain($entity, false);
@@ -75,10 +77,20 @@ class UpdateArticlesAction extends AbstractUpdateAction
 			$prevEntityId && ($tags[] = 'art-'.$prevEntityId);
 		}
 
-		if ($application->getOption('content.headings'))
+		if ($app->getOption('content.headings') && $decorator = HeadingDecorator::newInstance($app, $entity))
 		{
-			$decorator = HeadingDecorator::newInstance($application, $entity);
-			$tags[] = 'heading-'.($decorator->getHeading() ?: 'draft' );
+			$heading1 = $decorator->getHeading() ?: 'draft';
+			$heading2 = HeadingDecorator::newInstance($app, $original)->getHeading() ?: 'draft';
+
+			if ($heading1 != $heading2)
+			{
+				$tags[] = 'heading-'.$heading1;
+				$tags[] = 'heading-'.$heading2;
+			}
+			elseif (!empty($changes['order_at']) || !empty($changes['name']))
+			{
+				$tags[] = 'heading-'.$heading1;
+			}
 		}
 
 		$routes->setCompileFlagForTag(array_unique($tags));

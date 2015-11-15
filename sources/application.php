@@ -612,4 +612,20 @@ class Application extends CApplication
 	{
 		return $this->offsetGet(self::SERVICE_RELINK_TOOL);
 	}
+
+	/**
+	 * @return \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior
+	 */
+	public function getBehaviorTags()
+	{
+		return $this->offsetGet(self::BEHAVIOR_TAGS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Accessory\Heading\HeadingBehavior
+	 */
+	public function getBehaviorHeadings()
+	{
+		return $this->offsetGet(self::BEHAVIOR_HEADINGS);
+	}
 }

@@ -100,7 +100,8 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 			{
 				foreach ($this->selectEntities(null, null, null, 'tag', $tagEx) as $entity)
 				{
-					$entity->setCompileFlag(true);
+					$entity->delTags(['предпросмотр']);
+					$entity->setCompileFlag(2);
 					$this->commit($entity);
 				}
 			}
@@ -247,5 +248,28 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 		unset($application);
 		return $affected;
+	}
+
+	/**
+	 * @param Application $application
+	 * @param null|integer $lastRouteId
+	 * @return string|null
+	 */
+	public function getUnwatchedHtmlUrl(Application $application, $lastRouteId = null)
+	{
+		foreach ($this->selectEntities(null, null, 'updated_at', ['compile_flag', '!route'], [2, 'inner']) as $entity)
+		{
+			if ($entity->getId() !== $lastRouteId)
+			{
+				$url = $application->url($entity->getRoute(), $entity->getQuery());
+
+				if ($url && $url[0] != '#' && substr($url, -5) === '.html')
+				{
+					return $url;
+				}
+			}
+		}
+
+		return null;
 	}
 }

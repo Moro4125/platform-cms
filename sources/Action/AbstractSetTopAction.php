@@ -3,10 +3,10 @@
  * Class SetTopArticlesAction
  */
 namespace Moro\Platform\Action;
-
 use \Silex\Application as SilexApplication;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
+use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\OrderAt\OrderAtInterface;
 
 
@@ -20,6 +20,11 @@ class AbstractSetTopAction extends AbstractContentAction
 	 * @var string  Название "пути" к действию по отображению списочной страницы.
 	 */
 	public $routeIndex;
+
+	/**
+	 * @var \Moro\Platform\Model\EntityInterface
+	 */
+	protected $_entity;
 
 	/**
 	 * @param \Moro\Platform\Application|SilexApplication $app
@@ -40,20 +45,8 @@ class AbstractSetTopAction extends AbstractContentAction
 		}
 		elseif ($entity = $this->getService()->getEntityById($id, true))
 		{
-			if ($entity instanceof OrderAtInterface)
-			{
-				$entity->setOrderAt(time());
-				/** @var \Moro\Platform\Model\EntityInterface $entity */
-				$this->getService()->commit($entity);
-
-				$message = sprintf('Запись "%1$s" успешно поднята на первое место.', $entity->getProperty('name'));
-				$app->getServiceFlash()->success($message);
-			}
-			else
-			{
-				$message = sprintf('Сущность с ID "%1$s" не реализует необходимый интерфейс.', $id);
-				$app->getServiceFlash()->error($message);
-			}
+			$this->_setEntity($entity);
+			$this->execute();
 		}
 		else
 		{
@@ -61,7 +54,49 @@ class AbstractSetTopAction extends AbstractContentAction
 			$app->getServiceFlash()->error($message);
 		}
 
-
 		return $app->redirect($back);
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function execute()
+	{
+		$app = $this->getApplication();
+		$entity = $this->getEntity();
+		$id = $entity->getId();
+
+		if ($entity instanceof OrderAtInterface)
+		{
+			$entity->setOrderAt(time());
+			/** @var \Moro\Platform\Model\EntityInterface $entity */
+			$this->getService()->commit($entity);
+
+			$message = sprintf('Запись "%1$s" успешно поднята на первое место.', $entity->getProperty('name'));
+			$app->getServiceFlash()->success($message);
+		}
+		else
+		{
+			$message = sprintf('Сущность с ID "%1$s" не реализует необходимый интерфейс.', $id);
+			$app->getServiceFlash()->error($message);
+		}
+	}
+
+	/**
+	 * @param EntityInterface $entity
+	 * @return $this
+	 */
+	protected function _setEntity(EntityInterface $entity)
+	{
+		$this->_entity = $entity;
+		return $this;
+	}
+
+	/**
+	 * @return EntityInterface
+	 */
+	public function getEntity()
+	{
+		return $this->_entity;
 	}
 }

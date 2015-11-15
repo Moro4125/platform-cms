@@ -280,7 +280,8 @@ td .label {
 }
 
 .m-select2-images .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    width: 292px;
+    width: 23%;
+    min-width: 210px;
 }
 
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
