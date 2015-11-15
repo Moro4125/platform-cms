@@ -74,7 +74,7 @@
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.6",
-    "moro/platform-cms-installer": "dev-master",
+    "moro/platform-cms-installer": "~1.0",
     "fengyuanchen/cropperp": "~0.11",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
