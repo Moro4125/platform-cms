@@ -141,70 +141,68 @@ class CompileRoutesAction
 		{
 			if (empty($uri) || false !== strpos($uri, '#') || false !== strpos($uri, '?'))
 			{
+				throw new NotFoundHttpException();
+			}
+
+			$entity->setCompileFlag(false);
+
+			/** @var \Symfony\Component\HttpFoundation\Response $response */
+			$xRequest = Request::create($uri, 'GET', [], [], [], $request->server->all());
+			$xRequest->headers->set('Surrogate-Capability', 'SSI/1.0');
+			$response = $app->handle($xRequest, HttpKernelInterface::SUB_REQUEST, false);
+
+			if (200 != $statusCode = $response->getStatusCode())
+			{
+				throw new Exception('Действие по генерации страницы вернуло код '.$statusCode.'.');
+			}
+
+			if ($response->headers->get(Application::HEADER_EXPERIMENTAL) != false)
+			{
+				$message = 'Публикация страницы %1$s пропущена, т.к. она содержит экспериментальный функционал.';
+				$app->getServiceFlash()->alert(sprintf($message, $uri));
+				return $this->_workLimit > 0;
+			}
+
+			if ($response->headers->get('X-Use-Full-URL'))
+			{
+				unset($replace['http://'.$request->getHost()]);
+			}
+
+			if ($tags = $response->headers->get('X-Cache-Tags'))
+			{
+				$entity->setTags(explode(',', $tags));
+			}
+
+			$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
+			$entity->setTitle(htmlspecialchars_decode($title) ?: '~ Заголовок на странице отсутствует ~');
+			$content = strtr($response->getContent(), $replace);
+
+			$folder = $_SERVER['DOCUMENT_ROOT'].dirname($uri);
+			$file = $_SERVER['DOCUMENT_ROOT'].$uri;
+			$temp = tempnam($folder, 'html');
+
+			$oldFile = $entity->getFile();
+			$oldFile && $oldFile != $uri && @unlink($_SERVER['DOCUMENT_ROOT'].$oldFile);
+			$entity->setFile($uri);
+
+			file_exists($folder) || @mkdir($folder, 0755, true);
+			file_put_contents($temp, $content);
+			rename($temp, $file) && @chmod($file, 0644);
+
+			if ($entity->getRoute() == 'admin-image')
+			{
 				$service->deleteEntityById($id);
 			}
 			else
 			{
-				$entity->setCompileFlag(false);
+				$service->commit($entity);
+			}
 
-				/** @var \Symfony\Component\HttpFoundation\Response $response */
-				$xRequest = Request::create($uri, 'GET', [], [], [], $request->server->all());
-				$xRequest->headers->set('Surrogate-Capability', 'SSI/1.0');
-				$response = $app->handle($xRequest, HttpKernelInterface::SUB_REQUEST, false);
-
-				if (200 != $statusCode = $response->getStatusCode())
+			foreach ($service->selectEntities(null, null, null, RoutesInterface::PROP_FILE, $uri) as $item)
+			{
+				if (($itemId = $item->getId()) != $id)
 				{
-					throw new Exception('Действие по генерации страницы вернуло код '.$statusCode.'.');
-				}
-
-				if ($response->headers->get(Application::HEADER_EXPERIMENTAL) != false)
-				{
-					$message = 'Публикация страницы %1$s пропущена, т.к. она содержит экспериментальный функционал.';
-					$app->getServiceFlash()->alert(sprintf($message, $uri));
-					return $this->_workLimit > 0;
-				}
-
-				if ($response->headers->get('X-Use-Full-URL'))
-				{
-					unset($replace['http://'.$request->getHost()]);
-				}
-
-				if ($tags = $response->headers->get('X-Cache-Tags'))
-				{
-					$entity->setTags(explode(',', $tags));
-				}
-
-				$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
-				$entity->setTitle(htmlspecialchars_decode($title) ?: '~ Заголовок на странице отсутствует ~');
-				$content = strtr($response->getContent(), $replace);
-
-				$folder = $_SERVER['DOCUMENT_ROOT'].dirname($uri);
-				$file = $_SERVER['DOCUMENT_ROOT'].$uri;
-				$temp = tempnam($folder, 'html');
-
-				$oldFile = $entity->getFile();
-				$oldFile && $oldFile != $uri && @unlink($_SERVER['DOCUMENT_ROOT'].$oldFile);
-				$entity->setFile($uri);
-
-				file_exists($folder) || @mkdir($folder, 0755, true);
-				file_put_contents($temp, $content);
-				rename($temp, $file) && @chmod($file, 0644);
-
-				if ($entity->getRoute() == 'admin-image')
-				{
-					$service->deleteEntityById($id);
-				}
-				else
-				{
-					$service->commit($entity);
-				}
-
-				foreach ($service->selectEntities(null, null, null, RoutesInterface::PROP_FILE, $uri) as $item)
-				{
-					if (($itemId = $item->getId()) != $id)
-					{
-						$service->deleteEntityById($itemId);
-					}
+					$service->deleteEntityById($itemId);
 				}
 			}
 		}
