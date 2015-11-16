@@ -346,17 +346,24 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		{
 			foreach ($form->getData() as $name => $value)
 			{
-				try
+				if ($name == 'uploads')
 				{
-					if ($name == 'uploads')
+					/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
+					foreach ((array)$value as $object)
 					{
-						/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
-						foreach ((array)$value as $object)
-						{
-							$hash = $this->getHashForFile($object->getPathname());
-							$file = $this->getPathForHash($hash);
-							$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
+						$hash = $this->getHashForFile($object->getPathname());
+						$file = $this->getPathForHash($hash);
+						$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
 
+						if ($entity = $this->getByHashAndKind($hash, '1x1', true, false))
+						{
+							$name = $object->getClientOriginalName();
+							$hash = $entity->getSmallHash();
+							$message = sprintf('Для файла "%1$s" уже была запись в БД (%2$s).', $name, $hash);
+							$application->getServiceFlash()->alert($message);
+						}
+						else
+						{
 							$name    = $object->getClientOriginalName();
 							$image   = $application->getServiceImagine()->open($file);
 							$width   = $image->getSize()->getWidth();
@@ -374,14 +381,10 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 								'crop_w' => $minSize,
 								'crop_h' => $minSize,
 							]);
-
-							$this->commit($entity);
 						}
+
+						$this->commit($entity);
 					}
-				}
-				catch (UniqueConstraintViolationException $exception)
-				{
-					// Игнорируем, так как этот случай предусмотрен алгоритмом.
 				}
 			}
 
