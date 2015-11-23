@@ -337,9 +337,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	/**
 	 * @param Application $application
 	 * @param Form $form
+	 * @return array
 	 */
 	public function applyAdminUploadForm(Application $application, Form $form)
 	{
+		$idList = [];
 		$this->_connection->beginTransaction();
 
 		try
@@ -384,6 +386,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 						}
 
 						$this->commit($entity);
+						$idList[] = $entity->getId();
 					}
 				}
 			}
@@ -395,6 +398,8 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 			$this->_connection->rollBack();
 			$application->getServiceFlash()->error(get_class($exception).': '.$exception->getMessage());
 		}
+
+		return $idList;
 	}
 
 	/**

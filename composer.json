@@ -51,10 +51,6 @@
           "type": "zip"
         }
       }
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/Moro4125/platform-cms-installer"
     }
   ],
   "require": {

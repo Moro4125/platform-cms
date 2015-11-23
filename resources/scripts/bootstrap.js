@@ -3,6 +3,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		templates = [],
 		listCheckboxCount = 0,
 		checkedListCheckboxCount = 0,
+		match, i,
 		updateListCheckbox = function(target) {
 		if (target.checked) {
 			jQuery(target).closest("tr").addClass("highlight");
@@ -259,7 +260,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			check();
 		}, 15000);
 
-		$(window).unload(function() {
+		jQuery(window).unload(function() {
 			handler && clearTimeout(handler);
 			handler = null;
 			jQuery.ajax({
@@ -268,4 +269,21 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			})
 		});
 	});
+
+	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])selected=(\d+(?:,\d+)*)/))) {
+		match = match[1].split(",");
+
+		for (i = match.length - 1; i >= 0; i--) {
+			jQuery("#admin_list_id" + match[i]).each(function(index, element) {
+				element.checked = true;
+				jQuery(element).trigger("change");
+			});
+		}
+
+		window.location.hash = window.location.hash.replace(/selected=(\d+(?:,\d+)*)/, "").replace(/&&/, "&").replace(/^\#&|&$/, "");
+	}
+
+	if (window.location.hash == "" && window.location.href.indexOf("#") && typeof history != "undefined") {
+		history.pushState("", document.title, window.location.pathname + window.location.search);
+	}
 });

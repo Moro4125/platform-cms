@@ -23,12 +23,13 @@ class UploadImagesAction
 	{
 		$service = $app->getServiceFile();
 		$form = $service->createAdminUploadsForm($app);
+		$idList = [];
 
 		if ($form->handleRequest($request)->isValid())
 		{
 			if ($app->isGranted('ROLE_EDITOR'))
 			{
-				$service->applyAdminUploadForm($app, $form);
+				$idList = $service->applyAdminUploadForm($app, $form);
 			}
 			else
 			{
@@ -36,6 +37,6 @@ class UploadImagesAction
 			}
 		}
 
-		return $app->redirect($app->url('admin-content-images'));
+		return $app->redirect($app->url('admin-content-images').($idList ? '#selected='.implode(',', $idList) : ''));
 	}
 }
