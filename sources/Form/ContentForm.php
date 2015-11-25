@@ -112,6 +112,12 @@ class ContentForm extends AbstractContent
 			'required'    => false,
 		]);
 
+		$builder->add('cost', 'text', [
+			'label' => 'Цена',
+			'attr' => ['placeholder' => '0'],
+			'required'    => false,
+		]);
+
 		parent::buildForm($builder, $options);
 	}
 }

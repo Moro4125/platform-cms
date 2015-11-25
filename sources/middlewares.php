@@ -158,7 +158,7 @@ Application::getInstance(function(Application $app) {
 			$bar.= '<div style="float:left;color:gray;padding:0 8px;">ПРЕДВАРИТЕЛЬНЫЙ ПРОСМОТР</div>';
 			$bar.= '<a style="padding-right:16px;" href="'.htmlspecialchars($url1).'">Административная панель</a>';
 			$bar.= $url3 ? '<a style="padding-right:16px;" href="'.htmlspecialchars($url3).'">Следующая страница</a>' : '';
-			$bar.= $url2 ? '<a style="padding-right:16px;" href="'.htmlspecialchars($url2).'">Скомпилировать страницу</a>' : '';
+			$bar.= $url2 ? '<a style="padding-right:16px;" href="'.htmlspecialchars($url2).'">Скомпилировать</a>' : '';
 			$bar.= '</div></div>';
 
 			$response->setContent(preg_replace('{<body[^>]*>}', $bar, $response->getContent(), 1));

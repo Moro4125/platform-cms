@@ -199,6 +199,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			'tags' => isset($args['tags']) ? $args['tags'] : [],
 			'gallery' => isset($args['gallery']) ? $args['gallery'] : [],
 			'gallery_text' => isset($args['gallery_text']) ? $args['gallery_text'] : '',
+			'cost' => isset($args['cost']) ? $args['cost'] : '',
 		];
 
 		if ($request->getMethod() == Request::METHOD_GET)
@@ -237,11 +238,12 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$parameters['tags']         = array_values($data['tags']);
 			$parameters['gallery']      = $data['gallery'];
 			$parameters['gallery_text'] = $data['gallery_text'];
+			$parameters['cost']         = $data['cost'];
 
 			$entity->setName($data['name']);
 			$entity->setCode($data['code']);
 			$entity->setIcon($data['icon']);
-			$entity->setParameters($parameters);
+			$entity->setParameters(array_filter($parameters));
 
 			$this->commit($entity);
 			$this->_connection->commit();
