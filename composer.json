@@ -91,6 +91,9 @@
       "\\Assetic\\Filter\\GoogleClosure\\CompilerApiFilter": []
     }
   },
+  "bin": [
+    "bin/platform.php"
+  ],
   "extra": {
     "component": {
       "name": "platform",

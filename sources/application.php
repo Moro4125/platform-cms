@@ -27,8 +27,7 @@ class Application extends CApplication
 	use \Silex\Application\TwigTrait;
 	use \Silex\Application\FormTrait;
 
-	protected $NAME = 'Platform CMS';
-	protected $VERSION = '1.0.0';
+	const PLATFORM_VERSION = "1.1.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -51,6 +50,16 @@ class Application extends CApplication
 	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
+
+	/**
+	 * @var string
+	 */
+	protected $NAME = 'Platform CMS';
+
+	/**
+	 * @var string
+	 */
+	protected $VERSION = self::PLATFORM_VERSION;
 
 	/**
 	 * @var Application
