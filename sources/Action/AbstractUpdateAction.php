@@ -102,14 +102,23 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		if ($request->isMethod('POST') && $form = $this->getForm())
 		{
 			$form->handleRequest($request);
-			$service->tryUnlock($entity);
+
+			if ($lockedBy = $service->isLocked($entity))
+			{
+				$app->getServiceFlash()->error('Не удалось сохранить изменения.');
+				/** @noinspection PhpUndefinedMethodInspection */
+				return $app->redirect($request->getUri());
+			}
 
 			if ($this->_ignoreValidation() || $form->isValid())
 			{
 				if ( ($result = $this->_doActions($id)) && $result instanceof Response)
 				{
+					$service->tryUnlock($entity);
 					return $result;
 				}
+
+				$service->tryUnlock($entity);
 
 				/** @noinspection PhpUndefinedMethodInspection */
 				return $app->redirect($form->get('apply')->isClicked()

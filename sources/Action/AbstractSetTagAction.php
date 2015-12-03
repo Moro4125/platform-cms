@@ -71,7 +71,8 @@ class AbstractSetTagAction extends AbstractContentAction
 				return $result;
 			}
 
-			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
+			$fragment = '#selected='.implode(',', $list);
+			return $app->redirect(($request->query->get('back') ?: $app->url($this->routeIndex)).$fragment);
 		}
 
 		return $app->render($this->template, $this->_getViewParameters());
