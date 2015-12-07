@@ -14,6 +14,7 @@ use \Moro\Platform\Application;
  */
 class IndexImagesAction extends AbstractIndexAction
 {
+	public $title         = 'Графические материалы сайта';
 	public $serviceCode   = Application::SERVICE_FILE;
 	public $template      = '@PlatformCMS/admin/content/image-list.html.twig';
 	public $route         = 'admin-content-images';

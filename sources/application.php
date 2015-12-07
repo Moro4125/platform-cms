@@ -44,6 +44,7 @@ class Application extends CApplication
 	const SERVICE_RELINK              = 'app.service.relink';
 	const SERVICE_RELINK_TOOL         = 'app.tool.relink';
 	const SERVICE_TAGS                = 'app.service.tags';
+	const SERVICE_API_KEY             = 'app.service.api_key';
 	const SERVICE_IMAGINE             = 'imagine';
 
 	const BEHAVIOR_TAGS               = 'app.behavior.tags';
@@ -360,6 +361,15 @@ class Application extends CApplication
 				$parameters = array_merge($temp, $parameters);
 			}
 
+			if (!empty($parameters['roles']))
+			{
+				$user = $this->getServiceSecurityToken()->getUsername();
+				$roles = explode(',', $parameters['roles']);
+				$apiKeyEntity = $this->getServiceApiKey()->createEntityForUserAndTarget($user, $route, $roles);
+				$parameters['apikey'] = $apiKeyEntity->getKey();
+				unset($parameters['roles']);
+			}
+
 			$url = $this['url_generator']->generate($route, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
 		}
 		catch (Exception $exception)
@@ -612,6 +622,14 @@ class Application extends CApplication
 	public function getServiceTags()
 	{
 		return $this->offsetGet(self::SERVICE_TAGS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Implementation\ApiKey\ServiceApiKey
+	 */
+	public function getServiceApiKey()
+	{
+		return $this->offsetGet(self::SERVICE_API_KEY);
 	}
 
 	/**

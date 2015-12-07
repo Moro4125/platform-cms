@@ -22,6 +22,7 @@ use \Aptoma\Twig\Extension\MarkdownEngine\MichelfMarkdownEngine;
 use \Moro\Migration\Provider\TeamMigrationsServiceProvider;
 use \Moro\Migration\Provider\Handler\FilesStorageHandlerProvider;
 use \Moro\Migration\Provider\Handler\DoctrineDBALHandlerProvider;
+use \Moro\Platform\Provider\ApiKeyServiceProvider;
 use \Moro\Platform\Provider\MonologServiceProvider;
 use \Moro\Platform\Provider\ImagineServiceProvider;
 use \Moro\Platform\Provider\RequestProcessor;
@@ -29,6 +30,8 @@ use \Moro\Platform\Provider\FormServiceProvider;
 use \Moro\Platform\Provider\HttpCacheServiceProvider;
 use \Moro\Platform\Provider\Twig\ApplicationExtension;
 use \Moro\Platform\Provider\Twig\MarkdownExtension;
+use \Moro\Platform\Security\User\ApiKeyUserProvider;
+use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
 use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior;
 use \Moro\Platform\Model\Implementation\Routes\ServiceRoutes;
@@ -39,6 +42,7 @@ use \Moro\Platform\Model\Implementation\File\ServiceFile;
 use \Moro\Platform\Model\Implementation\File\Decorator\HeadingDecorator as HeadingFileDecorator;
 use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
+use \Moro\Platform\Model\Implementation\ApiKey\ServiceApiKey;
 use \Moro\Platform\Tools\Relink;
 
 
@@ -74,6 +78,11 @@ Application::getInstance(function (Application $app)
 	// Security Provider.
 	$app->register(new SecurityServiceProvider(), [
 		'security.firewalls' => [
+			'api' => [
+				'pattern' => $adminPrefix.'/platform',
+				'api_key' => true,
+				'stateless' => true,
+			],
 			'admin' => [
 				'pattern' => $adminPrefix,
 				'http' => true,
@@ -94,7 +103,14 @@ Application::getInstance(function (Application $app)
 			[$adminPrefix.'/panel/pages',             'ROLE_USER'],
 			[$adminPrefix.'/panel$',                  'ROLE_USER'],
 			[$adminPrefix.'/panel',                   'ROLE_ADMIN'],
+			[$adminPrefix.'/platform',                'ROLE_USER'],
 		],
+	]);
+
+	// API key Provider.
+	$app->register(new ApiKeyServiceProvider(), [
+		'api_key.user_provider' => new ApiKeyUserProvider($app),
+		'api_key.encoder'       => new SaltLessPasswordEncoder()
 	]);
 
 	// Doctrine DBAL Provider.
@@ -337,6 +353,17 @@ Application::getInstance(function (Application $app)
 		$service->setLogger($app->getServiceLogger());
 
 		$service->setLockTime($lockTime);
+
+		return $service;
+	});
+
+	// Service API KEYS.
+	$app[Application::SERVICE_API_KEY] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$class = $app->offsetGet(Application::SERVICE_API_KEY.$suffixClass, ServiceApiKey::class);
+
+		/** @var ServiceTags $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_API_KEY);
 
 		return $service;
 	});

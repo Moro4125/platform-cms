@@ -8,6 +8,7 @@ use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
+use \DateTime;
 
 
 /**
@@ -62,6 +63,11 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	public $useId = true;
 
 	/**
+	 * @var string  Заголовок окна.
+	 */
+	public $title = '';
+
+	/**
 	 * @var array  Базовые условия фильтрации данных.
 	 */
 	public $where = [];
@@ -80,6 +86,13 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	 * @var null|array
 	 */
 	protected $_cached;
+
+	/**
+	 * @var array
+	 */
+	protected $_headers = [
+		'Content-Type' => 'text/html; charset=utf-8',
+	];
 
 	/**
 	 * @param \Moro\Platform\Application|SilexApplication $app
@@ -116,7 +129,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			return $app->redirect($app->url($this->routeUpdate, $query1));
 		}
 
-		return $app->render($this->template, $this->_getViewParameters());
+		return $app->render($this->template, $this->_getViewParameters(), new Response('', 200, $this->_headers));
 	}
 
 	/**
@@ -181,12 +194,16 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			'offset' => $offset,
 			'count'  => $count,
 			'total'  => $total,
+			'title'  => $this->title .' :: '.$this->getRequest()->getHost(),
+			'published' => time(),
 			'search'         => $search,
 			'searchTags'     => $searchTags,
 			'searchTagsMeta' => $searchTagsMeta,
 			'tags' => $service instanceof TagsServiceInterface ? $service->selectActiveTags($this->_tags, true) : [],
 			'next' => ($offset + $count < $total) ? $next->getRequestUri() : false,
 			'prev' => ($page > 1) ? $prev->getRequestUri() : false,
+			'rfc822' => DateTime::RFC822,
+			'routeUpdate' => $this->routeUpdate,
 		];
 	}
 

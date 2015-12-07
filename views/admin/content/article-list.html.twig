@@ -1,6 +1,13 @@
 {% extends "@PlatformCMS/admin/content/_list.html.twig" %}
 
 
+{% block head_meta %}
+	{{ parent() }}
+	{% set rss = app.url("api-content-articles-rss?roles=ROLE_USER&search=" ~ app.request.query.get("search")) %}
+	<link rel="alternate" type="application/rss+xml" title="{{ title }}" href="{{ rss }}">
+{% endblock %}
+
+
 {% block workarea %}
 	{% set updateUrl = url("admin-content-articles-update",  {id: 777}) %}
 	{% set setTopUrl = url("admin-content-articles-set-top", {id: 777}) %}
