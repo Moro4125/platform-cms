@@ -46,6 +46,9 @@ Application::getInstance(function (Application $app)
 		'admin-content-images-set-tag'   => ['content/images/set-tag/{ids}',  'Images\\SetTagImagesAction'],
 		'admin-content-images-upload'    => ['content/images/upload',         'Images\\UploadImagesAction'],
 		'admin-image' => ['/images/{salt}/{hash}_{width}_{height}.{format}',  'Images\\ShowImagesAction'],
+		'api'                            => ['/platform',                     'Tools\\PrefixAction'],
+		'api-content-articles-rss'       => ['content/articles/rss.xml',      'Articles\\ApiRssArticlesAction'],
+		'api-content-images-rss'         => ['content/images/rss.xml',        'Images\\ApiRssImagesAction'],
 	];
 
 	$assertRules = [
@@ -64,16 +67,21 @@ Application::getInstance(function (Application $app)
 		'height' => 'str_to_int',
 	];
 
+	$prefix = '';
+
 	foreach ($actionRules as $route => list($pattern, $class))
 	{
 		$class = $app->offsetGet($route.'.action.class', ($class[0] == '\\') ? $class : __NAMESPACE__.'\\'.$class);
-		$controller = $admin->match(($pattern[0] == '/') ? $pattern : '/panel/'.$pattern, $class)->bind($route);
-		preg_match_all('{\\{(.+?)\\}}', $pattern, $matches, PREG_PATTERN_ORDER);
+		$pattern = ($pattern[0] == '/') ?( $prefix = $pattern ): $prefix.'/'.$pattern;
+		$controller = $admin->match($pattern, $class)->bind($route);
 
-		foreach ($matches[1] as $parameter)
+		if (preg_match_all('{\\{(.+?)\\}}', $pattern, $matches, PREG_PATTERN_ORDER))
 		{
-			isset($assertRules[$parameter])  && $controller->assert($parameter,  $assertRules[$parameter]);
-			isset($convertRules[$parameter]) && $controller->convert($parameter, $convertRules[$parameter]);
+			foreach ($matches[1] as $parameter)
+			{
+				isset($assertRules[$parameter])  && $controller->assert($parameter,  $assertRules[$parameter]);
+				isset($convertRules[$parameter]) && $controller->convert($parameter, $convertRules[$parameter]);
+			}
 		}
 	}
 });

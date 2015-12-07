@@ -121,8 +121,8 @@ abstract class AbstractService implements SplSubject
 	 */
 	protected function _initialization()
 	{
-		$this->_traits[static::class][self::STATE_PREPARE_COMMIT] = '_prepareSpecialsUpdatedAt';
-		$this->_traits[static::class][self::STATE_PREPARE_ENTITY] = '_prepareEntityUpdatedAt';
+		$this->_traits[self::class][self::STATE_PREPARE_COMMIT] = '_prepareSpecialsUpdatedAt';
+		$this->_traits[self::class][self::STATE_PREPARE_ENTITY] = '_prepareEntityUpdatedAt';
 
 		foreach ((new ReflectionObject($this))->getMethods() as $method)
 		{
@@ -131,6 +131,8 @@ abstract class AbstractService implements SplSubject
 				$this->_traits[strtolower(substr($name, 12))] = call_user_func([$this, $name]);
 			}
 		}
+
+		$this->_specials = array_fill_keys($this->_specials, null);
 	}
 
 	/**
@@ -598,7 +600,7 @@ abstract class AbstractService implements SplSubject
 				empty($values) || $query->values($values);
 			}
 
-			foreach (array_diff_key($entity->getProperties(), array_fill_keys($this->_specials, null)) as $name=>$value)
+			foreach (array_diff_key($entity->getProperties(), $this->_specials) as $name => $value)
 			{
 				$id ? $query->set($name, ":$name") : $query->setValue($name, ":$name");
 				$params[":$name"] = $value;

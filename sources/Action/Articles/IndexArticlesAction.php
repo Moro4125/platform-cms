@@ -14,6 +14,7 @@ use \Moro\Platform\Application;
  */
 class IndexArticlesAction extends AbstractIndexAction
 {
+	public $title         = 'Материалы сайта';
 	public $serviceCode   = Application::SERVICE_CONTENT;
 	public $template      = '@PlatformCMS/admin/content/article-list.html.twig';
 	public $route         = 'admin-content-articles';

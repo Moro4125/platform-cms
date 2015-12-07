@@ -357,6 +357,11 @@ abstract class AbstractDecorator implements ArrayAccess
 				{
 					$this->_entity = $this->_entity->decorate($entity);
 				}
+				elseif ($this->_entity)
+				{
+					$entity->decorate($this->_entity);
+					$this->_entity = $entity;
+				}
 				else
 				{
 					$this->_entity = $entity;
