@@ -112,6 +112,10 @@ class CompileRoutesAction
 				$count++;
 			}
 
+			$entity = $service->getByRouteAndQuery('compile-site-map', []);
+			$this->compile($entity);
+			$count++;
+
 			break;
 		}
 
@@ -135,7 +139,6 @@ class CompileRoutesAction
 		$service = $this->_service;
 		$replace = $this->_replace;
 		$uri = $entity->getUri();
-		$id = $entity->getId();
 
 		try
 		{
@@ -191,11 +194,13 @@ class CompileRoutesAction
 
 			if ($entity->getRoute() == 'admin-image')
 			{
+				$id = $entity->getId();
 				$service->deleteEntityById($id);
 			}
 			else
 			{
 				$service->commit($entity);
+				$id = $entity->getId();
 			}
 
 			foreach ($service->selectEntities(null, null, null, RoutesInterface::PROP_FILE, $uri) as $item)

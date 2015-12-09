@@ -27,7 +27,7 @@ class Application extends CApplication
 	use \Silex\Application\TwigTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.1.1";
+	const PLATFORM_VERSION = "1.2.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';

@@ -91,7 +91,6 @@ abstract class AbstractContentAction
 	public function getService()
 	{
 		$this->_service || $this->_service = $this->_createService();
-		assert($this->_service instanceof ContentActionsInterface);
 		return $this->_service;
 	}
 

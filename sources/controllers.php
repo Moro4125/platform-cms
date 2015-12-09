@@ -16,6 +16,7 @@ Application::getInstance(function (Application $app)
 	$admin instanceof Application || $app->mount('/admin', $admin);
 
 	$actionRules = [
+		'compile-site-map'               => ['/sitemap.xml',                  'Routes\\SiteMapAction'],
 		'admin-prefix'                   => ['/',                             'Tools\\PrefixAction'],
 		'admin-about'                    => ['/panel',                        'Tools\\AboutAction'],
 		'admin-password'                 => ['security/{login}/{password}',   'Tools\\SecurityAction'],

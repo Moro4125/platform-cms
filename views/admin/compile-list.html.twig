@@ -1,4 +1,5 @@
 {% extends "@PlatformCMS/admin/_layout.html.twig" %}
+{% import "@PlatformCMS/macros.html.twig" as macros %}
 
 {% block content %}
 	{% form_theme form _self %}
@@ -64,11 +65,14 @@
 			{% if is_granted("ROLE_EDITOR") %}
 				<tfoot>
 					<tr>
-						<td colspan="3" class="panel-footer">
+						<td colspan="2" class="panel-footer">
 							<div class="btn-group" role="group" aria-label="Действия">
 								{{ form_widget(form.compile, {attr: {class: 'btn btn-warning'}}) }}
 								<button type="reset" class="btn btn-default">Отмена</button>
 							</div>
+						</td>
+						<td class="panel-footer text-right">
+							{{  macros.pager_widget(page, pages, "admin-compile-list", app.request.query) }}
 						</td>
 					</tr>
 				</tfoot>

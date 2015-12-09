@@ -8,6 +8,7 @@ use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
+use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \DateTime;
 
 
@@ -101,13 +102,15 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	 */
 	public function __invoke(SilexApplication $app, Request $request)
 	{
+		$this->setApplication($app);
+		$this->setRequest($request);
+
 		assert(!empty($this->serviceCode));
 		assert(!empty($this->template));
 		assert(!empty($this->route));
 		assert(!empty($this->routeUpdate));
+		assert($this->getService() instanceof ContentActionsInterface);
 
-		$this->setApplication($app);
-		$this->setRequest($request);
 		$form = $this->getForm();
 
 		if ($form->handleRequest($request)->isValid())

@@ -85,6 +85,35 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	}
 
 	/**
+	 * @return array
+	 */
+	public function selectFileMap()
+	{
+		$builder = $this->_connection->createQueryBuilder();
+		$sqlQuery = $builder
+			->select(RoutesInterface::PROP_UPDATED_AT.','.RoutesInterface::PROP_FILE)
+			->from($this->_table)
+			->getSQL();
+
+		$statement = $this->_connection->prepare($sqlQuery);
+		$statement->setFetchMode(PDO::FETCH_ASSOC);
+
+		if ($statement->execute())
+		{
+			$result = $statement->fetchAll();
+
+			foreach ($result as &$record)
+			{
+				$record[RoutesInterface::PROP_UPDATED_AT] = strtotime($record[RoutesInterface::PROP_UPDATED_AT]);
+			}
+
+			return $result;
+		}
+
+		return [];
+	}
+
+	/**
 	 * @param string|array $tag
 	 * @return $this
 	 * @throws Exception
