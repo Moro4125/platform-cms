@@ -81,7 +81,11 @@ class CompileRoutesAction
 
 		/** @var \Moro\Platform\Model\Implementation\Routes\ServiceRoutes $service */
 		$this->_flashes = $app['session']->getFlashBag()->all();
-		$this->_replace = ['http://'.$request->getHost() => '', '/index.html' => '/'];
+		$this->_replace = [
+			$request->getSchemeAndHttpHost() => '',
+			'/index.html' => '/',
+			'//'.$request->getHttpHost() => $request->getSchemeAndHttpHost(),
+		];
 		$list = ($id = (int)$request->query->get('id'))
 			? [$service->getEntityById($id)]
 			: $service->selectActiveOnly();
@@ -168,7 +172,8 @@ class CompileRoutesAction
 
 			if ($response->headers->get('X-Use-Full-URL'))
 			{
-				unset($replace['http://'.$request->getHost()]);
+				unset($replace[$request->getSchemeAndHttpHost()]);
+				unset($replace['//'.$request->getHttpHost()]);
 			}
 
 			if ($tags = $response->headers->get('X-Cache-Tags'))
