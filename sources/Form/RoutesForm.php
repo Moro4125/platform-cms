@@ -51,5 +51,9 @@ class RoutesForm extends AbstractType
 		$builder->add('compile', 'submit', [
 			'label' => 'Скомпилировать',
 		]);
+
+		$builder->add('select_all', 'submit', [
+				'label' => 'Выбрать все',
+		]);
 	}
 }

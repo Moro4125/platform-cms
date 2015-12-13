@@ -7,6 +7,7 @@ use \Silex\Application;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Moro\Platform\Model\Implementation\Routes\Decorator\AdminDecorator;
+use \Moro\Platform\Model\Implementation\Routes\RoutesInterface;
 
 /**
  * Class IndexRoutesAction
@@ -32,8 +33,8 @@ class IndexRoutesAction
 	public function __invoke(Application $app, Request $request)
 	{
 		return $app->getServiceRoutes()->with(new AdminDecorator($app), function($service) use ($request, $app) {
-			$filter = $request->query->get('all') ? [] : ['!route' => 'inner'];
-			$order = ['!compile_flag', '!updated_at'];
+			$filter = $request->query->get('all') ? [] : ['!'.RoutesInterface::PROP_ROUTE => 'inner'];
+			$order = ['!'.RoutesInterface::PROP_COMPILE_FLAG, '!'.RoutesInterface::PROP_UPDATED_AT];
 
 			$page = max(1, (int)$request->query->get('page', 1));
 			$offset = ($page - 1) * $this->_count;
@@ -45,7 +46,16 @@ class IndexRoutesAction
 
 			if ($form->handleRequest($request)->isValid())
 			{
-				$app->getServiceRoutes()->commitAdminListForm($app, $form);
+				/** @noinspection PhpUndefinedMethodInspection */
+				if ($form->get('select_all')->isClicked())
+				{
+					$count = $app->getServiceRoutes()->setCompileFlagForAll();
+					$app->getServiceFlash()->info(sprintf('Дополнительно помеченных записей: %1$s.', $count));
+				}
+				else
+				{
+					$app->getServiceRoutes()->commitAdminListForm($app, $form);
+				}
 
 				/** @noinspection PhpUndefinedMethodInspection */
 				return $app->redirect($form->get('compile')->isClicked()

@@ -147,6 +147,22 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	}
 
 	/**
+	 * @return bool|int
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function setCompileFlagForAll()
+	{
+		$sqlQuery = $this->_connection->createQueryBuilder()
+			->update($this->_table)
+			->set(RoutesInterface::PROP_COMPILE_FLAG, 1)
+			->where(RoutesInterface::PROP_COMPILE_FLAG.'=?')
+			->andWhere(RoutesInterface::PROP_ROUTE.'<>?')
+			->getSQL();
+		$statement = $this->_connection->prepare($sqlQuery);
+		return $statement->execute([0, 'inner']) ? $statement->rowCount() : false;
+	}
+
+	/**
 	 * @return RoutesInterface[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
@@ -155,7 +171,11 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 		$list = [];
 
 		$builder = $this->_connection->createQueryBuilder();
-		$sqlQuery = $builder->select('*')->from($this->_table)->where(EntityRoutes::PROP_COMPILE_FLAG.'=1')->getSQL();
+		$sqlQuery = $builder->select('*')
+			->from($this->_table)
+			->where(EntityRoutes::PROP_COMPILE_FLAG.'=1')
+			->orderBy(EntityRoutes::PROP_UPDATED_AT, 'desc')
+			->getSQL();
 		$statement = $this->_connection->prepare($sqlQuery);
 
 		foreach ($statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) :[] as $record)
