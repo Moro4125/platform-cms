@@ -382,12 +382,12 @@ class Application extends CApplication
 		if ($route == 'admin-image' )
 		{
 			$uri = substr(substr($url, 0, strpos($url, '?') ?: strlen($url)), (strpos($url, 'index.php') ?: -9) + 9);
-			$uri = preg_replace('{^https?://[^/]+}', '', $uri);
+			$uri = preg_match('{^https?://[^/]+}', $uri, $match) ? substr($uri, strlen($match[0])) : $uri;
 			$imagePath = $this->getOption('path.root').$uri;
 
 			if (file_exists($imagePath) && intval($this->getOption('images.revision')) < $rev = filemtime($imagePath))
 			{
-				$url = $uri.'?rev='.$rev;
+				$url = (isset($match[0]) ? $match[0] : '').$uri.'?rev='.$rev;
 			}
 			elseif (!isset($parameters['remember']) || !empty($parameters['remember']))
 			{
