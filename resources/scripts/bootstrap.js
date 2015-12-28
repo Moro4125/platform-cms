@@ -6,13 +6,13 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		checkedListCheckboxCount = 0,
 		match, i,
 		updateListCheckbox = function(target) {
-		if (target.checked) {
-			jQuery(target).closest("tr").addClass("highlight");
-		}
-		else {
-			jQuery(target).closest("tr").removeClass("highlight");
-		}
-	};
+			if (target.checked) {
+				jQuery(target).closest("tr").addClass("highlight");
+			}
+			else {
+				jQuery(target).closest("tr").removeClass("highlight");
+			}
+		};
 
 	jQuery("script[type='text/x-mustache']").each(function() {
 		var script = jQuery(this), template = script.html();
@@ -272,6 +272,16 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				})
 			});
 		}
+	});
+
+	jQuery("#admin_update_cancel,#admin_update_delete").each(function() {
+		jQuery(this).on({
+			click: function(event) {
+				jQuery(event.target).closest("form").find("input[required]").each(function() {
+					jQuery(this).val() || jQuery(this).val("-");
+				});
+			}
+		});
 	});
 
 	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])selected=(\d+(?:,\d+)*)/))) {
