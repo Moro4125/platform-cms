@@ -188,6 +188,8 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			}
 		}
 
+		$title = $search ?( $search.' / ' ):( $searchTags ? implode(', ', array_keys($searchTags)).' / ' : '' );
+
 		return [
 			'route' => $this->route,
 			'form' => $this->getForm()->createView(),
@@ -197,7 +199,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			'offset' => $offset,
 			'count'  => $count,
 			'total'  => $total,
-			'title'  => $this->title .' :: '.$this->getRequest()->getHost(),
+			'title'  => $title.$this->title.' :: '.$this->getRequest()->getHost(),
 			'published' => time(),
 			'search'         => $search,
 			'searchTags'     => $searchTags,
