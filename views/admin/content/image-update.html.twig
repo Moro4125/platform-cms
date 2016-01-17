@@ -71,12 +71,16 @@
 				<div class="tab-content">
 					{% for kind, ratio in kinds %}
 						<div role="tabpanel" class="tab-pane row" id="tab{{ kind }}">
+							{% if useWatermark %}
 							<div class="col-xs-12">
 								{{ form_row(form["watermark" ~ kind]) }}
 							</div>
-							<div class="col-xs-8">
-								{{ form_widget(form["hide_mask" ~ kind]) }}
-							</div>
+							{% endif %}
+							{% if useMask %}
+								<div class="col-xs-8">
+									{{ form_widget(form["hide_mask" ~ kind]) }}
+								</div>
+							{% endif %}
 							<div class="col-xs-4 text-right">
 								<div class="btn-group btn-group-xs" role="group">
 									{{ form_widget(form["copy" ~ kind]) }}

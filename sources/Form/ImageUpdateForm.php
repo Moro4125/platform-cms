@@ -22,13 +22,25 @@ class ImageUpdateForm extends AbstractContent
 	protected $_tags;
 
 	/**
+	 * @var bool
+	 */
+	protected $_useWatermark;
+
+	/**
+	 * @var bool
+	 */
+	protected $_useMask;
+
+	/**
 	 * @param array $kinds
 	 * @param array $tags
 	 */
-	public function __construct(array $kinds, array $tags)
+	public function __construct(array $kinds, array $tags, $useWatermark, $useMask)
 	{
 		$this->_kinds = $kinds;
 		$this->_tags = $tags;
+		$this->_useWatermark = $useWatermark;
+		$this->_useMask = $useMask;
 	}
 
 	/**
@@ -60,21 +72,29 @@ class ImageUpdateForm extends AbstractContent
 
 		foreach ($this->_kinds as $kind)
 		{
-			$builder->add('watermark'.$kind, 'choice', [
-				'label' => 'Логотип',
-				'choices' => [
-					'1' => 'верхний правый угол',
-					'2' => 'нижний правый угол',
-					'3' => 'нижний левый угол',
-					'4' => 'верхний левый угол',
-					'0' => 'отсутствует',
-				],
-				'attr' => ['style' => 'width:100%;'],
-			]);
-			$builder->add('hide_mask'.$kind, 'checkbox', [
-				'label' => 'Не накладывать маску',
-				'required' => false,
-			]);
+			if ($this->_useWatermark)
+			{
+				$builder->add('watermark'.$kind, 'choice', [
+					'label' => 'Логотип',
+					'choices' => [
+						'1' => 'верхний правый угол',
+						'2' => 'нижний правый угол',
+						'3' => 'нижний левый угол',
+						'4' => 'верхний левый угол',
+						'0' => 'отсутствует',
+					],
+					'attr' => ['style' => 'width:100%;'],
+				]);
+			}
+
+			if ($this->_useMask)
+			{
+				$builder->add('hide_mask'.$kind, 'checkbox', [
+					'label' => 'Не накладывать маску',
+					'required' => false,
+				]);
+			}
+
 			$builder->add('copy'.$kind, 'submit', [
 				'label' => 'Создать копию',
 				'attr'  => ['title' => 'Вырезать выделенную область и сохранить в качестве нового изображения.'],

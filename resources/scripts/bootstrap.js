@@ -78,13 +78,15 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				showTab = function(tab) {
 					var kind = tab.data("kind"),
 						ratio = parseFloat(tab.data("ratio")),
-						prefix = tab.data("id-prefix");
+						prefix = tab.data("id-prefix"),
+						mask = jQuery("#admin_update_hide_mask"+kind),
+						watermark = jQuery("#admin_update_watermark"+kind);
 
 					cropper.cropper("destroy");
 					prLabel.html(kind);
 					preview.attr("class", "img-preview-container img-preview-" + kind).find(".img-preview").attr("style", null);
-					preview.toggleClass("hide-mask", jQuery("#admin_update_hide_mask"+kind).is(":checked"));
-					preview.toggleClass("w-" + jQuery("#admin_update_watermark"+kind).val(), true);
+					preview.toggleClass("hide-mask", mask.length && mask.is(":checked"));
+					preview.toggleClass("w-" + (watermark.length ? watermark.val() : "0"), true);
 
 					cropper.cropper({
 						aspectRatio: ratio,

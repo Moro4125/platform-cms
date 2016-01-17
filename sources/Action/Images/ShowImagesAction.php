@@ -139,7 +139,7 @@ class ShowImagesAction
 		}
 
 		// Наложение водяного знака.
-		if ($width && $height && !empty($parameters['watermark']) && !$toSmallForWatermark)
+		if ($width && $height && !empty($parameters['watermark']) && !$toSmallForWatermark && $watermarkFile)
 		{
 			if ($watermarkPath = realpath($app->getOption('path.ir6e').DIRECTORY_SEPARATOR.$watermarkFile))
 			{

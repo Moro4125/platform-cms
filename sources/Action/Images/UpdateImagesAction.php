@@ -59,6 +59,8 @@ class UpdateImagesAction extends AbstractUpdateAction
 		return array_merge(parent::_getViewParameters(), [
 			'kinds' => $this->getService()->getKinds(),
 			'usedList' => $usedList,
+			'useWatermark' => !empty($this->getApplication()->getOption('images.watermark')),
+			'useMask' => !empty($this->getApplication()->getOption('images.mask1')),
 		]);
 	}
 

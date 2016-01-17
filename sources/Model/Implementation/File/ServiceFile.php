@@ -418,10 +418,16 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 			'tags' => isset($args['tags']) ? $args['tags'] : [],
 		];
 
+		$useWatermark = !empty($application->getOption('images.watermark'));
+		$useMask      = !empty($application->getOption('images.mask1'));
+
+		$defaultWatermark = $application->getOption('images.default.watermark');
+		$defaultHideMask  = $application->getOption('images.default.hide_mask');
+
 		foreach (array_keys($this->_kinds) as $kind)
 		{
-			$data['watermark'.$kind] = 3;
-			$data['hide_mask'.$kind] = false;
+			$data['watermark'.$kind] = $useWatermark ? $defaultWatermark : 0;
+			$data['hide_mask'.$kind] = empty($useMask) || $defaultHideMask;
 		}
 
 		foreach ($this->selectByHash($entity->getHash()) as $item)
@@ -442,7 +448,8 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		}
 
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new ImageUpdateForm(array_keys($this->_kinds), $tags), $data);
+		$form = new ImageUpdateForm(array_keys($this->_kinds), $tags, $useWatermark, $useMask);
+		$builder = $service->createBuilder($form, $data);
 
 		return $builder->getForm();
 	}
@@ -462,6 +469,9 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		try
 		{
+			$useWatermark = !empty($application->getOption('images.watermark'));
+			$useMask      = !empty($application->getOption('images.mask1'));
+
 			foreach (array_keys($this->_kinds) as $kind)
 			{
 				if ($data['crop'.$kind.'_a'] || $kind == '1x1')
@@ -484,8 +494,16 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					$options['crop_y'] = max(0, (int)$data['crop'.$kind.'_y']);
 					$options['crop_w'] = min((int)$data['crop'.$kind.'_w'], $options['width']  - $options['crop_x']);
 					$options['crop_h'] = min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']);
-					$options['watermark'] = min(max(0, (int)$data['watermark'.$kind]), 4);
-					$options['hide_mask'] = min(max(0, (int)$data['hide_mask'.$kind]), 1);
+
+					if ($useWatermark)
+					{
+						$options['watermark'] = min(max(0, (int)$data['watermark'.$kind]), 4);
+					}
+
+					if ($useMask)
+					{
+						$options['hide_mask'] = min(max(0, (int)$data['hide_mask'.$kind]), 1);
+					}
 
 					$item->setParameters($options);
 					$this->commit($item);

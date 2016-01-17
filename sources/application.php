@@ -107,7 +107,7 @@ class Application extends CApplication
 	 */
 	public function getOptions($prefix = null)
 	{
-		assert('$prefix === null || is_string($prefix)');
+		assert($prefix === null || is_string($prefix));
 
 		if ($prefix === null)
 		{
@@ -144,7 +144,7 @@ class Application extends CApplication
 	 */
 	public function getOption($name)
 	{
-		assert('is_string($name)');
+		assert(is_string($name));
 
 		$value = isset($this->_options[$name]) ? $this->_options[$name] : null;
 
