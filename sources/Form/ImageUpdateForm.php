@@ -76,6 +76,11 @@ class ImageUpdateForm extends AbstractContent
 			],
 		]);
 
+		$builder->add('lead', 'text', [
+			'label' => 'Описание',
+			'attr' => ['placeholder' => 'Необязательное текстовое описание изображения'],
+		]);
+
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
 			'multiple' => true,

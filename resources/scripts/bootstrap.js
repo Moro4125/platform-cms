@@ -299,6 +299,10 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		window.location.hash = window.location.hash.replace(/selected=(\d+(?:,\d+)*)/, "").replace(/&&/, "&").replace(/^\#&|&$/, "");
 	}
 
+	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])close=Y/))) {
+		window.close();
+	}
+
 	if (window.location.hash == "" && window.location.href.indexOf("#") && typeof history != "undefined") {
 		history.pushState("", document.title, window.location.pathname + window.location.search);
 	}

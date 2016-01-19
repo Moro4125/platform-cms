@@ -413,6 +413,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$tags = array_unique(array_merge($tags, isset($args['tags']) ? $args['tags'] : []));
 		$data = [
 			'name' => $entity->getName(),
+			'lead' => isset($args['lead']) ? $args['lead'] : '',
 			'tags' => isset($args['tags']) ? $args['tags'] : [],
 		];
 
@@ -482,10 +483,12 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					{
 						$item->setName($data['name']);
 						$options['tags'] = array_values($data['tags']);
+						$options['lead'] = $data['lead'];
 					}
 					else
 					{
 						unset($options['tags']);
+						unset($options['lead']);
 					}
 
 					$options['crop_x'] = max(0, (int)$data['crop'.$kind.'_x']);

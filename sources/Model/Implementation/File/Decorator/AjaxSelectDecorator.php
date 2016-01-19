@@ -15,6 +15,7 @@ class AjaxSelectDecorator extends AbstractDecorator
 	const PROP_TAGS = 'tags';
 	const PROP_VIEW = 'view';
 	const PROP_EDIT = 'edit';
+	const PROP_HINT = 'hint';
 
 	/**
 	 * @return string
@@ -53,7 +54,17 @@ class AjaxSelectDecorator extends AbstractDecorator
 	 */
 	public function getEdit()
 	{
-		return $this->_application->url('admin-content-images-update', ['id' => $this->getId()]);
+		$closeUrl = $this->_application->url('admin-about').'#close=Y';
+		return $this->_application->url('admin-content-images-update', ['id' => $this->getId(), 'back' => $closeUrl]);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHint()
+	{
+		$parameters = $this->getParameters();
+		return isset($parameters['lead']) ? $parameters['lead'] : '';
 	}
 
 	/**
@@ -68,6 +79,7 @@ class AjaxSelectDecorator extends AbstractDecorator
 			self::PROP_TAGS => $this->getTags(),
 			self::PROP_VIEW => $this->getView(),
 			self::PROP_EDIT => $this->getEdit(),
+			self::PROP_HINT => $this->getHint(),
 		];
 	}
 }
