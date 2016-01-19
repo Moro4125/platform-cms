@@ -4,6 +4,8 @@
  */
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\FormBuilderInterface;
+use \Symfony\Component\Validator\Constraints\NotBlank;
+use \Symfony\Component\Validator\Constraints\Regex;
 
 /**
  * Class ImageUpdateForm
@@ -61,6 +63,17 @@ class ImageUpdateForm extends AbstractContent
 
 		$builder->add('name', 'text', [
 			'label' => 'Название',
+			'constraints' => [
+				new NotBlank(['message' => 'Необходимо заполнить поле "Название".']),
+				new Regex([
+					'message' => 'Значение поля "Название" не должно содержать квадратных скобок.',
+					'pattern' => '{^[^\[\]]*$}',
+				]),
+				new Regex([
+					'message' => 'Значение поля "Название" не должно содержать двойных пробелов.',
+					'pattern' => '{^[^ ]*([ ][^ ]+)*$}',
+				]),
+			],
 		]);
 
 		$builder->add('tags', 'choice_tags', [
