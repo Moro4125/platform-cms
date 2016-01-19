@@ -14,8 +14,6 @@ use \Moro\Platform\Form\ContentListForm;
 use \Moro\Platform\Form\ImageUpdateForm;
 use \Imagine\Image\Box;
 use \Imagine\Image\Point;
-
-
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
 use \Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -45,7 +43,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	/**
 	 * @var array
 	 */
-	protected $_kinds = ['1x1' => 1, '16x10' => 1.6, '10x16' => 0.625, /*'24x10' => 2.4,*/ '16x5' => 3.2, '32x5' => 6.4];
+	protected $_kinds = ['1x1' => 1, '16x10' => 1.6, '10x16' => 0.625, '16x5' => 3.2, '32x5' => 6.4];
 
 	/**
 	 * @var EntityFile[]

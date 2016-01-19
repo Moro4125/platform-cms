@@ -41,10 +41,14 @@
 {%- block templateSelect2Image -%}
 	<div class="m-select2-image{{ '{{#isList}}' }} m-select2-image_view_list{{ '{{/isList}}' }} clearfix">
 		<div class="m-select2-image__icon">
-			<img src="{{ '{{ icon }}' }}">
+			<a href="{{ '{{ view }}' }}" target="_blank">
+				<img src="{{ '{{ icon }}' }}">
+			</a>
 		</div>
 		<div class="m-select2-image__name">
-			{{- '{{ name }}' -}}
+			<a href="{{- '{{ edit }}' -}}" target="_blank">
+				{{- '{{ name }}' -}}
+			</a>
 			{{- '{{^isList}}' -}}
 				<br/>
 				{{- '{{#tags}}' -}}

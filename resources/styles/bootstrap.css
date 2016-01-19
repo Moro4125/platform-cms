@@ -270,6 +270,10 @@ td .label {
     padding-top: 2px;
 }
 
+.m-select2-image__name > a {
+    color: black;
+}
+
 .m-select2-image_view_list .m-select2-image__name {
     line-height: 32px;
     padding-top: 0;
