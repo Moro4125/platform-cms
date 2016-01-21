@@ -4,8 +4,6 @@
  */
 namespace Moro\Platform\Model\Accessory\Parameters\Tags;
 use \Moro\Platform\Model\AbstractService;
-
-
 use \PDO;
 
 /**

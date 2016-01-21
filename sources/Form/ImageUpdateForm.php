@@ -78,6 +78,7 @@ class ImageUpdateForm extends AbstractContent
 
 		$builder->add('lead', 'text', [
 			'label' => 'Описание',
+			'required' => false,
 			'attr' => ['placeholder' => 'Необязательное текстовое описание изображения'],
 		]);
 
