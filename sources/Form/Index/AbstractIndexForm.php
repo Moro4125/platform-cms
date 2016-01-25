@@ -2,7 +2,7 @@
 /**
  * Class ContentListForm
  */
-namespace Moro\Platform\Form;
+namespace Moro\Platform\Form\Index;
 use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
@@ -11,7 +11,7 @@ use \Symfony\Component\Form\FormBuilderInterface;
  * Class ContentListForm
  * @package Form
  */
-class ContentListForm extends AbstractType
+class AbstractIndexForm extends AbstractType
 {
 	/**
 	 * @var \Moro\Platform\Model\Implementation\Content\EntityContent[]
@@ -24,13 +24,20 @@ class ContentListForm extends AbstractType
 	protected $_withoutCreate;
 
 	/**
+	 * @var \Moro\Platform\Application
+	 */
+	protected $_application;
+
+	/**
 	 * @param \Moro\Platform\Model\Implementation\Content\EntityContent[] $list
 	 * @param null|boolean $withoutCreate
+	 * @param null|\Moro\Platform\Application $application
 	 */
-	public function __construct(array $list, $withoutCreate = null)
+	public function __construct(array $list, $withoutCreate = null, $application = null)
 	{
 		$this->_list = $list;
 		$this->_withoutCreate = (bool)$withoutCreate;
+		$this->_application = $application;
 	}
 
 	/**

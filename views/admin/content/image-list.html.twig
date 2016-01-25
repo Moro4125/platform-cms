@@ -8,6 +8,47 @@
 {% endblock %}
 
 
+{% block group_actions %}
+	{{ parent() }}
+	{% if form.show_watermark is defined %}
+		<li>
+			<button class="btn btn-default btn-xs" type="submit" name="admin_list[show_watermark]" value="1">
+				<span class="glyphicon glyphicon-copyright-mark" aria-hidden="true">&nbsp;</span>
+				<span>Поставить водяной знак</span>
+				{% do form.show_watermark.setRendered %}
+			</button>
+		</li>
+	{% endif %}
+	{% if form.hide_watermark is defined %}
+		<li>
+			<button class="btn btn-default btn-xs" type="submit" name="admin_list[hide_watermark]" value="1">
+				<span class="glyphicon glyphicon-erase" aria-hidden="true">&nbsp;</span>
+				<span>Скрыть водяной знак</span>
+				{% do form.hide_watermark.setRendered %}
+			</button>
+		</li>
+	{% endif %}
+	{% if form.show_mask is defined %}
+		<li>
+			<button class="btn btn-default btn-xs" type="submit" name="admin_list[show_mask]" value="1">
+				<span class="glyphicon glyphicon-certificate" aria-hidden="true">&nbsp;</span>
+				<span>Включить обрамление</span>
+				{% do form.show_mask.setRendered %}
+			</button>
+		</li>
+	{% endif %}
+	{% if form.hide_mask is defined %}
+		<li>
+			<button class="btn btn-default btn-xs" type="submit" name="admin_list[hide_mask]" value="1">
+				<span class="glyphicon glyphicon-picture" aria-hidden="true">&nbsp;</span>
+				<span>Убрать обрамление</span>
+				{% do form.hide_mask.setRendered %}
+			</button>
+		</li>
+	{% endif %}
+{% endblock %}
+
+
 {% block workarea %}
 	{% set updateUrl = url("admin-content-images-update",  {id: 777}) %}
 	{% set setTopUrl = url("admin-content-images-set-top", {id: 777}) %}

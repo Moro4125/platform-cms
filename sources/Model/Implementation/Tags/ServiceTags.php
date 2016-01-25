@@ -9,9 +9,8 @@ use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
-use \Moro\Platform\Form\ContentListForm;
+use Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\TagsForm;
-
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
@@ -155,7 +154,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new ContentListForm($list), array_fill_keys(array_keys($list), false));
+		$builder = $service->createBuilder(new AbstractIndexForm($list), array_fill_keys(array_keys($list), false));
 
 		return $builder->getForm();
 	}

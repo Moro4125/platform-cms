@@ -3,14 +3,13 @@
  * Class ServiceRelink
  */
 namespace Moro\Platform\Model\Implementation\Relink;
-
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\Form\Form;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\EntityInterface;
-use \Moro\Platform\Form\ContentListForm;
+use \Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\RelinkForm;
 use \Moro\Platform\Application;
 use \Exception;
@@ -147,7 +146,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new ContentListForm($list), array_fill_keys(array_keys($list), false));
+		$builder = $service->createBuilder(new AbstractIndexForm($list), array_fill_keys(array_keys($list), false));
 
 		return $builder->getForm();
 	}

@@ -5,7 +5,6 @@
 namespace Moro\Platform\Action;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
-
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;

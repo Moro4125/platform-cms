@@ -14,13 +14,15 @@ use \Moro\Platform\Application;
  */
 class IndexImagesAction extends AbstractIndexAction
 {
-	public $title         = 'Графические материалы сайта';
-	public $serviceCode   = Application::SERVICE_FILE;
-	public $template      = '@PlatformCMS/admin/content/image-list.html.twig';
-	public $route         = 'admin-content-images';
-	public $routeUpdate   = 'admin-content-images-update';
-	public $routeDelete   = 'admin-content-images-delete';
-	public $routeBindTags = 'admin-content-images-set-tag';
+	public $title          = 'Графические материалы сайта';
+	public $serviceCode    = Application::SERVICE_FILE;
+	public $template       = '@PlatformCMS/admin/content/image-list.html.twig';
+	public $route          = 'admin-content-images';
+	public $routeUpdate    = 'admin-content-images-update';
+	public $routeDelete    = 'admin-content-images-delete';
+	public $routeBindTags  = 'admin-content-images-set-tag';
+	public $routeWatermark = 'admin-content-images-watermark';
+	public $routeMask      = 'admin-content-images-mask';
 
 	/**
 	 * @var array  Базовые условия фильтрации данных.
@@ -35,5 +37,61 @@ class IndexImagesAction extends AbstractIndexAction
 		return array_merge(parent::_getViewParameters(), [
 			'upload' => $this->getService()->createAdminUploadsForm($this->_application)->createView(),
 		]);
+	}
+
+	/**
+	 * @param array $list
+	 * @return null|\Symfony\Component\HttpFoundation\RedirectResponse
+	 */
+	protected function _doAction($list)
+	{
+		$app = $this->getApplication();
+		$form = $this->getForm();
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($form->get('show_watermark')->isClicked())
+		{
+			if (count($list))
+			{
+				return $app->redirect($app->url($this->routeWatermark, ['ids' => implode(',', $list), 'flag' => 1]));
+			}
+
+			$app->getServiceFlash()->alert('Для установки водяного знака нужно выбрать одну или более записей.');
+		}
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($form->get('hide_watermark')->isClicked())
+		{
+			if (count($list))
+			{
+				return $app->redirect($app->url($this->routeWatermark, ['ids' => implode(',', $list), 'flag' => 0]));
+			}
+
+			$app->getServiceFlash()->alert('Для удаления водяного знака нужно выбрать одну или более записей.');
+		}
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($form->get('show_mask')->isClicked())
+		{
+			if (count($list))
+			{
+				return $app->redirect($app->url($this->routeMask, ['ids' => implode(',', $list), 'flag' => 1]));
+			}
+
+			$app->getServiceFlash()->alert('Для включения обрамления нужно выбрать одну или более записей.');
+		}
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($form->get('hide_mask')->isClicked())
+		{
+			if (count($list))
+			{
+				return $app->redirect($app->url($this->routeMask, ['ids' => implode(',', $list), 'flag' => 0]));
+			}
+
+			$app->getServiceFlash()->alert('Для удаления обрамления нужно выбрать одну или более записей.');
+		}
+
+		return parent::_doAction($list);
 	}
 }

@@ -10,7 +10,7 @@ use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
-use \Moro\Platform\Form\ContentListForm;
+use \Moro\Platform\Form\Index\ImagesIndexForm;
 use \Moro\Platform\Form\ImageUpdateForm;
 use \Imagine\Image\Box;
 use \Imagine\Image\Point;
@@ -306,7 +306,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new ContentListForm($list, true), array_fill_keys(array_keys($list), false));
+		$builder = $service->createBuilder(new ImagesIndexForm($list, true, $application), array_fill_keys(array_keys($list), false));
 
 		return $builder->getForm();
 	}
@@ -524,7 +524,19 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 			$application->getServiceFlash()->error(get_class($exception).': '.$exception->getMessage());
 		}
 
-		$url = $application->url('image', ['hash' => $entity->getHash(), 'width' => 0, 'height' => 0, 'remember' => 0]);
+		$this->recreateImageFiles($application, $hash);
+	}
+
+	/**
+	 * @param Application $application
+	 * @param string $hash
+	 * @return int
+	 */
+	public function recreateImageFiles(Application $application, $hash)
+	{
+		$affectedFiles = 0;
+
+		$url = $application->url('image', ['hash' => $hash, 'width' => 0, 'height' => 0, 'remember' => 0]);
 		$url = substr($url, 0, strpos($url, '?') ?: strlen($url));
 		$uri = substr($url, (strpos($url, 'index.php') ?: -9) + 9);
 		$uri = substr($uri, strpos($uri, '/'));
@@ -555,9 +567,12 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					rename($tempFile, $realPath);
 
 					sha1_file($realPath) === $fileHash && touch($realPath, $fileTime);
+					$affectedFiles++;
 				}
 			}
 		}
+
+		return $affectedFiles;
 	}
 
 	/**

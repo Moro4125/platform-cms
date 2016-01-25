@@ -46,6 +46,8 @@ Application::getInstance(function (Application $app)
 		'admin-content-images-set-top'   => ['content/images/set-top/{id}',   'Images\\SetTopImagesAction'],
 		'admin-content-images-set-tag'   => ['content/images/set-tag/{ids}',  'Images\\SetTagImagesAction'],
 		'admin-content-images-upload'    => ['content/images/upload',         'Images\\UploadImagesAction'],
+		'admin-content-images-watermark' => ['content/images/watermark/{ids}','Images\\WatermarkImagesAction'],
+		'admin-content-images-mask'      => ['content/images/mask/{ids}',     'Images\\MaskImagesAction'],
 		'admin-image' => ['/images/{salt}/{hash}_{width}_{height}.{format}',  'Images\\ShowImagesAction'],
 		'api'                            => ['/platform',                     'Tools\\PrefixAction'],
 		'api-content-articles-rss'       => ['content/articles/rss.xml',      'Articles\\ApiRssArticlesAction'],

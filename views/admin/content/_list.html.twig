@@ -102,40 +102,42 @@
 						<span class="sr-only">Выбор действия</span>
 					</button>
 					<ul class="dropdown-menu" role="menu">
-						{% if not ignore_create %}
-						<li>
-							<button class="btn btn-default btn-xs" type="submit" name="admin_list[create]" value="1">
-								<span class="glyphicon glyphicon-plus" aria-hidden="true">&nbsp;</span>
-								<span>Создать новую запись</span>
-							</button>
-						</li>
-						{% endif %}
-
-						<li>
-							<button class="btn btn-default btn-xs" type="submit" name="admin_list[update]" value="1">
-								<span class="glyphicon glyphicon-pencil" aria-hidden="true">&nbsp;</span>
-								<span>Редактировать записи</span>
-							</button>
-						</li>
-
-						{% if is_granted("ROLE_EDITOR") %}
+						{%- block group_actions -%}
+							{% if not ignore_create %}
 							<li>
-								<button class="btn btn-default btn-xs" type="submit" name="admin_list[delete]" value="1">
-									<span class="glyphicon glyphicon-trash" aria-hidden="true">&nbsp;</span>
-									<span>Удалить записи</span>
+								<button class="btn btn-default btn-xs" type="submit" name="admin_list[create]" value="1">
+									<span class="glyphicon glyphicon-plus" aria-hidden="true">&nbsp;</span>
+									<span>Создать новую запись</span>
 								</button>
 							</li>
-						{% endif %}
+							{% endif %}
 
-						<li class="divider"></li>
+							<li>
+								<button class="btn btn-default btn-xs" type="submit" name="admin_list[update]" value="1">
+									<span class="glyphicon glyphicon-pencil" aria-hidden="true">&nbsp;</span>
+									<span>Редактировать записи</span>
+								</button>
+							</li>
 
-						<li>
-							<button class="btn btn-default btn-xs" type="submit" name="admin_list[bind]" value="1">
-								<span class="glyphicon glyphicon-tags" aria-hidden="true">&nbsp;</span>
-								<span>Назначить ярлыки</span>
-								{% do form.bind.setRendered %}
-							</button>
-						</li>
+							{% if is_granted("ROLE_EDITOR") %}
+								<li>
+									<button class="btn btn-default btn-xs" type="submit" name="admin_list[delete]" value="1">
+										<span class="glyphicon glyphicon-trash" aria-hidden="true">&nbsp;</span>
+										<span>Удалить записи</span>
+									</button>
+								</li>
+							{% endif %}
+
+							<li class="divider"></li>
+
+							<li>
+								<button class="btn btn-default btn-xs" type="submit" name="admin_list[bind]" value="1">
+									<span class="glyphicon glyphicon-tags" aria-hidden="true">&nbsp;</span>
+									<span>Назначить ярлыки</span>
+									{% do form.bind.setRendered %}
+								</button>
+							</li>
+						{%- endblock group_actions -%}
 					</ul>
 				</div>
 			</div>
