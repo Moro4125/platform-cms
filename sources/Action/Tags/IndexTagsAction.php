@@ -14,6 +14,7 @@ use \Moro\Platform\Application;
  */
 class IndexTagsAction extends AbstractIndexAction
 {
+	public $title         = 'Стандартные ярлыки';
 	public $serviceCode   = Application::SERVICE_TAGS;
 	public $template      = '@PlatformCMS/admin/content/tags-list.html.twig';
 	public $route         = 'admin-content-tags';

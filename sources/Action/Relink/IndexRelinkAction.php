@@ -14,6 +14,7 @@ use \Moro\Platform\Application;
  */
 class IndexRelinkAction extends AbstractIndexAction
 {
+	public $title         = 'Правила перелинковки';
 	public $serviceCode   = Application::SERVICE_RELINK;
 	public $template      = '@PlatformCMS/admin/content/relink-list.html.twig';
 	public $route         = 'admin-content-relink';
