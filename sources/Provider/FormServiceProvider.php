@@ -6,6 +6,7 @@ namespace Moro\Platform\Provider;
 use \Silex\Provider\FormServiceProvider as CFormServiceProvider;
 use \Silex\Application;
 use \Moro\Platform\Form\Type\Extension\FieldsetExtension;
+use \Moro\Platform\Form\Type\ArticleChoiceType;
 use \Moro\Platform\Form\Type\ImageChoiceType;
 use \Moro\Platform\Form\Type\TagsChoiceType;
 
@@ -28,6 +29,7 @@ class FormServiceProvider extends CFormServiceProvider
 		});
 
 		$app['form.types'] = $app->extend('form.types', function($list) use ($app) {
+			$list[] = new ArticleChoiceType($app);
 			$list[] = new ImageChoiceType($app);
 			$list[] = new TagsChoiceType($app);
 			return $list;

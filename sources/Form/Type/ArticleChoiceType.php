@@ -1,6 +1,6 @@
 <?php
 /**
- * Class ImageChoiceType
+ * Class ArticleChoiceType
  */
 namespace Moro\Platform\Form\Type;
 use \Symfony\Component\Form\AbstractType;
@@ -8,15 +8,15 @@ use \Symfony\Component\Form\ChoiceList\View\ChoiceView;
 use \Symfony\Component\Form\FormView;
 use \Symfony\Component\Form\FormInterface;
 use \Symfony\Component\OptionsResolver\OptionsResolver;
-use \Moro\Platform\Model\Implementation\File\Decorator\AjaxSelectDecorator;
-use \Moro\Platform\Model\Implementation\File\ServiceFile;
+use \Moro\Platform\Model\Implementation\Content\Decorator\AjaxSelectDecorator;
+use \Moro\Platform\Model\Implementation\Content\ServiceContent;
 use \Moro\Platform\Application;
 
 /**
- * Class ImageChoiceType
+ * Class ArticleChoiceType
  * @package Form\Extension
  */
-class ImageChoiceType extends AbstractType
+class ArticleChoiceType extends AbstractType
 {
 	/**
 	 * @var \Moro\Platform\Application
@@ -38,7 +38,7 @@ class ImageChoiceType extends AbstractType
 	 */
 	public function getName()
 	{
-		return 'choice_image';
+		return 'choice_article';
 	}
 
 	/**
@@ -58,10 +58,10 @@ class ImageChoiceType extends AbstractType
 	{
 		$iterator = new \RecursiveArrayIterator($_POST);
 		$iterator = new \RecursiveIteratorIterator($iterator);
-		$iterator = new \RegexIterator($iterator, '{^.{32}$}');
+		$iterator = new \RegexIterator($iterator, '{^\\d+$}');
 
 		$choices = iterator_to_array($iterator);
-		$choices = $this->_application->getServiceFile()->filterHashList($choices);
+		$choices = $this->_application->getServiceContent()->filterIdList($choices);
 		$choices = array_combine($choices, $choices);
 
 		$resolver->setDefaults(array(
@@ -75,22 +75,18 @@ class ImageChoiceType extends AbstractType
 	 */
 	public function buildView(FormView $view, FormInterface $form, array $options)
 	{
-		$service = $this->_application->getServiceFile();
+		$service = $this->_application->getServiceContent();
 		$decorator = new AjaxSelectDecorator($this->_application);
 
-		$list = $service->with($decorator, function(ServiceFile $service) use ($view)
+		$list = $service->with($decorator, function(ServiceContent $service) use ($view)
 		{
 			$result = [];
 
-			foreach ((array)$view->vars['data'] as $hash)
+			foreach ((array)$view->vars['data'] as $id)
 			{
-				foreach ($service->selectByHash($hash) as $entity)
+				if ($entity = $service->getEntityById($id, true))
 				{
-					if ($entity->getKind() == '1x1')
-					{
-						$result[$hash] = json_decode(json_encode($entity), true);
-						continue 2;
-					}
+					$result[$id] = json_decode(json_encode($entity), true);
 				}
 			}
 
@@ -114,8 +110,8 @@ class ImageChoiceType extends AbstractType
 		$view->vars['placeholder'] = null;
 		$view->vars['attr'] = array_merge($view->vars['attr'], [
 			'data-ajax--dataType' => 'json',
-			'data-ajax--url'      => $this->_application->url('admin-content-images-select'),
-			'data-template'       => 'templateSelect2Image',
+			'data-ajax--url'      => $this->_application->url('admin-content-articles-select'),
+			'data-template'       => 'templateSelect2Article',
 			'data-json'           => json_encode($list, JSON_UNESCAPED_UNICODE),
 			'style'               => 'width: 100%;',
 		]);

@@ -36,6 +36,7 @@
 	</div>{# /.modal #}
 
 	<script id="templateSelect2Image" type="text/x-mustache">{{ block("templateSelect2Image") }}</script>
+	<script id="templateSelect2Article" type="text/x-mustache">{{ block("templateSelect2Article") }}</script>
 {% endblock %}
 
 {%- block templateSelect2Image -%}
@@ -64,6 +65,30 @@
 				{{- '{{#tags}}' -}}
 					<span class="label label-default">{{ '{{ . }}' }}</span>
 				{{- '{{/tags}}' -}}
+			{{- '{{/isList}}' -}}
+		</div>
+	</div>
+{%- endblock -%}
+
+{%- block templateSelect2Article -%}
+	<div class="m-select2-article{{ '{{#isList}}' }} m-select2-article_view_list{{ '{{/isList}}' }} clearfix">
+		<div class="m-select2-article__icon">
+			<img src="{{ '{{ icon }}' }}">
+		</div>
+		<div class="m-select2-article__name">
+			{{- '{{#isList}}' -}}
+			{{- '{{ name }}' -}}
+			{{- '{{/isList}}' -}}
+			{{- '{{^isList}}' -}}
+			<a href="{{- '{{ edit }}' -}}" target="_blank" title="{{ '{{ hint }}' }}">
+				{{- '{{ name }}' -}}
+			</a>
+			{{- '{{/isList}}' -}}
+			{{- '{{^isList}}' -}}
+			<br/>
+			{{- '{{#tags}}' -}}
+			<span class="label label-default">{{ '{{ . }}' }}</span>
+			{{- '{{/tags}}' -}}
 			{{- '{{/isList}}' -}}
 		</div>
 	</div>

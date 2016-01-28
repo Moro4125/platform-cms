@@ -629,4 +629,25 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		return $entity->getId();
 	}
+
+	/**
+	 * @param array $list
+	 * @return array
+	 */
+	public function filterHashList(array $list)
+	{
+		$query = $this->_connection->createQueryBuilder()->select('id')->from($this->_table)->where('hash=?')->getSQL();
+		$statement = $this->_connection->prepare($query);
+		$result = [];
+
+		foreach ($list as $hash)
+		{
+			if ($statement->execute([$hash]) && $statement->fetchAll())
+			{
+				$result[] = $hash;
+			}
+		}
+
+		return $result;
+	}
 }

@@ -107,9 +107,15 @@ class ContentForm extends AbstractContent
 		]);
 
 		$builder->add('gallery_text', 'textarea', [
-			'label'       => 'Описание',
-			'attr' => ['placeholder' => 'Описание'],
-			'required'    => false,
+			'label'    => 'Описание',
+			'attr'     => ['placeholder' => 'Описание'],
+			'required' => false,
+		]);
+
+		$builder->add('articles', 'choice_article', [
+			'label'    => 'Связанные материалы',
+			'multiple' => true,
+			'required' => false,
 		]);
 
 		$builder->add('cost', 'text', [

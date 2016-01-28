@@ -64,13 +64,26 @@
 			{{ form_widget(form.gallery) }}
 		</div>
 	</div>
-	<br/>
+
+	<hr/>
+
 	<div class="row">
 		<div class="col-md-12">
 			<h3>Блок текста материала</h3>
 		</div>
 		<div class="col-md-12">
 			{{ form_widget(form.gallery_text) }}
+		</div>
+	</div>
+
+	<hr/>
+
+	<div class="row">
+		<div class="col-md-12">
+			<h3>Связанные материалы</h3>
+		</div>
+		<div class="col-md-12 m-select2-articles">
+			{{ form_widget(form.articles) }}
 		</div>
 	</div>
 

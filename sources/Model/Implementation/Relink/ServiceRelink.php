@@ -76,7 +76,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 
 		if (!$href = $entity->getHREF())
 		{
-			$tags[] = normalizeTag('Ссылка: отсутствует');
+			$tags[] = normalizeTag('Ссылка: запрещённая');
 		}
 		elseif (preg_match('{^(?:/|(?:f|ht)tps?://'.preg_quote($_SERVER['HTTP_HOST'], '}').')}', $href))
 		{

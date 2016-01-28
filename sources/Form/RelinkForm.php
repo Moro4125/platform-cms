@@ -87,7 +87,7 @@ class RelinkForm extends AbstractContent
 			]);
 		}
 
-		$group2 = 'Параметры ссылки';
+		$group2 = 'Ссылка';
 		$list = [
 			'href'  => 'URL',
 			'title' => 'Подсказка',

@@ -24,6 +24,7 @@ Application::getInstance(function (Application $app)
 		'admin-compile'                  => ['pages/compile',                 'Routes\\CompileRoutesAction'],
 		'admin-options'                  => ['options',                       'Tools\\OptionsAction'],
 		'admin-content-articles'         => ['content/articles',              'Articles\\IndexArticlesAction'],
+		'admin-content-articles-select'  => ['content/article/select',        'Articles\\IndexAjaxArticlesAction'],
 		'admin-content-articles-create'  => ['content/article/create',        'Articles\\CreateArticlesAction'],
 		'admin-content-articles-update'  => ['content/article/update/{id}',   'Articles\\UpdateArticlesAction'],
 		'admin-content-articles-delete'  => ['content/article/delete/{ids}',  'Articles\\DeleteArticlesAction'],

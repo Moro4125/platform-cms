@@ -284,7 +284,7 @@ td .label {
 }
 
 .m-select2-images .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    width: 23%;
+    width: 24%;
     min-width: 210px;
 }
 
@@ -292,6 +292,53 @@ td .label {
     margin-right: 0;
     margin-left: 2px;
     float: right;
+}
+
+.m-select2-article {
+    width: 99%;
+    margin: 0;
+}
+.m-select2-article__icon {
+    float: left;
+    padding: 0 8px 0 0;
+}
+.m-select2-article__icon img {
+    border: solid 1px white;
+    box-shadow: black 0 0 1px;
+    background-image: url(../images/no-icon.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 80px;
+    height: 50px;
+    margin: 4px;
+}
+.m-select2-article_view_list .m-select2-article__icon img {
+    width: 51px;
+    height: 32px;
+    margin: 0;
+}
+.m-select2-article__name {
+    overflow: hidden;
+    line-height: 24px;
+    padding-top: 2px;
+}
+
+.m-select2-article__name > a {
+    color: black;
+}
+
+.m-select2-article_view_list .m-select2-article__name {
+    line-height: 32px;
+    padding-top: 0;
+}
+
+.m-select2-article__name .label {
+    margin-right: 2px;
+}
+
+.m-select2-articles .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    width: 100%;
+    min-width: 210px;
 }
 
 textarea {

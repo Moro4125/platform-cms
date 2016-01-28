@@ -184,6 +184,8 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 */
 	public function createAdminUpdateForm(Application $application, EntityInterface $entity, Request $request)
 	{
+		$method = $request->getMethod();
+
 		$args = $entity->getParameters();
 		$tags = @$request->get('admin_update')['tags'] ?: [];
 		$tags = array_unique(array_merge($tags, isset($args['tags']) ? $args['tags'] : []));
@@ -197,19 +199,27 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			'tags' => isset($args['tags']) ? $args['tags'] : [],
 			'gallery' => isset($args['gallery']) ? $args['gallery'] : [],
 			'gallery_text' => isset($args['gallery_text']) ? $args['gallery_text'] : '',
+			'articles' => isset($args['articles']) ? $args['articles'] : [],
 			'cost' => isset($args['cost']) ? $args['cost'] : '',
 		];
 
-		if ($request->getMethod() == Request::METHOD_GET)
+		$serviceFile = $application->getServiceFile();
+		$hasIcon = !empty($data['icon']);
+		$data['icon'] = ($hasIcon && $serviceFile->existsByHashAndKind($data['icon'], '1x1')) ? $data['icon'] : null;
+		$count = count($data['gallery']);
+		$data['gallery'] = $serviceFile->filterHashList($data['gallery']);
+
+		if ($method == Request::METHOD_GET && ($count > count($data['gallery']) || $hasIcon && empty($data['icon'])))
 		{
-			foreach (array_filter(array_merge([$data['icon']], $data['gallery'])) as $hash)
-			{
-				if (!$application->getServiceFile()->existsByHashAndKind($hash, '1x1'))
-				{
-					$application->getServiceFlash()->alert('В материале были скрыты ссылки на удаленные изображения.');
-					break;
-				}
-			}
+			$application->getServiceFlash()->alert('В материале были скрыты ссылки на удаленные изображения.');
+		}
+
+		$count = count($data['articles']);
+		$data['articles'] = $this->filterIdList($data['articles']);
+
+		if ($method == Request::METHOD_GET && $count > count($data['articles']))
+		{
+			$application->getServiceFlash()->alert('В материале были скрыты ссылки на другие удаленные материалы.');
 		}
 
 		$form = new ContentForm($entity->getId(), $tags);
@@ -236,6 +246,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$parameters['tags']         = array_values($data['tags']);
 			$parameters['gallery']      = $data['gallery'];
 			$parameters['gallery_text'] = $data['gallery_text'];
+			$parameters['articles']     = $data['articles'];
 			$parameters['cost']         = $data['cost'];
 
 			$entity->setName($data['name']);
@@ -255,5 +266,26 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 
 		unset($application);
+	}
+
+	/**
+	 * @param array $list
+	 * @return array
+	 */
+	public function filterIdList(array $list)
+	{
+		$query = $this->_connection->createQueryBuilder()->select('id')->from($this->_table)->where('id = ?')->getSQL();
+		$statement = $this->_connection->prepare($query);
+		$result = [];
+
+		foreach ($list as $id)
+		{
+			if ($statement->execute([(int)$id]) && $statement->fetchAll())
+			{
+				$result[] = (int)$id;
+			}
+		}
+
+		return $result;
 	}
 }
