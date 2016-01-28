@@ -58,10 +58,11 @@ Application::getInstance(function(Application $app) {
 					$tags[] = 'link-'.$id;
 				}
 
-				$content = $service->apply($content);
-				$response->setContent($content);
 				$response->headers->set('X-Cache-Tags', implode(',', $tags));
 			}
+
+			$content = $service->apply($content);
+			$response->setContent($content);
 		}
 	});
 
