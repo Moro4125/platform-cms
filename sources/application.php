@@ -51,6 +51,7 @@ class Application extends CApplication
 	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
+	const HEADER_CACHE_TAGS   = 'X-Cache-Tags';
 
 	/**
 	 * @var string

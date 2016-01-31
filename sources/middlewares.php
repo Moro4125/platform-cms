@@ -51,14 +51,14 @@ Application::getInstance(function(Application $app) {
 
 			if ($found = $service->search($content))
 			{
-				$tags = (array)$response->headers->get('X-Cache-Tags');
+				$tags = (array)$response->headers->get(Application::HEADER_CACHE_TAGS);
 
 				foreach (array_unique(array_intersect_key($app->getServiceRelink()->getIdMap(), $found)) as $id)
 				{
 					$tags[] = 'link-'.$id;
 				}
 
-				$response->headers->set('X-Cache-Tags', implode(',', $tags));
+				$response->headers->set(Application::HEADER_CACHE_TAGS, implode(',', $tags));
 			}
 
 			$content = $service->apply($content);
@@ -132,7 +132,7 @@ Application::getInstance(function(Application $app) {
 			$entity->setCompileFlag(true);
 			$entity->setTags(['предпросмотр']);
 
-			if ($tags = $response->headers->get('X-Cache-Tags'))
+			if ($tags = $response->headers->get(Application::HEADER_CACHE_TAGS))
 			{
 				$entity->addTags(explode(',', $tags));
 			}

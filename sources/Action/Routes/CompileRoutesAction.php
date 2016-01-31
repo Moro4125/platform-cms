@@ -176,7 +176,7 @@ class CompileRoutesAction
 				unset($replace['//'.$request->getHttpHost()]);
 			}
 
-			if ($tags = $response->headers->get('X-Cache-Tags'))
+			if ($tags = $response->headers->get(Application::HEADER_CACHE_TAGS))
 			{
 				$entity->setTags(explode(',', $tags));
 			}
