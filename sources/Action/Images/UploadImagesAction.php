@@ -15,6 +15,11 @@ use \Silex\Application as SilexApplication;
 class UploadImagesAction
 {
 	/**
+	 * @var string
+	 */
+	public $routeIndex = 'admin-content-images';
+
+	/**
 	 * @param \Moro\Platform\Application|SilexApplication $app
 	 * @param Request $request
 	 * @return Response
@@ -29,7 +34,7 @@ class UploadImagesAction
 		{
 			if ($app->isGranted('ROLE_EDITOR'))
 			{
-				$idList = $service->applyAdminUploadForm($app, $form);
+				$idList = $service->applyAdminUploadForm($app, $form, $request->query->get('tags'));
 			}
 			else
 			{
@@ -37,6 +42,17 @@ class UploadImagesAction
 			}
 		}
 
-		return $app->redirect($app->url('admin-content-images').($idList ? '#selected='.implode(',', $idList) : ''));
+		$fragment = ($idList ? '#selected='.implode(',', $idList) : '');
+
+		if ($back = $request->query->get('back'))
+		{
+			$url = $back;
+		}
+		else
+		{
+			$url = $app->url($this->routeIndex);
+		}
+
+		return $app->redirect($url.$fragment);
 	}
 }

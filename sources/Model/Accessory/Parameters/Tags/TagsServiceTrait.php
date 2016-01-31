@@ -40,7 +40,7 @@ trait TagsServiceTrait
 		{
 			$builder1 = $this->_connection->createQueryBuilder();
 			$builder1->select('a.tag, COUNT(a.tag) as cnt')->from($table.'_tags', 'a')->groupBy('tag');
-			$builder1->orderBy('cnt', 'desc')->setMaxResults(50);
+			$builder1->orderBy('cnt', 'desc')->setMaxResults(64);
 
 			$builder1->where('a.tag > "+~"');
 

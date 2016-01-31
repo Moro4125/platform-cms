@@ -299,7 +299,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 		/** @noinspection PhpUndefinedMethodInspection */
 		if ($this->routeCreate && $form->get('create')->isClicked())
 		{
-			return $app->redirect($app->url($this->routeCreate));
+			return $app->redirect($app->url($this->routeCreate, ['tags' => $this->_tags]));
 		}
 
 		/** @noinspection PhpUndefinedMethodInspection */

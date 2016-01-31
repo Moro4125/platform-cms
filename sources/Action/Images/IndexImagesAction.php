@@ -34,8 +34,10 @@ class IndexImagesAction extends AbstractIndexAction
 	 */
 	protected function _getViewParameters()
 	{
+		$back = $this->getRequest()->getRequestUri();
+
 		return array_merge(parent::_getViewParameters(), [
-			'upload' => $this->getService()->createAdminUploadsForm($this->_application)->createView(),
+			'upload' => $this->getService()->createAdminUploadsForm($this->_application, $back, $this->_tags)->createView(),
 		]);
 	}
 

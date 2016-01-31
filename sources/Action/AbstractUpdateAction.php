@@ -161,19 +161,19 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 			/** @var $service \Moro\Platform\Model\AbstractService */
 			/** @var $entity \Moro\Platform\Model\EntityInterface */
-			if (empty($tags))
+			if ($entity->getProperty('name'))
 			{
-				if ($entity->getProperty('name'))
+				if (empty($tags))
 				{
 					$text = 'У записи отсутствуют ярлыки. Следовательно, в дальнейшем её сложно будет найти.';
 					$this->getApplication()->getServiceFlash()->alert($text);
 				}
-			}
-			elseif ($service->getCount(array_keys($where), array_values($where)) > 10)
-			{
-				$text = 'Было найденно слишком много записей с аналогичным набором ярлыков. '.
-						'Рекомендуется добавить ещё один ярлык, описывающий какую-либо особенность.';
-				$this->getApplication()->getServiceFlash()->alert($text);
+				elseif ($service->getCount(array_keys($where), array_values($where)) > 10)
+				{
+					$text = 'Было найденно слишком много записей с аналогичным набором ярлыков. '.
+							'Рекомендуется добавить ещё один ярлык, описывающий какую-либо особенность.';
+					$this->getApplication()->getServiceFlash()->alert($text);
+				}
 			}
 		}
 

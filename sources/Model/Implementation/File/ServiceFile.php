@@ -313,12 +313,15 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 	/**
 	 * @param \Moro\Platform\Application $application
+	 * @param null|string $back
+	 * @param null|string $tags
 	 * @return Form
 	 */
-	public function createAdminUploadsForm(Application $application)
+	public function createAdminUploadsForm(Application $application, $back = null, $tags = null)
 	{
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new FilesUploadForm($application->url('admin-content-images-upload')));
+		$fromUrl = $application->url('admin-content-images-upload', array_filter(['tags' => $tags, 'back' => $back]));
+		$builder = $service->createBuilder(new FilesUploadForm($fromUrl));
 
 		return $builder->getForm();
 	}
@@ -335,15 +338,18 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	/**
 	 * @param Application $application
 	 * @param Form $form
+	 * @param null|string $tags
 	 * @return array
 	 */
-	public function applyAdminUploadForm(Application $application, Form $form)
+	public function applyAdminUploadForm(Application $application, Form $form, $tags = null)
 	{
 		$idList = [];
 		$this->_connection->beginTransaction();
 
 		try
 		{
+			$tags = array_map('trim', explode(',', rtrim((string)$tags, '.')));
+
 			foreach ($form->getData() as $name => $value)
 			{
 				if ($name == 'uploads')
@@ -381,6 +387,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 								'crop_w' => $minSize,
 								'crop_h' => $minSize,
 							]);
+							$entity->addTags($tags);
 						}
 
 						$this->commit($entity);

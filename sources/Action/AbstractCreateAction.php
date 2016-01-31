@@ -3,8 +3,7 @@
  * Class AbstractCreateAction
  */
 namespace Moro\Platform\Action;
-
-
+use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -44,6 +43,7 @@ abstract class AbstractCreateAction extends AbstractContentAction
 		if (!$request->query->has('back'))
 		{
 			return $app->redirect($app->url($this->route, [
+				'tags' => $request->query->get('tags'),
 				'back' => ($request->headers->has('Referer') && $request->headers->get('Referer'))
 					? $request->headers->get('Referer')
 					: 0,
@@ -57,8 +57,19 @@ abstract class AbstractCreateAction extends AbstractContentAction
 			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
 		}
 
+		$entity = $this->getService()->createNewEntityWithId();
+
+		if ($tags = array_filter(array_map('trim', explode(',', (string)rtrim($request->query->get('tags'), '.')))))
+		{
+			if ($entity instanceof TagsEntityInterface)
+			{
+				$entity->addTags($tags);
+				$this->getService()->commit($entity);
+			}
+		}
+
 		return $app->redirect($app->url($this->routeUpdate, [
-			'id'   => $this->getService()->createNewEntityWithId()->getId(),
+			'id'   => $entity->getId(),
 			'back' => $request->query->get('back') ?: $app->url($this->routeIndex)
 		]));
 	}
