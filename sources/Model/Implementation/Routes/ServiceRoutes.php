@@ -308,7 +308,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	{
 		foreach ($this->selectEntities(null, null, 'updated_at', ['compile_flag', '!route'], [2, 'inner']) as $entity)
 		{
-			if ($entity->getId() !== $lastRouteId)
+			if ($entity->getId() !== $lastRouteId && !$entity->hasTag('предпросмотр'))
 			{
 				$url = $application->url($entity->getRoute(), $entity->getQuery());
 
