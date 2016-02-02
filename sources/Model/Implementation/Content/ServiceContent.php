@@ -29,6 +29,8 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
+	const MD_IMG_MASK = '{(!\\[[^\\]]*\\]\\[\\s*)([^"\\]]*)}';
+
 	/**
 	 * @var string
 	 */
@@ -222,6 +224,18 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$application->getServiceFlash()->alert('В материале были скрыты ссылки на другие удаленные материалы.');
 		}
 
+		$data['gallery_text'] = preg_replace_callback(self::MD_IMG_MASK, function($match) use ($data, $serviceFile) {
+			$match[3] = substr($match[2], strlen(rtrim($match[2])));
+			$match[2] = rtrim($match[2]);
+
+			if (in_array($match[2], $data['gallery']) && $image = $serviceFile->getByHashAndKind($match[2], '1x1'))
+			{
+				return $match[1].$image->getName().$match[3];
+			}
+
+			return $match[0];
+		}, $data['gallery_text']);
+
 		$form = new ContentForm($entity->getId(), $tags);
 
 		return $application->getServiceFormFactory()->createBuilder($form, $data)->getForm();
@@ -236,11 +250,31 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	{
 		$data = $form->getData();
 		$parameters = $entity->getParameters();
+		$serviceFile = $application->getServiceFile();
 
 		$this->_connection->beginTransaction();
 
 		try
 		{
+			$data['gallery_text'] = preg_replace_callback(self::MD_IMG_MASK, function($match) use ($data, $serviceFile) {
+				$match[3] = substr($match[2], strlen(rtrim($match[2])));
+				$match[2] = rtrim($match[2]);
+
+				if ($list = $serviceFile->selectEntities(null, null, null, 'name', $match[2]))
+				{
+					/** @var \Moro\Platform\Model\Implementation\File\EntityFile $image */
+					foreach ($list as $image)
+					{
+						if (in_array($image->getHash(), $data['gallery']))
+						{
+							return $match[1].$image->getHash().$match[3];
+						}
+					}
+				}
+
+				return $match[0];
+			}, $data['gallery_text']);
+
 			$parameters['lead']         = $data['lead'];
 			$parameters['link']         = $data['external'];
 			$parameters['tags']         = array_values($data['tags']);
