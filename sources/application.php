@@ -184,7 +184,7 @@ class Application extends CApplication
 
 		if (empty($build))
 		{
-			$git = realpath(dirname(__DIR__).DIRECTORY_SEPARATOR.'.git');
+			$git = realpath($this->getOption('path.project').DIRECTORY_SEPARATOR.'.git');
 			$head = $git ? trim(file_get_contents($git.DIRECTORY_SEPARATOR.'HEAD')) : filemtime(__FILE__);
 			strncmp($head, 'ref:', 4) || $head = trim(file_get_contents($git.DIRECTORY_SEPARATOR.substr($head, 5)));
 			$build = substr($head, -8);
