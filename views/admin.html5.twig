@@ -8,11 +8,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 		<link rel="icon" href="/favicon.ico">
-		<link rel="stylesheet" href="/assets/bootstrap/bootstrap-built.css">
-		<link rel="stylesheet" href="/assets/bootstrap-fileinput/bootstrap-fileinput-built.css">
-		<link rel="stylesheet" href="/assets/bootstrap-cropper/bootstrap-cropper-built.css">
-		<link rel="stylesheet" href="/assets/select2/select2-built.css">
-		<link rel="stylesheet" href="/assets/platform/platform-built.css">
+		<link rel="stylesheet" href="/assets/bootstrap/bootstrap-built.css?ver={{ app.build }}">
+		<link rel="stylesheet" href="/assets/bootstrap-fileinput/bootstrap-fileinput-built.css?ver={{ app.build }}">
+		<link rel="stylesheet" href="/assets/bootstrap-cropper/bootstrap-cropper-built.css?ver={{ app.build }}">
+		<link rel="stylesheet" href="/assets/select2/select2-built.css?ver={{ app.build }}">
+		<link rel="stylesheet" href="/assets/platform/platform-built.css?ver={{ app.build }}">
 		{% block head_meta %}{% endblock %}
 	</head>
 	<body>
@@ -20,8 +20,8 @@
 			{% block layout %}
 			{% endblock layout %}
 		{% endblock layout_wrapper %}
-		<script type="text/javascript" src="/assets/require.js"></script>
-		<script type="text/javascript" src="/assets/platform/platform-built.js"></script>
+		<script type="text/javascript" src="/assets/require.js?ver={{ app.build }}"></script>
+		<script type="text/javascript" src="/assets/platform/platform-built.js?ver={{ app.build }}"></script>
 	</body>
 </html>
 {% endspaceless %}
