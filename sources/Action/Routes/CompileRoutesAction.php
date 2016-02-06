@@ -155,11 +155,16 @@ class CompileRoutesAction
 
 			/** @var \Symfony\Component\HttpFoundation\Response $response */
 			$xRequest = Request::create($uri, 'GET', [], [], [], $request->server->all());
-			$xRequest->headers->set('Surrogate-Capability', 'SSI/1.0');
+			$xRequest->headers->set(Application::HEADER_SURROGATE, 'SSI/1.0');
 			$response = $app->handle($xRequest, HttpKernelInterface::SUB_REQUEST, false);
 
 			if (200 != $statusCode = $response->getStatusCode())
 			{
+				if ($statusCode == 302)
+				{
+					throw new NotFoundHttpException();
+				}
+
 				throw new Exception('Действие по генерации страницы вернуло код '.$statusCode.'.');
 			}
 
@@ -170,7 +175,7 @@ class CompileRoutesAction
 				return $this->_workLimit > 0;
 			}
 
-			if ($response->headers->get('X-Use-Full-URL'))
+			if ($response->headers->get(Application::HEADER_USE_FULL_URL))
 			{
 				unset($replace[$request->getSchemeAndHttpHost()]);
 				unset($replace['//'.$request->getHttpHost()]);
@@ -185,17 +190,19 @@ class CompileRoutesAction
 			$entity->setTitle(htmlspecialchars_decode($title) ?: '~ Заголовок на странице отсутствует ~');
 			$content = strtr($response->getContent(), $replace);
 
-			$folder = $_SERVER['DOCUMENT_ROOT'].dirname($uri);
-			$file = $_SERVER['DOCUMENT_ROOT'].$uri;
-			$temp = tempnam($folder, 'html');
+			$folder = $app->getOption('path.root').dirname($uri);
+			$file = $app->getOption('path.root').$uri;
 
 			$oldFile = $entity->getFile();
-			$oldFile && $oldFile != $uri && @unlink($_SERVER['DOCUMENT_ROOT'].$oldFile);
+			$oldFile && $oldFile != $uri && @unlink($app->getOption('path.root').$oldFile);
 			$entity->setFile($uri);
 
-			file_exists($folder) || @mkdir($folder, 0755, true);
-			file_put_contents($temp, $content);
-			rename($temp, $file) && @chmod($file, 0644);
+			if (!$response->headers->get(Application::HEADER_DO_NOT_SAVE))
+			{
+				file_exists($folder) || @mkdir($folder, 0755, true);
+				file_put_contents($temp = tempnam($folder, 'html'), $content);
+				rename($temp, $file) && @chmod($file, 0644);
+			}
 
 			if ($entity->getRoute() == 'admin-image')
 			{
@@ -220,9 +227,9 @@ class CompileRoutesAction
 		{
 			$service->deleteEntityById($entity->getId());
 
-			if (($file = $entity->getFile()) && file_exists($_SERVER['DOCUMENT_ROOT'].$file))
+			if (($file = $entity->getFile()) && file_exists($app->getOption('path.root').$file))
 			{
-				$service->getByFileName($file) || unlink($_SERVER['DOCUMENT_ROOT'].$file);
+				$service->getByFileName($file) || unlink($app->getOption('path.root').$file);
 			}
 		}
 		catch (Exception $exception)

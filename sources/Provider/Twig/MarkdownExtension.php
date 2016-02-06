@@ -21,7 +21,7 @@ class MarkdownExtension extends CMarkdownExtension
 	{
 		/** @noinspection PhpParamsInspection */
 		$html = CMarkdownExtension::parseMarkdown($content);
-		$html = preg_replace('{<a\\shref="([^#/])}', '<a rel="nofollow" target="_blank" href="$1', $html);
+		$html = preg_replace('{<a\\s+href="([^#/])}', '<a rel="nofollow" target="_blank" href="$1', $html);
 
 		return $html;
 	}

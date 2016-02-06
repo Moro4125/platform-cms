@@ -54,12 +54,55 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		jQuery(element).prop("checked", checkedListCheckboxCount == listCheckboxCount);
 	});
 
-	jQuery("input.file-loading[type=file]").each(function() {
+	jQuery("input.file-loading[type=file]:not([data-upload-url])").each(function() {
 		if (!fileInputFlag) {
 			require(["bootstrap-fileinput"], function() {
 				$("input.file-loading[type=file]").fileinput({
 					language: "ru",
 					allowedFileExtensions: ["jpg", "jpeg", "png", "gif"]
+				});
+			});
+		}
+
+		fileInputFlag = true;
+	});
+
+	jQuery("input.file-loading[type=file][data-upload-url]").each(function() {
+		var self = jQuery(this),
+			ajaxUrl = self.data("upload-url"),
+			uploadExtraData = {};
+
+		if (!fileInputFlag) {
+			jQuery("input[type=hidden]", self.closest('form')).each(function() {
+				var input = jQuery(this);
+				uploadExtraData[input.attr("name")] = input.val();
+			});
+
+			require(["bootstrap-fileinput"], function() {
+				jQuery.ajax({
+					url: ajaxUrl,
+					type: "GET",
+					dataType: "json"
+				}).done(function(data) {
+					self.fileinput({
+						language: "ru",
+						dropZoneEnabled: false,
+						allowedPreviewTypes: false,
+						uploadAsync: true,
+						uploadExtraData: uploadExtraData,
+						uploadUrl: ajaxUrl,
+						mainClass: "b-file-upload",
+						previewClass: "b-file-upload",
+						overwriteInitial: false,
+						initialPreview: data.initialPreview,
+						initialPreviewConfig: data.initialPreviewConfig
+					});
+
+					self.on("fileuploaded", function(event, data, previewId, index) {
+						var form = data.form, files = data.files, extra = data.extra,
+								response = data.response, reader = data.reader;
+						console.log('File uploaded triggered');
+					});
 				});
 			});
 		}

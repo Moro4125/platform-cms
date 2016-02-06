@@ -27,7 +27,7 @@ class Application extends CApplication
 	use \Silex\Application\TwigTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.2.0";
+	const PLATFORM_VERSION = "1.7.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -51,7 +51,11 @@ class Application extends CApplication
 	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
+	const HEADER_USE_FULL_URL = 'X-Use-Full-URL';
+	const HEADER_DO_NOT_SAVE  = 'X-Do-Not-Save';
 	const HEADER_CACHE_TAGS   = 'X-Cache-Tags';
+	const HEADER_CACHE_FILE   = 'X-Cache-File';
+	const HEADER_SURROGATE    = 'Surrogate-Capability';
 
 	/**
 	 * @var string
@@ -351,6 +355,16 @@ class Application extends CApplication
 			empty($parameters['hash']) && $parameters['hash'] = '00000000000000000000000000000000';
 			empty($parameters['format']) && $parameters['format'] = 'jpg';
 			$parameters['salt'] = substr($parameters['hash'], -2);
+		}
+
+		/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
+		if ($route == 'download' && $file = isset($parameters['file']) ? $parameters['file'] : null)
+		{
+			$parameters['hash'] = $file->getHash();
+			$parameters['salt'] = substr($parameters['hash'], -2);
+			$parameters['extension'] = mb_strtolower($file->getName());
+			$parameters['extension'] = substr($parameters['extension'], strrpos($parameters['extension'], '.') + 1);
+			unset($parameters['file']);
 		}
 
 		try

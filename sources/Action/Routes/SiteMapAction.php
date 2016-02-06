@@ -56,7 +56,7 @@ class SiteMapAction extends AbstractContentAction
 			'host'  => $request->getHost(),
 			'items' => $items,
 		], new Response('', 200, [
-			'X-Use-Full-URL' => 1,
+			Application::HEADER_USE_FULL_URL => 1,
 		]));
 	}
 }

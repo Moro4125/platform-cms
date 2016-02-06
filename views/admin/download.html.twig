@@ -1,0 +1,73 @@
+{% extends "@PlatformCMS/admin/_layout.html.twig" %}
+
+{% block content %}
+	{% block navbar %}<br/>{% endblock %}
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+					<span>Скачивание файла</span>
+				</div>
+				<div class="panel-body">
+					<p>
+						<strong>Внимание! </strong>
+						<span>Вы можете скачать файл «<strong>{{ entity.name }}</strong>» </span>
+						<a href="{{ url }}" download="{{ entity.name }}">по прямой ссылке</a>
+						<span> или </span>
+						<a href="{{ back }}">вернуться назад</a>.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% if usedList|length %}
+		<hr/>
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						{{- "Статьи, использующие данный файл" -}}
+					</div>
+					{% set icon_col_width = 80 %}
+					<table class="table admin-list with-highlight">
+						<colgroup>
+							<col width="4"/>
+							{% if icon_col_width %}<col width="{{ icon_col_width }}"/>{% endif %}
+							<col width="100%"/>
+						</colgroup>
+						{% for item in usedList %}
+							<tr>
+								<td></td>
+								<td>
+									{% if item.icon %}
+										<img src="{{ app.url('image', {hash: item.icon, width: 154, height: 96}) }}" width="77" height="48" />
+									{% else %}
+										<div class="content-no-icon"></div>
+									{% endif %}
+								</td>
+								<td class="name_in_list">
+									<div class="nowrap-row">
+										<a href="{{ app.url('admin-content-articles-update', {id: item.id, back: app.url('admin-about') ~ '#close=Y'}) }}" target="_blank">
+											{{- item.name -}}
+										</a>
+										{%- if item.parameters.lead|default("") -%}
+											<small class="text-muted">  ●  {{ item.parameters.lead|striptags }}</small>
+										{%- endif -%}
+									</div>
+									{% for tag in item.tags|default([])|sort if tag|first != '-' %}
+										<span class="label label-default">{{ tag }}</span>
+									{% else %}
+										{{- " " -}}
+									{% endfor %}
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
+					<div class="panel-footer"></div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}

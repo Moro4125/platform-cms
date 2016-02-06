@@ -1,16 +1,16 @@
 <?php
 /**
- * Class FilesUploadForm
+ * Class AjaxUploadForm
  */
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\AbstractType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
- * Class FilesUploadForm
+ * Class AjaxUploadForm
  * @package Form
  */
-class FilesUploadForm extends AbstractType
+class AjaxUploadForm extends AbstractType
 {
 	/**
 	 * @var string
@@ -30,7 +30,7 @@ class FilesUploadForm extends AbstractType
 	 */
 	public function getName()
 	{
-		return 'admin_upload';
+		return 'admin_ajax_upload';
 	}
 
 	/**
@@ -40,13 +40,12 @@ class FilesUploadForm extends AbstractType
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->setMethod('POST');
-		$builder->setAction($this->_action);
 
 		$builder->add('uploads', 'file', [
-			'label' => 'Загрузка изображений на сервер',
+			'label' => ' ',
 			'multiple' => true,
 			'required' => false,
-			'attr' => ['class' => 'file-loading'],
+			'attr' => ['class' => 'file-loading', 'data-upload-url' => $this->_action],
 		]);
 	}
 }

@@ -112,8 +112,6 @@
 							<col width="4"/>
 							{% if icon_col_width %}<col width="{{ icon_col_width }}"/>{% endif %}
 							<col width="100%"/>
-							<col width="128" class="hidden-xs hidden-sm"/>
-							<col width="128" class="hidden-xs"/>
 						</colgroup>
 						{% for item in usedList %}
 							<tr>
@@ -127,7 +125,9 @@
 								</td>
 								<td class="name_in_list">
 									<div class="nowrap-row">
-										{{- item.name -}}
+										<a href="{{ app.url('admin-content-articles-update', {id: item.id, back: app.url('admin-about') ~ '#close=Y'}) }}" target="_blank">
+											{{- item.name -}}
+										</a>
 										{%- if item.parameters.lead|default("") -%}
 											<small class="text-muted">  ●  {{ item.parameters.lead|striptags }}</small>
 										{%- endif -%}

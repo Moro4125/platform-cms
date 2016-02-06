@@ -132,6 +132,11 @@ Application::getInstance(function(Application $app) {
 			$entity->setCompileFlag(true);
 			$entity->setTags(['предпросмотр']);
 
+			if ($file = $response->headers->get(Application::HEADER_CACHE_FILE))
+			{
+				$entity->setFile($file);
+			}
+
 			if ($tags = $response->headers->get(Application::HEADER_CACHE_TAGS))
 			{
 				$entity->addTags(explode(',', $tags));

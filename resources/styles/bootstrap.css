@@ -483,3 +483,24 @@ form > table.table {
     padding: 0;
     background-color: #f0f0f0;
 }
+
+
+.b-file-upload .file-preview-frame{
+    height: auto !important;
+    position: relative;
+}
+
+.b-file-upload .file-preview-other-frame {
+    display: none;
+}
+
+.b-file-upload__link {
+    position: absolute;
+    display: block;
+    top: 50px;
+    z-index: 100;
+}
+
+.b-admin-panel {
+    position: relative !important;
+}

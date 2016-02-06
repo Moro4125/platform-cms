@@ -4,7 +4,7 @@
  */
 namespace Moro\Platform\Model\Implementation\File;
 use \Moro\Platform\Application;
-use \Moro\Platform\Form\FilesUploadForm;
+use \Moro\Platform\Form\ImagesUploadForm;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
@@ -185,6 +185,34 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	}
 
 	/**
+	 * @param array $ids
+	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function selectByIds(array $ids)
+	{
+		if (empty($ids))
+		{
+			return [];
+		}
+
+		$result = [];
+		$ids = array_values($ids);
+		$placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+		$builder = $this->_connection->createQueryBuilder();
+		$sqlQuery = $builder->select('*')->from($this->_table)->where('id IN ('.$placeholders.')')->getSQL();
+		$statement = $this->_connection->prepare($sqlQuery);
+
+		foreach ($statement->execute($ids) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
+		{
+			$result[] = $this->_newEntityFromArray($record);
+		}
+
+		return $result;
+	}
+
+	/**
 	 * @param string $hash
 	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
 	 * @throws \Doctrine\DBAL\DBALException
@@ -198,6 +226,27 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$statement = $this->_connection->prepare($sqlQuery);
 
 		foreach ($statement->execute([ $hash ]) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
+		{
+			$result[] = $this->_newEntityFromArray($record);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param string $kind
+	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function selectByKind($kind)
+	{
+		$result = [];
+
+		$builder = $this->_connection->createQueryBuilder();
+		$sqlQuery = $builder->select('*')->from($this->_table)->where('kind = ?')->getSQL();
+		$statement = $this->_connection->prepare($sqlQuery);
+
+		foreach ($statement->execute([$kind ]) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
 		{
 			$result[] = $this->_newEntityFromArray($record);
 		}
@@ -321,7 +370,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	{
 		$service = $application->getServiceFormFactory();
 		$fromUrl = $application->url('admin-content-images-upload', array_filter(['tags' => $tags, 'back' => $back]));
-		$builder = $service->createBuilder(new FilesUploadForm($fromUrl));
+		$builder = $service->createBuilder(new ImagesUploadForm($fromUrl));
 
 		return $builder->getForm();
 	}

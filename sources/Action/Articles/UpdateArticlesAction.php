@@ -39,7 +39,11 @@ class UpdateArticlesAction extends AbstractUpdateAction
 	protected function _getViewParameters()
 	{
 		$this->_checkFields();
-		return parent::_getViewParameters();
+		$parameters = parent::_getViewParameters();
+		$parameters['upload'] = $this->getService()->createAdminUploadForm($this->getApplication(), $this->getEntity())->createView();
+		$parameters['title'] = $this->getEntity()->getName().' - Редактирование статьи';
+
+		return $parameters;
 	}
 
 	/**

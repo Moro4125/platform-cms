@@ -280,6 +280,7 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_CONTENT);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		$service->setLogger($app->getServiceLogger());
+		$service->setServiceFile($app->getServiceFile());
 		$service->attach($app->getBehaviorTags());
 
 		$service->setLockTime($lockTime);

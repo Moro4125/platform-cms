@@ -1,6 +1,7 @@
 {% extends "@PlatformCMS/admin.html5.twig" %}
 
 {% block layout %}
+	{% block navbar %}
 	<nav class="navbar navbar-inverse">
 		<div class="container">
 			<div class="navbar-header">
@@ -19,6 +20,7 @@
 			</div>
 		</div>
 	</nav>
+	{% endblock navbar %}
 
 	<div class="container">
 		{% set close = true %}

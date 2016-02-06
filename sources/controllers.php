@@ -27,6 +27,8 @@ Application::getInstance(function (Application $app)
 		'admin-content-articles-select'  => ['content/article/select',        'Articles\\IndexAjaxArticlesAction'],
 		'admin-content-articles-create'  => ['content/article/create',        'Articles\\CreateArticlesAction'],
 		'admin-content-articles-update'  => ['content/article/update/{id}',   'Articles\\UpdateArticlesAction'],
+		'admin-content-articles-attach'  => ['content/article/attach/{id}',   'Articles\\FileAttach2ArticlesAction'],
+		'admin-content-articles-detach'  => ['content/article/detach/{id}',   'Articles\\FileDetach2ArticlesAction'],
 		'admin-content-articles-delete'  => ['content/article/delete/{ids}',  'Articles\\DeleteArticlesAction'],
 		'admin-content-articles-set-top' => ['content/article/set-top/{id}',  'Articles\\SetTopArticlesAction'],
 		'admin-content-articles-set-tag' => ['content/article/set-tag/{ids}', 'Articles\\SetTagArticlesAction'],
@@ -50,19 +52,21 @@ Application::getInstance(function (Application $app)
 		'admin-content-images-watermark' => ['content/images/watermark/{ids}','Images\\WatermarkImagesAction'],
 		'admin-content-images-mask'      => ['content/images/mask/{ids}',     'Images\\MaskImagesAction'],
 		'admin-image' => ['/images/{salt}/{hash}_{width}_{height}.{format}',  'Images\\ShowImagesAction'],
+		'download'    => ['/download/{salt}/{hash}.{extension}',              'Tools\\DownloadAction'],
 		'api'                            => ['/platform',                     'Tools\\PrefixAction'],
 		'api-content-articles-rss'       => ['content/articles/rss.xml',      'Articles\\ApiRssArticlesAction'],
 		'api-content-images-rss'         => ['content/images/rss.xml',        'Images\\ApiRssImagesAction'],
 	];
 
 	$assertRules = [
-		'id'     => '\\d+',
-		'ids'    => '\\d+(,\\d+)*',
-		'salt'   => '[0-9a-v]{2}',
-		'hash'   => '[0-9a-v]{32}',
-		'width'  => '\\d+',
-		'height' => '\\d+',
-		'format' => 'jpg|png',
+		'id'        => '\\d+',
+		'ids'       => '\\d+(,\\d+)*',
+		'salt'      => '[0-9a-v]{2}',
+		'hash'      => '[0-9a-v]{32}',
+		'width'     => '\\d+',
+		'height'    => '\\d+',
+		'format'    => 'jpg|png',
+		'extension' => '[0-9a-z]+',
 	];
 
 	$convertRules = [

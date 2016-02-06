@@ -204,37 +204,46 @@ class UploadedCommand extends AbstractCommand
 
 			$count++;
 
+			$parameters = [
+				'size'   => $info->getSize(),
+				'tags' => ['Флаг: восстановленные'],
+			];
+
 			try
 			{
 				$image   = $this->_application->getServiceImagine()->open($info->getRealPath());
 				$width   = $image->getSize()->getWidth();
 				$height  = $image->getSize()->getHeight();
 				$minSize = min($width, $height);
+
+				$parameters = array_merge($parameters, [
+					'width'  => $width,
+					'height' => $height,
+					'crop_x' => floor(($width - $minSize) / 2),
+					'crop_y' => 0,
+					'crop_w' => $minSize,
+					'crop_h' => $minSize,
+				]);
 			}
 			catch (Exception $exception)
 			{
 				$image = null;
-				$width = 0;
-				$height = 0;
-				$minSize = 0;
 			}
 
-			$entity = $service->createEntity($hash, $image ? '1x1' : 'unknown', true);
-			$entity->setName($hash);
-			$entity->setParameters([
-				'size'   => $info->getSize(),
-				'width'  => $width,
-				'height' => $height,
-				'crop_x' => floor(($width - $minSize) / 2),
-				'crop_y' => 0,
-				'crop_w' => $minSize,
-				'crop_h' => $minSize,
-				'tags' => ['Флаг: восстановленные'],
-			]);
+			if ($image)
+			{
+				$entity = $service->createEntity($hash, '1x1', true);
+				$entity->setName($hash);
+				$entity->setParameters($parameters);
 
-			$service->commit($entity);
-
-			$verbose && $output->writeln('  '.$hash);
+				$service->commit($entity);
+				$verbose && $output->writeln('  '.$hash);
+			}
+			else
+			{
+				$count--;
+				$verbose && $output->writeln('  skip '.$hash);
+			}
 		}
 
 		$count && $output->writeln(($verbose ? '' : 'Restore ').$count.' entity(ies).');
