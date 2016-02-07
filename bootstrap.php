@@ -4,6 +4,7 @@
  */
 use \Moro\Platform\Application;
 use \Moro\Platform\Command\UploadedCommand;
+use \Moro\Platform\Command\ImagesCommand;
 
 if (file_exists(__DIR__.'/vendor/autoload.php'))
 {
@@ -20,6 +21,7 @@ if (php_sapi_name() === 'cli')
 	return Application::getInstance(function(Application $application) {
 		$console = $application->offsetGet('console');
 		$console->add(new UploadedCommand($application));
+		$console->add(new ImagesCommand($application));
 
 		return $console;
 	});

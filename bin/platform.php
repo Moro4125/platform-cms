@@ -8,7 +8,7 @@ use \Moro\Platform\Command\AbstractCommand;
 use \Moro\Platform\Application as PlatformApplication;
 
 global $argv;
-define('CLI_NAMESPACE_MIGRATIONS', true);
+define('CLI_NAMESPACE_PLATFORM', true);
 
 for ($projectPath = $currentPath = dirname(__DIR__); strlen($currentPath) > 3; $currentPath = dirname($currentPath))
 {

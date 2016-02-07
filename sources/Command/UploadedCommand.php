@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Images
+ * Class UploadedCommand
  */
 namespace Moro\Platform\Command;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +22,7 @@ class UploadedCommand extends AbstractCommand
 	 */
 	protected function configure()
 	{
-		$this->setName(defined('CLI_NAMESPACE_MIGRATIONS') ? 'uploaded' : 'platform:uploaded')
+		$this->setName(defined('CLI_NAMESPACE_PLATFORM') ? 'uploaded' : 'platform:uploaded')
 			->setDescription('Work with uploaded files.')
 			->addOption('status', null, InputOption::VALUE_OPTIONAL, 'Show status of uploaded files.', false)
 			->addOption('restore', null, InputOption::VALUE_OPTIONAL, 'Restore erased uploaded files.', false)
