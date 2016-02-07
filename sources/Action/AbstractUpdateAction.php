@@ -88,7 +88,6 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 		$entity instanceof AbstractDecorator && $entity = $entity->decorate(false);
 		$this->_setEntity($entity);
-		$lockedBy = false;
 
 		if ($request->query->has('lock'))
 		{

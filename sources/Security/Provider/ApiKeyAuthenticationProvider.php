@@ -20,7 +20,7 @@ class ApiKeyAuthenticationProvider implements AuthenticationProviderInterface
 	/**
 	 * Encoder used to encode the API key
 	 *
-	 * We're using a saltless password encoder.
+	 * We're using a salt-less password encoder.
 	 * There is no way of looking up the salt since we don't know who the user is
 	 * The encoder can of course implement a static, common salt for all passwords
 	 *

@@ -3,9 +3,9 @@
  * Class RequestProcessor.
  */
 namespace Moro\Platform\Provider;
-use Silex\Application;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use \Silex\Application;
+use \Symfony\Component\HttpFoundation\RequestStack;
+use \Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
  * RequestProcessor adds extra information about the request.

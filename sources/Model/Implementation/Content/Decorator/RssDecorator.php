@@ -20,7 +20,8 @@ class RssDecorator extends AbstractDecorator
 		if ($icon = $this->getIcon())
 		{
 			$iconUrl = $this->_application->url('image', ['hash' => $icon, 'width' => 154, 'height' => 96]);
-			$html.= '<br/><img src="'.htmlspecialchars($iconUrl).'">';
+			$html.= '<br/><';
+			$html.= 'img'.' src="'.htmlspecialchars($iconUrl).'">';
 		}
 
 		$parameters = $this->getParameters();

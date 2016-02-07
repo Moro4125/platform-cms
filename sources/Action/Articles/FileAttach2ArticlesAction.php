@@ -81,7 +81,7 @@ class FileAttach2ArticlesAction extends AbstractContentAction
 		foreach ($list as $file)
 		{
 			$url = htmlspecialchars($app->url('download', ['file' => $file]));
-			$result["initialPreview"][] = "<a href='$url' title='Download file' target='_blank' class='b-file-upload__link glyphicon glyphicon-download'></a>";
+			$result["initialPreview"][] = "<"."a href='$url' title='Download file' target='_blank' class='b-file-upload__link glyphicon glyphicon-download'></a>";
 			$result["initialPreviewConfig"][] = [
 				"caption" => $file->getName(),
 				"url" => $app->url($this->routeDetach, ['id' => $id]),

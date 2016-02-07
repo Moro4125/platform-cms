@@ -597,6 +597,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$uri = substr($url, (strpos($url, 'index.php') ?: -9) + 9);
 		$uri = substr($uri, strpos($uri, '/'));
 		$dir = dirname($application->getOption('path.root').$uri);
+		/** @noinspection HtmlUnknownTag */
 		$pattern = '{^(?P<hash>'.$hash.')_(?P<width>\\d+)_(?P<height>\\d+)\\.(?P<format>jpg|png|gif)$}';
 
 		/** @var \SplFileInfo $file */

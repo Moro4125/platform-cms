@@ -47,7 +47,6 @@ class ApiKeyServiceProvider implements ServiceProviderInterface
 
 	/**
 	 * @param \Silex\Application $app
-	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
 	public function boot(Application $app)
 	{

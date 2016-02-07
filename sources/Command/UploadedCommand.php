@@ -6,9 +6,6 @@ namespace Moro\Platform\Command;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
-use \Symfony\Component\Console\Helper\QuestionHelper;
-use \Symfony\Component\Console\Question\Question;
-use \Symfony\Component\Console\Question\ChoiceQuestion;
 use \RecursiveIteratorIterator;
 use \RecursiveDirectoryIterator;
 use \PDO;
@@ -67,6 +64,7 @@ class UploadedCommand extends AbstractCommand
 
 		if (!$flag)
 		{
+			/** @noinspection HtmlUnknownTag */
 			$output->writeln('<error>Please, enter on of the actions: status, restore, clean.</error>');
 		}
 	}
@@ -198,6 +196,7 @@ class UploadedCommand extends AbstractCommand
 			if ($info->getSize() > $maxSize)
 			{
 				$errors++;
+				/** @noinspection HtmlUnknownTag */
 				$verbose && $output->writeln('  <error>'.$hash.' - file is too big</error>');
 				continue;
 			}
@@ -247,6 +246,7 @@ class UploadedCommand extends AbstractCommand
 		}
 
 		$count && $output->writeln(($verbose ? '' : 'Restore ').$count.' entity(ies).');
+		/** @noinspection HtmlUnknownTag */
 		$errors && $output->writeln('<error>Restore '.$errors.' error(s).</error>');
 	}
 
@@ -272,11 +272,13 @@ class UploadedCommand extends AbstractCommand
 			else
 			{
 				$errors++;
+				/** @noinspection HtmlUnknownTag */
 				$verbose && $output->writeln('  <error>'.$hash.'</error>');
 			}
 		}
 
 		$count && $output->writeln(($verbose ? '' : 'Delete ').$count.' entity(ies).');
+		/** @noinspection HtmlUnknownTag */
 		$errors && $output->writeln('<error>Detect '.$errors.' error(s).</error>');
 	}
 }

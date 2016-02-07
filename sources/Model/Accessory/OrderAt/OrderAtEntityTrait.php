@@ -33,6 +33,7 @@ trait OrderAtEntityTrait
 
 	/**
 	 * @param int|string $value
+	 * @return $this
 	 */
 	public function setOrderAt($value)
 	{

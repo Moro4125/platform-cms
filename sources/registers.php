@@ -201,6 +201,7 @@ Application::getInstance(function (Application $app)
 	]);
 
 	// Http Fragment Service Provider.
+	/** @noinspection SpellCheckingInspection */
 	$app->register(new HttpFragmentServiceProvider(), [
 		'fragment.renderer.ssi' => $app->share(function ($app) {
 			$renderer = new SsiFragmentRenderer($app['http_cache.ssi'], $app['fragment.renderer.inline']);

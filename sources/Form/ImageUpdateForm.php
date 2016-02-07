@@ -36,6 +36,8 @@ class ImageUpdateForm extends AbstractContent
 	/**
 	 * @param array $kinds
 	 * @param array $tags
+	 * @param bool $useWatermark
+	 * @param bool $useMask
 	 */
 	public function __construct(array $kinds, array $tags, $useWatermark, $useMask)
 	{

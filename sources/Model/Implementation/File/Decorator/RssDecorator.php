@@ -20,7 +20,8 @@ class RssDecorator extends AbstractDecorator
 		if ($icon = $this->getHash())
 		{
 			$iconUrl = $this->_application->url('image', ['hash' => $icon, 'width' => 96, 'height' => 96]);
-			$html.= '<br/><img src="'.htmlspecialchars($iconUrl).'">';
+			$html.= '<br/><';
+			$html.= 'img'.' src'.'="'.htmlspecialchars($iconUrl).'">';
 		}
 
 		return $html;

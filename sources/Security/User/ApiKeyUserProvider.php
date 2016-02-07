@@ -3,8 +3,7 @@
  * Class UserProvider
  */
 namespace Moro\Platform\Security\User;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
+use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use \Symfony\Component\Security\Core\User\UserInterface;
 use \Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use \Symfony\Component\Security\Core\Exception\UnsupportedUserException;
