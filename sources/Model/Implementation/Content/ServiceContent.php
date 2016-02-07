@@ -231,7 +231,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			'gallery' => isset($args['gallery']) ? $args['gallery'] : [],
 			'gallery_text' => isset($args['gallery_text']) ? $args['gallery_text'] : '',
 			'articles' => isset($args['articles']) ? $args['articles'] : [],
-			'cost' => isset($args['cost']) ? $args['cost'] : '',
 		];
 
 		$serviceFile = $application->getServiceFile();
@@ -310,7 +309,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$parameters['gallery']      = $data['gallery'];
 			$parameters['gallery_text'] = $data['gallery_text'];
 			$parameters['articles']     = $data['articles'];
-			$parameters['cost']         = $data['cost'];
 
 			$entity->setName($data['name']);
 			$entity->setCode($data['code']);
