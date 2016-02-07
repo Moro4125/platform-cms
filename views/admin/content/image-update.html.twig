@@ -97,57 +97,8 @@
 		</div>
 	</div>
 
-	<hr/>
-
-	{% if usedList|length %}
-		<div class="row">
-			<div class="col-xs-12">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						{{- "Статьи, использующие данное изображение" -}}
-					</div>
-					{% set icon_col_width = 80 %}
-					<table class="table admin-list with-highlight">
-						<colgroup>
-							<col width="4"/>
-							{% if icon_col_width %}<col width="{{ icon_col_width }}"/>{% endif %}
-							<col width="100%"/>
-						</colgroup>
-						{% for item in usedList %}
-							<tr>
-								<td></td>
-								<td>
-									{% if item.icon %}
-										<img src="{{ app.url('image', {hash: item.icon, width: 154, height: 96}) }}" width="77" height="48" />
-									{% else %}
-										<div class="content-no-icon"></div>
-									{% endif %}
-								</td>
-								<td class="name_in_list">
-									<div class="nowrap-row">
-										<a href="{{ app.url('admin-content-articles-update', {id: item.id, back: app.url('admin-about') ~ '#close=Y'}) }}" target="_blank">
-											{{- item.name -}}
-										</a>
-										{%- if item.parameters.lead|default("") -%}
-											<small class="text-muted">  ●  {{ item.parameters.lead|striptags }}</small>
-										{%- endif -%}
-									</div>
-									{% for tag in item.tags|default([])|sort if tag|first != '-' %}
-										<span class="label label-default">{{ tag }}</span>
-									{% else %}
-										{{- " " -}}
-									{% endfor %}
-								</td>
-							</tr>
-						{% endfor %}
-					</table>
-					<div class="panel-footer"></div>
-				</div>
-			</div>
-		</div>
-
-		<hr/>
-	{% endif %}
+	{%- set usedListTitle = "Статьи, использующие данное изображение" -%}
+	{{- block("usedList") -}}
 
 	{{ form_end(form) }}
 {% endblock %}
