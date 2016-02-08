@@ -31,7 +31,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
-	const MD_IMG_MASK = '{(!\\[[^\\]]*\\]\\[\\s*)([^"\\]]*)}';
+	const MD_LINK_MASK = '{\\[([^\\]^]+)\\]}';
 
 	/**
 	 * @var string
@@ -252,13 +252,16 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$application->getServiceFlash()->alert('В материале были скрыты ссылки на другие удаленные материалы.');
 		}
 
-		$data['gallery_text'] = preg_replace_callback(self::MD_IMG_MASK, function($match) use ($data, $serviceFile) {
-			$match[3] = substr($match[2], strlen(rtrim($match[2])));
-			$match[2] = rtrim($match[2]);
+		$id = $entity->getId();
 
-			if (in_array($match[2], $data['gallery']) && $image = $serviceFile->getByHashAndKind($match[2], '1x1'))
+		$data['gallery_text'] = preg_replace_callback(self::MD_LINK_MASK, function($match) use ($id, $data, $serviceFile) {
+			if (in_array($match[1], $data['gallery']) && $image = $serviceFile->getByHashAndKind($match[1], '1x1', true))
 			{
-				return $match[1].$image->getName().$match[3];
+				return '['.$image->getName().']';
+			}
+			elseif ($attachment = $serviceFile->getByHashAndKind($match[1], "a$id", true))
+			{
+				return '['.$attachment->getName().']';
 			}
 
 			return $match[0];
@@ -284,18 +287,19 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 		try
 		{
-			$data['gallery_text'] = preg_replace_callback(self::MD_IMG_MASK, function($match) use ($data, $serviceFile) {
-				$match[3] = substr($match[2], strlen(rtrim($match[2])));
-				$match[2] = rtrim($match[2]);
+			$id = $entity->getId();
 
-				if ($list = $serviceFile->selectEntities(null, null, null, 'name', $match[2]))
+			$data['gallery_text'] = preg_replace_callback(self::MD_LINK_MASK, function($match) use ($id, $data, $serviceFile) {
+				if ($list = $serviceFile->selectEntities(null, null, null, 'name', $match[1]))
 				{
-					/** @var \Moro\Platform\Model\Implementation\File\EntityFile $image */
-					foreach ($list as $image)
+					/** @var \Moro\Platform\Model\Implementation\File\EntityFile $file */
+					foreach ($list as $file)
 					{
-						if (in_array($image->getHash(), $data['gallery']))
+						$kind = $file->getKind();
+
+						if ($kind == '1x1' && in_array($file->getHash(), $data['gallery']) || $kind == "a$id")
 						{
-							return $match[1].$image->getHash().$match[3];
+							return '['.$file->getHash().']';
 						}
 					}
 				}
@@ -354,9 +358,9 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 		try
 		{
-			foreach ($form->getData() as $name => $value)
+			foreach ($form->getData() as $key => $value)
 			{
-				if ($name == 'uploads')
+				if ($key == 'uploads')
 				{
 					/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
 					foreach ((array)$value as $object)
@@ -365,14 +369,18 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 						$file = $service->getPathForHash($hash);
 						$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
 
+						$name = $object->getClientOriginalName();
+						$name = strtr($name, ['[' => ' ', ']' => ' ']);
+						$name = trim(preg_replace('{\\s+}', ' ', $name));
+
 						if ($entity = $service->getByHashAndKind($hash, "a$id", true, false))
 						{
-							$entity->setName($object->getClientOriginalName());
+							$entity->setName($name);
 						}
 						else
 						{
 							$entity = $service->createEntity($hash, "a$id");
-							$entity->setName($object->getClientOriginalName());
+							$entity->setName($name);
 							$entity->setParameters([
 								'size' => $file->getSize(),
 							]);

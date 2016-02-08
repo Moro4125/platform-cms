@@ -21,6 +21,7 @@ class MarkdownExtension extends CMarkdownExtension
 	{
 		/** @noinspection PhpParamsInspection */
 		$html = CMarkdownExtension::parseMarkdown($content);
+		$html = preg_replace('{(/download/[0-9a-v]{2}/[0-9a-v]{32}\\.[a-z0-9]+"\\s+)title="([^"]+)"}', '$1download="$2"', $html);
 		$html = preg_replace('{<a\\s+href="([^#/])}', '<a rel="nofollow" target="_blank" href="$1', $html);
 
 		return $html;
