@@ -151,7 +151,7 @@ Application::getInstance(function(Application $app) {
 	$app->after(function(Request $request, Response $response) use ($app, &$lastRouteId) {
 		$route = $request->get('_route');
 		$contentType = $response->headers->get('Content-Type');
-		$back = rtrim(preg_replace('{\\?|$}', '?compiled=Y&', $request->getRequestUri(), 1), '&');
+		$back = rtrim(preg_replace('{\\?(compiled=Y)?|$}', '?compiled=Y&', $request->getRequestUri(), 1), '&');
 
 		if (strncmp($route, 'admin-', 6) !== 0 && strncmp($contentType, 'text/html', 9) === 0)
 		{
