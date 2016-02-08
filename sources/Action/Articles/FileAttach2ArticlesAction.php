@@ -46,32 +46,39 @@ class FileAttach2ArticlesAction extends AbstractContentAction
 			throw new NotFoundHttpException(sprintf('Article with ID %1$s is not exists.', $id));
 		}
 
-		if ($request->getMethod() == 'POST')
+		while ($request->getMethod() == 'POST')
 		{
 			$form = $service->createAdminUploadForm($app);
 
-			if ($form->handleRequest($request)->isValid())
-			{
-				if ($app->isGranted('ROLE_EDITOR'))
-				{
-					$idList = $service->applyAdminUploadForm($app, $form, $id);
-
-					if (!is_array($idList))
-					{
-						$result['error'] = (string)$idList;
-					}
-
-					$app->getServiceRoutes()->setCompileFlagForTag(['art-'.$id]);
-				}
-				else
-				{
-					$result['error'] = 'У вас недостаточно прав для загрузки файлов на сервер.';
-				}
-			}
-			else
+			if (!$form->handleRequest($request)->isValid())
 			{
 				$result['error'] = 'Форма не прошла валидацию. Обратитесь к администратору с описанием ваших действий.';
+				break;
 			}
+
+			if (!$app->isGranted('ROLE_EDITOR'))
+			{
+				$result['error'] = 'У вас недостаточно прав для загрузки файлов на сервер.';
+				break;
+			}
+
+			if ($service->isLocked($entity))
+			{
+				$result['error'] = 'Нельзя добавлять файлы к заблокированному другим пользователем материалу.';
+				break;
+			}
+
+			$idList = $service->applyAdminUploadForm($app, $form, $id);
+
+			if (!is_array($idList))
+			{
+				$result['error'] = (string)$idList;
+				break;
+			}
+
+			$app->getServiceRoutes()->setCompileFlagForTag(['art-'.$id]);
+
+			break;
 		}
 
 		$fileService = $app->getServiceFile();

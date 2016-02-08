@@ -97,12 +97,6 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 						initialPreview: data.initialPreview,
 						initialPreviewConfig: data.initialPreviewConfig
 					});
-
-					self.on("fileuploaded", function(event, data, previewId, index) {
-						var form = data.form, files = data.files, extra = data.extra,
-								response = data.response, reader = data.reader;
-						console.log('File uploaded triggered');
-					});
 				});
 			});
 		}
@@ -292,6 +286,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 	jQuery("*[data-lock]:first").each(function() {
 		var check = function() {
 			jQuery.ajax({
+				method: "POST",
 				url: window.location.href.split('?', 1)[0] + "?lock=Y"
 			}).done(function() {
 				handler = setTimeout(check, 15000);
@@ -313,6 +308,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				handler = null;
 				jQuery.ajax({
 					async: false,
+					method: "POST",
 					url: window.location.href.split('?', 1)[0] + "?lock=N"
 				})
 			});
@@ -342,7 +338,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		window.location.hash = window.location.hash.replace(/selected=(\d+(?:,\d+)*)/, "").replace(/&&/, "&").replace(/^\#&|&$/, "");
 	}
 
-	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])close=Y/))) {
+	if (window.location.hash && (window.location.hash.match(/(?:[#&])close=Y/))) {
 		window.close();
 	}
 

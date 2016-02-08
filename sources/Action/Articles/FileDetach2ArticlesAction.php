@@ -46,24 +46,27 @@ class FileDetach2ArticlesAction extends AbstractContentAction
 			throw new NotFoundHttpException(sprintf('Article with ID %1$s is not exists.', $id));
 		}
 
-		if ($request->getMethod() == 'POST' && $app->isGranted('ROLE_EDITOR'))
-		{
-			$fileId = (int)$request->get('key');
-
-			if ($file = $serviceFile->getEntityById($fileId, true))
-			{
-				if ($file->getKind() != "a$id")
-				{
-					throw new NotFoundHttpException(sprintf('Wrong attachment for article with ID %1$s.', $id));
-				}
-
-				$serviceFile->deleteEntityById($fileId);
-				$app->getServiceRoutes()->setCompileFlagForTag(['art-'.$id, 'file-'.$file->getSmallHash()]);
-			}
-		}
-		else
+		if ($request->getMethod() != 'POST' || !$app->isGranted('ROLE_EDITOR'))
 		{
 			throw new AccessDeniedHttpException();
+		}
+
+		$fileId = (int)$request->get('key');
+
+		if ($file = $serviceFile->getEntityById($fileId, true))
+		{
+			if ($file->getKind() != "a$id")
+			{
+				throw new NotFoundHttpException(sprintf('Wrong attachment for article with ID %1$s.', $id));
+			}
+
+			if ($service->isLocked($entity))
+			{
+				throw new AccessDeniedHttpException();
+			}
+
+			$serviceFile->deleteEntityById($fileId);
+			$app->getServiceRoutes()->setCompileFlagForTag(['art-'.$id, 'file-'.$file->getSmallHash()]);
 		}
 
 		return $app->json($result);
