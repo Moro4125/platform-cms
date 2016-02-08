@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action\Tools;
 use \Symfony\Component\Security\Core\User\User;
+use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application;
 
 /**
@@ -22,6 +23,6 @@ class SecurityAction
 	{
 		/** @var \Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface $encoder */
 		$encoder = $application['security.encoder_factory']->getEncoder(new User($login, $password));
-		return $application->json($encoder->encodePassword($password, null));
+		return new Response($encoder->encodePassword($password, null));
 	}
 }
