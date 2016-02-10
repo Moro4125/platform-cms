@@ -68,5 +68,17 @@
 				</div>
 			</div>
 		</div>
+		{% if app.granted("ROLE_ADMIN") %}
+			<div class="col-xs-12">
+				<h3>Утилиты</h3>
+				<ul>
+					<li>
+						<a href="{{ app.url('admin-password', {login: 'login', password: 'password'}) }}">
+							Генерация хэша пароля пользователя
+						</a>
+					</li>
+				</ul>
+			</div>
+		{% endif %}
 	</div>
 {% endblock %}
