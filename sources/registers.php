@@ -169,7 +169,7 @@ Application::getInstance(function (Application $app)
 	$app->update('twig', function(\Twig_Environment $twig, Application $application) {
 		$twig->setCache($application->getOption('path.temp').DIRECTORY_SEPARATOR.'twig');
 		$twig->addExtension(new MarkdownExtension(new MichelfMarkdownEngine()));
-		$twig->addExtension($extension = new ApplicationExtension());
+		$twig->addExtension($extension = new ApplicationExtension($application));
 
 		$extension->setTexFilePath($application->getOption('content.hyphenate'));
 

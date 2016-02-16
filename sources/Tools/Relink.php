@@ -50,6 +50,11 @@ class Relink
 	protected $_utf8 = true;
 
 	/**
+	 * @var bool  Use block marker
+	 */
+	protected $_useBlockMarker = true;
+
+	/**
 	 * @var array
 	 */
 	protected $_tagNameEnd = [':' => 1, ' ' => 1, "\r" => 1, "\n" => 1, "\t" => 1, '>' => 1];
@@ -168,7 +173,7 @@ class Relink
 			$blockMarker  && $prefix .= '(?><!\-\-/'.$blockMarker.'\-\->(?:[^<]*<)+?!\-\-'.$blockMarker.'\-\->)|';
 			$noLinkMarker && $prefix .= '(?><!\-\-'.$noLinkMarker.'\-\->(?:[^<]*<)+?!\-\-/'.$noLinkMarker.'\-\->)|';
 			$prefix.= '(?><!\-(?:[-][^-]*)+?\-\->)|(?></?[A-Za-z]+[^>]*>)|';
-			$suffix = '(?=[\\x00-\\x2C\\x2E\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])}'.($this->_utf8 ? 'u' : '');
+			$suffix = '(?=[“»\\x00-\\x2C\\x2E\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])}'.($this->_utf8 ? 'u' : '');
 
 			for ($i = $u = 0; $i < $count; $i += $limit, $u++)
 			{
@@ -202,6 +207,21 @@ class Relink
 	{
 		$this->_linksInRegex = (int)$count;
 		$this->_regex = null;
+		return $this;
+	}
+
+	/**
+	 * @param bool $flag
+	 * @return $this
+	 */
+	public function setUseBlockMarker($flag)
+	{
+		if ($this->_useBlockMarker != (bool)$flag)
+		{
+			$this->_useBlockMarker = (bool)$flag;
+			$this->_regex = null;
+		}
+
 		return $this;
 	}
 
@@ -277,9 +297,12 @@ class Relink
 	{
 		$links = $this->_getLinks();
 		$result = [];
-		$this->_blockMarker && $html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
-
 		$spaceless = '{\\s+}'.($this->_utf8 ? 'u' : '');
+
+		if ($this->_blockMarker && $this->_useBlockMarker)
+		{
+			$html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
+		}
 
 		for ($i = 0; $regex = $this->_getRegex($i); $i++)
 		{
@@ -333,7 +356,11 @@ class Relink
 	{
 		$links = $this->_getLinks();
 		$parts = [];
-		$html = $this->_blockMarker ? '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->' : $html;
+
+		if ($this->_blockMarker && $this->_useBlockMarker)
+		{
+			$html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
+		}
 
 		$found = [];
 		$total = $this->_totalLinksLimit ?: -1;

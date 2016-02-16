@@ -43,10 +43,12 @@ Application::getInstance(function(Application $app) {
 	$app->behind(function(Request $request, Response $response) use ($app) {
 		$route = $request->get('_route');
 		$contentType = $response->headers->get('Content-Type');
+		$flag = $app->getOption('content.relink') == 'global';
 
-		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'text/html', 9) === 0)
+		if ($flag && !preg_match('{^(GET_|admin-|_)}', $route) && strncmp($contentType, 'text/html', 9) === 0)
 		{
 			$service = $app->getServiceRelinkTool();
+			$service->setUseBlockMarker(true);
 			$content = $response->getContent();
 
 			if ($found = $service->search($content))

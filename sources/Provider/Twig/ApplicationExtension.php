@@ -3,6 +3,7 @@
  * Class ApplicationExtension
  */
 namespace Moro\Platform\Provider\Twig;
+use \Moro\Platform\Application;
 use \Twig_Extension;
 use \Twig_SimpleFilter;
 use \Twig_SimpleFunction;
@@ -34,6 +35,19 @@ class ApplicationExtension extends Twig_Extension
 	]];
 
 	/**
+	 * @var Application
+	 */
+	protected $_application;
+
+	/**
+	 * @param Application $application
+	 */
+	public function __construct(Application $application)
+	{
+		$this->_application = $application;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getName()
@@ -57,9 +71,10 @@ class ApplicationExtension extends Twig_Extension
 	public function getFilters()
 	{
 		return [
-			new Twig_SimpleFilter('canonical', [$this, 'filterCanonical']),
-			new Twig_SimpleFilter('hard_dash', [$this, 'filterHardDash'], ['is_safe' => ['html']]),
-			new Twig_SimpleFilter('hyphenate', [$this, 'filterHyphenate']),
+			new Twig_SimpleFilter('canonical',  [$this, 'filterCanonical']),
+			new Twig_SimpleFilter('hard_dash',  [$this, 'filterHardDash'],   ['is_safe' => ['html']]),
+			new Twig_SimpleFilter('relink',     [$this, 'filterRelink'],     ['preserves_safety' => ['html']]),
+			new Twig_SimpleFilter('hyphenate',  [$this, 'filterHyphenate'],  ['preserves_safety' => ['html']]),
 		];
 	}
 
@@ -109,21 +124,52 @@ class ApplicationExtension extends Twig_Extension
 	public function filterHardDash($text)
 	{
 		return implode(' ', array_map(
-				function($chunk)
+			function($chunk)
+			{
+				if (strpos($chunk, '-'))
 				{
-					if (strpos($chunk, '-'))
-					{
-						$chunk = '<nobr>'.htmlspecialchars($chunk).'</nobr>';
-					}
-					else
-					{
-						$chunk = htmlspecialchars($chunk);
-					}
+					$chunk = '<nobr>'.htmlspecialchars($chunk).'</nobr>';
+				}
+				else
+				{
+					$chunk = htmlspecialchars($chunk);
+				}
 
-					return $chunk;
-				},
-				explode(' ', $text))
+				return $chunk;
+			},
+			explode(' ', $text))
 		);
+	}
+
+	/**
+	 * @param string $content
+	 * @return string
+	 */
+	public function filterRelink($content)
+	{
+		if (!$this->_application->getOption('content.relink'))
+		{
+			return $content;
+		}
+
+		/** @var \Symfony\Component\HttpFoundation\Response $response */
+		$serviceRelinkTool = $this->_application->getServiceRelinkTool()->setUseBlockMarker(false);
+		$serviceRelink = $this->_application->getServiceRelink();
+		$response = $this->_application['response'];
+
+		if ($found = $serviceRelinkTool->search($content))
+		{
+			$tags = (array)$response->headers->get(Application::HEADER_CACHE_TAGS);
+
+			foreach (array_unique(array_intersect_key($serviceRelink->getIdMap(), $found)) as $id)
+			{
+				$tags[] = 'link-'.$id;
+			}
+
+			$response->headers->set(Application::HEADER_CACHE_TAGS, implode(',', $tags));
+		}
+
+		return $serviceRelinkTool->apply($content);
 	}
 
 	/**

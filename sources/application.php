@@ -8,6 +8,7 @@ use \Symfony\Component\Debug\ErrorHandler;
 use \Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
+use \Symfony\Component\HttpFoundation\StreamedResponse;
 use \Silex\Application as CApplication;
 use \RuntimeException;
 use \Exception;
@@ -24,10 +25,9 @@ use \Exception;
 class Application extends CApplication
 {
 	use \Silex\Application\MonologTrait;
-	use \Silex\Application\TwigTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.7.0";
+	const PLATFORM_VERSION = "1.9.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -493,6 +493,59 @@ class Application extends CApplication
 		$callback && $this->offsetSet($id, $this->share($this->extend($id, $callback)));
 
 		return $this;
+	}
+
+	/**
+	 * Renders a view and returns a Response.
+	 *
+	 * To stream a view, pass an instance of StreamedResponse as a third argument.
+	 *
+	 * @param string   $view       The view name
+	 * @param array    $parameters An array of parameters to pass to the view
+	 * @param Response $response   A Response instance
+	 *
+	 * @return Response A Response instance
+	 */
+	public function render($view, array $parameters = array(), Response $response = null)
+	{
+		/** @var \Twig_Environment $twig */
+		$twig = $this['twig'];
+
+		if ($response instanceof StreamedResponse) {
+			$response->setCallback(function () use ($twig, $view, $parameters) {
+				$twig->display($view, $parameters);
+			});
+		} else {
+			if (null === $response) {
+				$response = new Response();
+			}
+
+			try
+			{
+				$original = isset($this['response']) ? $this['response'] : null;
+				$this['response'] = $response;
+				$response->setContent($twig->render($view, $parameters));
+			}
+			finally
+			{
+				$this['response'] = $original;
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Renders a view.
+	 *
+	 * @param string $view       The view name
+	 * @param array  $parameters An array of parameters to pass to the view
+	 *
+	 * @return string The rendered view
+	 */
+	public function renderView($view, array $parameters = array())
+	{
+		return $this['twig']->render($view, $parameters);
 	}
 
 	/**
