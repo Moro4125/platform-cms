@@ -137,9 +137,17 @@
 			<a href="{{- '{{ edit }}' -}}" target="_blank" title="{{ '{{ hint }}' }}">
 				{{- '{{ name }}' -}}
 			</a>
+			{{- '{{#lead}}' -}}
+			{{- ' ' -}}
+			<small>
+				{{- ' ● ' -}}
+				{{- '{{ lead }}' -}}
+			</small>
+			{{- '{{/lead}}' -}}
 			{{- '{{/isList}}' -}}
 			{{- '{{^isList}}' -}}
 			<br/>
+			<span class="label label-info">{{ '{{ code }}' }}</span>
 			{{- '{{#tags}}' -}}
 			<span class="label label-default">{{ '{{ . }}' }}</span>
 			{{- '{{/tags}}' -}}

@@ -74,7 +74,7 @@ class ViewDecorator extends AbstractDecorator
 					{
 						case '-': $meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL]; break;
 						case '|': $meta = $this->_imageViews[self::IMG_VIEW_VERTICAL]; break;
-						case '*': $meta = $this->_imageViews[self::IMG_VIEW_SQUARE]; break;
+						case '+': $meta = $this->_imageViews[self::IMG_VIEW_SQUARE]; break;
 					}
 				}
 
@@ -84,7 +84,7 @@ class ViewDecorator extends AbstractDecorator
 				$href = $this->_application->url('image', array_merge($meta, ['hash' => $hash]));
 				$temp = $file->getParameters();
 				$lead = strtr(isset($temp['lead']) ? $temp['lead'] : '', '"', "'");
-				$adds.= "\n[".$hash."]: ".$href.' "'.$lead.'"';
+				$adds.= "\n[".$hash."]: ".$href."\t\"".$lead."\"\t";
 
 				return $match[1].'['.$hash.']';
 			}
@@ -94,7 +94,7 @@ class ViewDecorator extends AbstractDecorator
 				$file = $args['attachment'][$match[3]];
 				$name = $file->getName();
 				$href = $this->_application->url('download', ['file' => $file]);
-				$adds.= "\n[".$name."]: ".$href.($flag ? ' "'.$name.'"' : '');
+				$adds.= "\n[".$name."]: ".$href.($flag ? "\t\"".$name."\"\t" : '');
 
 				return $match[1].'['.$name.']';
 			}

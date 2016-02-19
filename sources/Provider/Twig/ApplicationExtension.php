@@ -334,6 +334,11 @@ class ApplicationExtension extends Twig_Extension
 		$this->_hypPatterns || $this->hyphenateInit($this->_texFilePath);
 		is_array($word) && $word = reset($word);
 
+		if (!strlen($word) || $word[0] == '<')
+		{
+			return $word;
+		}
+
 		$len = preg_match_all('~.~u', ".$word.", $match);
 		$max = array_fill(0, $len + 1, 0);
 		$chars = $match[0];
@@ -377,7 +382,7 @@ class ApplicationExtension extends Twig_Extension
 	public function filterHyphenate($text)
 	{
 		$pattern = "/(?<![!{$this->_hypAlphabetU}{$this->_hypAlphabetL}])"
-			."(?>[{$this->_hypAlphabetU}{$this->_hypAlphabetL}][$this->_hypAlphabetL]{3,})/u";
+			."(?><[A-Za-z].*?>|[{$this->_hypAlphabetU}{$this->_hypAlphabetL}][$this->_hypAlphabetL]{3,})/u";
 
 		return preg_replace_callback($pattern, array($this, 'hyphenateWord'), $text);
 	}

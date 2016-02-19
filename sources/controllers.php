@@ -19,6 +19,7 @@ Application::getInstance(function (Application $app)
 		'compile-site-map'               => ['/sitemap.xml',                  'Routes\\SiteMapAction'],
 		'admin-prefix'                   => ['/',                             'Tools\\PrefixAction'],
 		'admin-about'                    => ['/panel',                        'Tools\\AboutAction'],
+		'admin-markdown-help'            => ['markdown-help',                 'Tools\\MarkdownHelpAction'],
 		'admin-password'                 => ['security/{login}/{password}',   'Tools\\SecurityAction'],
 		'admin-compile-list'             => ['pages',                         'Routes\\IndexRoutesAction'],
 		'admin-compile'                  => ['pages/compile',                 'Routes\\CompileRoutesAction'],

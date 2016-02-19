@@ -484,6 +484,15 @@ form > table.table {
     background-color: #f0f0f0;
 }
 
+.markdown-help-link {
+    position: absolute;
+    top: 2px;
+    right: 18px;
+}
+
+.footnotes {
+    font-size: 80%;
+}
 
 .b-file-upload .file-preview-frame{
     height: auto !important;

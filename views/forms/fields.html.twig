@@ -35,7 +35,7 @@
 {% block textarea_widget -%}
 	{% set attr = attr|merge({class: (attr.class|default('') ~ ' form-control')|trim}) %}
 	{{- parent() -}}
-	<a style="position: absolute; top: 2px; right: 18px;" data-toggle="modal" href="/assets/platform/resources/markdown.html" data-target="#markdown">
+	<a class="markdown-help-link" data-toggle="modal" href="{{ app.url('admin-markdown-help') }}" data-target="#markdown">
 		<span title="Используется формат текста Markdown" class="glyphicon glyphicon-info-sign"></span>
 	</a>
 {%- endblock textarea_widget %}
