@@ -22,6 +22,8 @@ use \Exception;
 /**
  * Class ServiceContent
  * @package Model\Content
+ *
+ * @method EntityContent[] getEntitiesById(array $idList)
  */
 class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
 {
@@ -259,6 +261,10 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			{
 				return '['.$image->getName().']';
 			}
+			elseif (!strncmp($match[1], 'id:', 3) && $code = array_search((int)substr($match[1],3), $data['articles']))
+			{
+				return '['.$code.']';
+			}
 			elseif ($attachment = $serviceFile->getByHashAndKind($match[1], "a$id", true))
 			{
 				return '['.$attachment->getName().']';
@@ -288,9 +294,14 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		try
 		{
 			$id = $entity->getId();
+			$data['articles'] = $this->filterIdList($data['articles']);
 
 			$data['gallery_text'] = preg_replace_callback(self::MD_LINK_MASK, function($match) use ($id, $data, $serviceFile) {
-				if ($list = $serviceFile->selectEntities(null, null, null, 'name', $match[1]))
+				if (!empty($data['articles'][$match[1]]))
+				{
+					return '[id:'.$data['articles'][$match[1]].']';
+				}
+				elseif ($list = $serviceFile->selectEntities(null, null, null, 'name', $match[1]))
 				{
 					/** @var \Moro\Platform\Model\Implementation\File\EntityFile $file */
 					foreach ($list as $file)
@@ -409,15 +420,15 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 */
 	public function filterIdList(array $list)
 	{
-		$query = $this->_connection->createQueryBuilder()->select('id')->from($this->_table)->where('id = ?')->getSQL();
+		$query = $this->_connection->createQueryBuilder()->select('code')->from($this->_table)->where('id = ?')->getSQL();
 		$statement = $this->_connection->prepare($query);
 		$result = [];
 
 		foreach ($list as $id)
 		{
-			if ($statement->execute([(int)$id]) && $statement->fetchAll())
+			if ($statement->execute([(int)$id]) && $code = $statement->fetchColumn(0))
 			{
-				$result[] = (int)$id;
+				$result[$code] = (int)$id;
 			}
 		}
 

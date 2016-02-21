@@ -41,6 +41,7 @@ class ViewDecorator extends AbstractDecorator
 	 */
 	public function getText()
 	{
+		$content = $this->_application->getServiceContent();
 		$files = $this->_application->getServiceFile();
 		$args = $this->getParameters();
 		$args['gallery'] = empty($args['gallery']) ? [] : $args['gallery'];
@@ -63,40 +64,56 @@ class ViewDecorator extends AbstractDecorator
 			$args['attachment'][$file->getName()] = $file;
 		}
 
+		foreach ($content->getEntitiesById(empty($args['articles']) ? [] : $args['articles']) as $article)
+		{
+			$args['articles'][$article->getCode()] = $article;
+			$args['articles']['id:'.$article->getId()] = $article;
+		}
+
 		$text = preg_replace_callback(self::MD_LINK_MASK_EX, function($match) use ($files, $args, $flag, &$adds){
-			if (isset($args['images'][$match[3]]))
+			switch (TRUE)
 			{
-				$meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL];
+				case isset($args['images'][$match[3]]) && is_object($args['images'][$match[3]]):
+					$meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL];
 
-				for ($i = 0; $i <= 1; $i++)
-				{
-					switch (substr($match[2], $i, 1))
+					for ($i = 0; $i <= 1; $i++)
 					{
-						case '-': $meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL]; break;
-						case '|': $meta = $this->_imageViews[self::IMG_VIEW_VERTICAL]; break;
-						case '+': $meta = $this->_imageViews[self::IMG_VIEW_SQUARE]; break;
+						switch (substr($match[2], $i, 1))
+						{
+							case '-': $meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL]; break;
+							case '|': $meta = $this->_imageViews[self::IMG_VIEW_VERTICAL]; break;
+							case '+': $meta = $this->_imageViews[self::IMG_VIEW_SQUARE]; break;
+						}
 					}
-				}
 
-				/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
-				$file = $args['images'][$match[3]];
-				$hash = $file->getHash();
-				$href = $this->_application->url('image', array_merge($meta, ['hash' => $hash]));
-				$temp = $file->getParameters();
-				$lead = strtr(isset($temp['lead']) ? $temp['lead'] : '', '"', "'");
-				$adds.= "\n[".$hash."]: ".$href."\t\"".$lead."\"\t";
+					/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
+					$file = $args['images'][$match[3]];
+					$hash = $file->getHash();
+					$href = $this->_application->url('image', array_merge($meta, ['hash' => $hash]));
+					$temp = $file->getParameters();
+					$lead = strtr(isset($temp['lead']) ? $temp['lead'] : '', '"', "'");
+					$adds.= "\n[".$hash."]: ".$href."\t\"".$lead."\"\t";
 
-				return $match[1].'['.$hash.']';
-			}
-			elseif (isset($args['attachment'][$match[3]]))
-			{
-				/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
-				$file = $args['attachment'][$match[3]];
-				$name = $file->getName();
-				$href = $this->_application->url('download', ['file' => $file]);
-				$adds.= "\n[".$name."]: ".$href.($flag ? "\t\"".$name."\"\t" : '');
+					return $match[1].'['.$hash.']';
 
-				return $match[1].'['.$name.']';
+				case isset($args['attachment'][$match[3]]) && is_object($args['attachment'][$match[3]]):
+					/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
+					$file = $args['attachment'][$match[3]];
+					$name = $file->getName();
+					$href = $this->_application->url('download', ['file' => $file]);
+					$adds.= "\n[".$name."]: ".$href.($flag ? "\t\"".$name."\"\t" : '');
+
+					return $match[1].'['.$name.']';
+
+				case isset($args['articles'][$match[3]]) && is_object($args['articles'][$match[3]]):
+					/** @var \Moro\Platform\Model\Implementation\Content\ContentInterface $data */
+					$data = $args['articles'][$match[3]];
+					$temp = $data->getParameters();
+					$href = isset($data['url']) ? $data['url'] : '#article-'.$data->getId();
+					$lead = strip_tags(isset($temp['parameters']['lead']) ? $temp['parameters']['lead'] : '');
+					$adds.= "\n[".$match[3]."]: ".$href."\t\"".$lead."\"\t";
+
+					return $match[0];
 			}
 
 			return $match[0];

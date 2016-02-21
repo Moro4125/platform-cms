@@ -536,7 +536,7 @@ abstract class AbstractService implements SplSubject
 
 	/**
 	 * @param array $idList
-	 * @return array
+	 * @return EntityInterface[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
 	public function getEntitiesById(array $idList)

@@ -3,10 +3,9 @@
  * Class AbstractDecorator
  */
 namespace Moro\Platform\Model;
-
-
 use \Moro\Platform\Application;
 use \ArrayAccess;
+use \Traversable;
 
 /**
  * Class AbstractDecorator
@@ -106,16 +105,21 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function hasProperty($name)
 	{
-		assert(is_string($name));
-		return array_key_exists($name, self::$_default[static::class]) ?: $this->_entity->hasProperty($name);
+		return is_string($name)
+			?( array_key_exists($name, self::$_default[static::class])
+				?: isset(self::$_getters[static::class][$name])
+					?: $this->_entity->hasProperty($name)
+			): $this->_entity->hasProperty($name);
 	}
 
 	/**
-	 * @param array|\Traversable $properties
+	 * @param array|Traversable $properties
 	 * @return $this
 	 */
 	public function setProperties($properties)
 	{
+		assert(is_array($properties) || $properties instanceof Traversable);
+
 		foreach ($properties as $name => $value)
 		{
 			if (isset(self::$_setters[static::class][$name]))
@@ -138,7 +142,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function setProperty($name, $value)
 	{
-		if (isset(self::$_setters[static::class][$name]))
+		if (is_string($name) && isset(self::$_setters[static::class][$name]))
 		{
 			$this->{self::$_setters[static::class][$name]}($value);
 		}
@@ -174,7 +178,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function getProperty($name)
 	{
-		if (isset(self::$_getters[static::class][$name]))
+		if (is_string($name) && isset(self::$_getters[static::class][$name]))
 		{
 			return $this->{self::$_getters[static::class][$name]}();
 		}
@@ -269,7 +273,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function offsetExists($offset)
 	{
-		return $this->_entity->hasProperty($offset);
+		return $this->hasProperty($offset);
 	}
 
 	/**
@@ -278,7 +282,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function offsetGet($offset)
 	{
-		return $this->_entity->getProperty($offset);
+		return $this->getProperty($offset);
 	}
 
 	/**
@@ -288,7 +292,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function offsetSet($offset, $value)
 	{
-		$this->_entity->setProperty($offset, $value);
+		$this->setProperty($offset, $value);
 		return $this;
 	}
 
@@ -298,7 +302,7 @@ abstract class AbstractDecorator implements ArrayAccess
 	 */
 	public function offsetUnset($offset)
 	{
-		$this->_entity->setProperty($offset, null);
+		$this->setProperty($offset, null);
 		return $this;
 	}
 
