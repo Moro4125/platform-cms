@@ -93,9 +93,9 @@ trait EntityTrait
 	{
 		if (is_array($this->_reflection) && count($this->_reflection) === 3)
 		{
-			self::$_default[static::class] = array_shift($this->_reflection);
-			self::$_getters[static::class] = array_shift($this->_reflection);
-			self::$_setters[static::class] = array_shift($this->_reflection);
+			self::$_default[static::class] = $this->_reflection[0];
+			self::$_getters[static::class] = $this->_reflection[1];
+			self::$_setters[static::class] = $this->_reflection[2];
 		}
 
 		if (empty(self::$_default[static::class]))
