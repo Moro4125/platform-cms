@@ -85,6 +85,7 @@ class CompileRoutesAction
 			$request->getSchemeAndHttpHost() => '',
 			'/index.html' => '/',
 			'//'.$request->getHttpHost() => $request->getSchemeAndHttpHost(),
+			explode('index.php', $_SERVER['REQUEST_URI'])[0].'index.php' => '',
 		];
 		$list = ($id = (int)$request->query->get('id'))
 			? [$service->getEntityById($id)]

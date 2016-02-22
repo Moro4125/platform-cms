@@ -250,6 +250,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		if ($this->_links === null)
 		{
 			$this->_links = [];
+			$prefix = explode('index.php', $_SERVER['REQUEST_URI'])[0].'index.php';
 
 			for ($count = $this->getCount(), $offset = 0, $limit = 256; $offset < $count; $offset += $limit)
 			{
@@ -259,6 +260,11 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 					$id = $entity->getId();
 					$parameters = $entity->getParameters();
 					$href = $entity->getHREF();
+
+					if ($href && strncmp($href, '/', 1) === 0)
+					{
+						$href = $prefix.$href;
+					}
 
 					$link = $href ? '<a href="'.htmlspecialchars($href).'"' : '<span';
 					$link.= ( $class = $entity->getClass() ) ? ' class="'.htmlspecialchars($class).'"' : '';
