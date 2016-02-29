@@ -104,9 +104,15 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 			if ($lockedBy = $service->isLocked($entity))
 			{
-				$app->getServiceFlash()->error('Не удалось сохранить изменения.');
-				/** @noinspection PhpUndefinedMethodInspection */
-				return $app->redirect($request->getUri());
+				/** @var \Symfony\Component\Form\SubmitButton $buttonCancel */
+				$buttonCancel = $form->get('cancel');
+
+				if (!$buttonCancel->isClicked())
+				{
+					$app->getServiceFlash()->error('Не удалось сохранить изменения.');
+					/** @noinspection PhpUndefinedMethodInspection */
+					return $app->redirect($request->getUri());
+				}
 			}
 
 			if ($this->_ignoreValidation() || $form->isValid())
@@ -223,9 +229,12 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	protected function _ignoreValidation()
 	{
 		$form = $this->getForm();
+		/** @var \Symfony\Component\Form\SubmitButton $buttonCancel */
+		$buttonCancel = $form->get('cancel');
+		/** @var \Symfony\Component\Form\SubmitButton $buttonDelete */
+		$buttonDelete = $form->get('delete');
 
-		/** @noinspection PhpUndefinedMethodInspection */
-		return $form->get('cancel')->isClicked() || $form->get('delete')->isClicked();
+		return $buttonCancel->isClicked() || $buttonDelete->isClicked();
 	}
 
 	/**
