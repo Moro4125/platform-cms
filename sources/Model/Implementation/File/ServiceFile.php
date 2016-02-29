@@ -406,7 +406,14 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
 					foreach ((array)$value as $object)
 					{
-						$hash = $this->getHashForFile($object->getPathname());
+						if (!$path = $object->getPathname())
+						{
+							$originalName = $object->getClientOriginalName();
+							$message = sprintf('Не удалось загрузить на сервер файл "%1$s".', $originalName);
+							throw new \RuntimeException($message);
+						}
+
+						$hash = $this->getHashForFile($path);
 						$file = $this->getPathForHash($hash);
 						$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
 

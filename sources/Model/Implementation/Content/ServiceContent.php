@@ -376,7 +376,14 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 					/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
 					foreach ((array)$value as $object)
 					{
-						$hash = $service->getHashForFile($object->getPathname());
+						if (!$path = $object->getPathname())
+						{
+							$originalName = $object->getClientOriginalName();
+							$message = sprintf('Не удалось загрузить на сервер файл "%1$s".', $originalName);
+							throw new \RuntimeException($message);
+						}
+
+						$hash = $service->getHashForFile($path);
 						$file = $service->getPathForHash($hash);
 						$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
 

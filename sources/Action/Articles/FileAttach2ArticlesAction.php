@@ -73,6 +73,7 @@ class FileAttach2ArticlesAction extends AbstractContentAction
 			if (!is_array($idList))
 			{
 				$result['error'] = (string)$idList;
+				$idList = null;
 				break;
 			}
 
