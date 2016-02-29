@@ -101,6 +101,7 @@ Application::getInstance(function (Application $app)
 			[$adminPrefix.'/panel/content/relink',    'ROLE_RS_RELINK'],
 			[$adminPrefix.'/panel/content/tags?',     'ROLE_RS_TAGS'],
 			[$adminPrefix.'/panel/pages',             'ROLE_USER'],
+			[$adminPrefix.'/panel/help',              'ROLE_USER'],
 			[$adminPrefix.'/panel$',                  'ROLE_USER'],
 			[$adminPrefix.'/panel',                   'ROLE_ADMIN'],
 			[$adminPrefix.'/platform',                'ROLE_USER'],
