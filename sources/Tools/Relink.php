@@ -87,17 +87,19 @@ class Relink
 		{
 			$cursor = &$tree;
 
-			for ($length = $this->_utf8 ? mb_strlen($name, 'UTF-8') : strlen($name); $length--;)
+			for ($index = 0, $length = $this->_utf8 ? mb_strlen($name, 'UTF-8') : strlen($name); $length--; $index++)
 			{
 				if ($this->_utf8)
 				{
 					$char = mb_substr($name, 0, 1, 'UTF-8');
 					$name = mb_substr($name, 1, $length, 'UTF-8');
+					$index || $char = mb_strtolower($char, 'UTF-8');
 				}
 				else
 				{
 					$char = substr($name, 0, 1);
 					$name = substr($name, 1, $length);
+					$index || $char = strtolower($char);
 				}
 
 				if (empty($cursor[$char]))
@@ -120,9 +122,10 @@ class Relink
 
 	/**
 	 * @param array $tree
+	 * @param null|int $level
 	 * @return string
 	 */
-	protected function _tree2regex(array $tree)
+	protected function _tree2regex(array $tree, $level = null)
 	{
 		if (1 === count($tree))
 		{
@@ -130,7 +133,7 @@ class Relink
 
 			return (true === $value)
 				? preg_quote(key($tree), '}')
-				: preg_quote(key($tree), '}').$this->_tree2regex($value);
+				: preg_quote(key($tree), '}').$this->_tree2regex($value, $level + 1);
 		}
 
 		$result = '';
@@ -144,11 +147,21 @@ class Relink
 				continue;
 			}
 
-			$result .= (($result === '') ? '' : '|').preg_quote($char, '}');
+			if ($level)
+			{
+				$char = preg_quote($char, '}');
+			}
+			else
+			{
+				$up = $this->_utf8 ? mb_strtoupper($char, 'UTF-8') : strtoupper($char);
+				$char = ($up == $char) ? preg_quote($char, '}') : '['.preg_quote($up, '}').preg_quote($char, '}').']';
+			}
+
+			$result .= (($result === '') ? '' : '|').$char;
 
 			if (true !== $value)
 			{
-				$result .= $this->_tree2regex($value);
+				$result .= $this->_tree2regex($value, $level + 1);
 			}
 		}
 
@@ -338,8 +351,27 @@ class Relink
 						}
 					}
 				}
-				elseif ($anchors === 0 && isset($links[$key = preg_replace($spaceless, ' ', $text)]))
+				elseif ($anchors === 0)
 				{
+					if (!isset($links[$key = $words = preg_replace($spaceless, ' ', $text)]))
+					{
+						$key = $this->_utf8
+							? mb_strtoupper(mb_substr($words, 0, 1, 'UTF-8')).mb_substr($words, 1, null, 'UTF-8')
+							: ucfirst($words);
+
+						if (!isset($links[$key]))
+						{
+							$key = $this->_utf8
+								? mb_strtolower(mb_substr($words, 0, 1, 'UTF-8')).mb_substr($words, 1, null, 'UTF-8')
+								: ucfirst($words);
+						}
+					}
+
+					if (empty($links[$key]))
+					{
+						continue;
+					}
+
 					$result[$key] = isset($result[$key]) ? ($result[$key] + 1) : 1;
 				}
 			}
@@ -420,13 +452,32 @@ class Relink
 						}
 					}
 				}
-				elseif ($anchors === 0 && isset($links[$key = preg_replace($spaceless, ' ', $text)]))
+				elseif ($anchors === 0)
 				{
+					if (!isset($links[$key = $words = preg_replace($spaceless, ' ', $text)]))
+					{
+						$key = $this->_utf8
+							? mb_strtoupper(mb_substr($words, 0, 1, 'UTF-8')).mb_substr($words, 1, null, 'UTF-8')
+							: ucfirst($words);
+
+						if (!isset($links[$key]))
+						{
+							$key = $this->_utf8
+								? mb_strtolower(mb_substr($words, 0, 1, 'UTF-8')).mb_substr($words, 1, null, 'UTF-8')
+								: ucfirst($words);
+						}
+					}
+
+					if (empty($links[$key]))
+					{
+						continue;
+					}
+
 					$found[$key] = isset($found[$key]) ?( $found[$key] + 1): 1;
 
 					if ($total !== 0 && (!$this->_uniqueLinkLimit || $found[$key] <= $this->_uniqueLinkLimit))
 					{
-						$parts[$pos] = [$pos, $pos + strlen($text), str_replace('%text%', $key, $links[$key])];
+						$parts[$pos] = [$pos, $pos + strlen($text), str_replace('%text%', $words, $links[$key])];
 						$total--;
 					}
 				}
