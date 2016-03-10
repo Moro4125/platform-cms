@@ -268,7 +268,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					escapeMarkup: function(html) {
 						return html;
 					},
-					allowClear: false,
+					// allowClear: true,
 					placeholder: {
 						id: "00000000000000000000000000000000",
 						name: null

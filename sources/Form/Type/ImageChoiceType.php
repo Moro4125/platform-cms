@@ -117,6 +117,7 @@ class ImageChoiceType extends AbstractType
 			'data-ajax--url'      => $this->_application->url('admin-content-images-select'),
 			'data-template'       => 'templateSelect2Image',
 			'data-json'           => json_encode($list, JSON_UNESCAPED_UNICODE),
+			'data-allow-clear'    => empty($view->vars['multiple']),
 			'style'               => 'width: 100%;',
 		]);
 	}
