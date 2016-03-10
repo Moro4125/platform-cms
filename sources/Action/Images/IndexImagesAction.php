@@ -51,7 +51,7 @@ class IndexImagesAction extends AbstractIndexAction
 		$form = $this->getForm();
 
 		/** @noinspection PhpUndefinedMethodInspection */
-		if ($form->get('show_watermark')->isClicked())
+		if ($form->has('show_watermark') && $form->get('show_watermark')->isClicked())
 		{
 			if (count($list))
 			{
@@ -62,7 +62,7 @@ class IndexImagesAction extends AbstractIndexAction
 		}
 
 		/** @noinspection PhpUndefinedMethodInspection */
-		if ($form->get('hide_watermark')->isClicked())
+		if ($form->has('hide_watermark') && $form->get('hide_watermark')->isClicked())
 		{
 			if (count($list))
 			{
@@ -73,7 +73,7 @@ class IndexImagesAction extends AbstractIndexAction
 		}
 
 		/** @noinspection PhpUndefinedMethodInspection */
-		if ($form->get('show_mask')->isClicked())
+		if ($form->has('show_mask') && $form->get('show_mask')->isClicked())
 		{
 			if (count($list))
 			{
@@ -84,7 +84,7 @@ class IndexImagesAction extends AbstractIndexAction
 		}
 
 		/** @noinspection PhpUndefinedMethodInspection */
-		if ($form->get('hide_mask')->isClicked())
+		if ($form->has('hide_mask') && $form->get('hide_mask')->isClicked())
 		{
 			if (count($list))
 			{
