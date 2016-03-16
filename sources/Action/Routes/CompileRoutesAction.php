@@ -19,6 +19,11 @@ use \Exception;
 class CompileRoutesAction
 {
 	/**
+	 * @var string
+	 */
+	protected $_route;
+
+	/**
 	 * @var \Moro\Platform\Application
 	 */
 	protected $_application;
@@ -58,6 +63,7 @@ class CompileRoutesAction
 		$this->_application = $app;
 		$this->_request = $request;
 		$this->_service = $app->getServiceRoutes();
+		$this->_route = $request->attributes->get('_route');
 
 		$this->_workLimit = round((intval(ini_get("max_execution_time")) ?: 30) * 0.7);
 
@@ -238,6 +244,21 @@ class CompileRoutesAction
 			$message = sprintf('При компиляции страницы %1$s произошла ошибка: ', $uri);
 			$message.= $exception->getMessage();
 			$app->getServiceFlash()->error($message);
+
+			$app->getServiceLogger()->error($exception->getMessage(), [
+				'class' => get_class($exception),
+				'code' => $exception->getCode(),
+				'file' => $exception->getFile(),
+				'line' => $exception->getLine(),
+				'url' => $uri,
+			]);
+
+			if ($sentry = $app->getServiceSentry())
+			{
+				$sentry->captureException($exception, [
+					'tags' => ['controller' => isset($xRequest) ? $xRequest->attributes->get('_route') : $this->_route],
+				]);
+			}
 		}
 		finally
 		{

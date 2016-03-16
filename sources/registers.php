@@ -30,6 +30,7 @@ use \Moro\Platform\Provider\FormServiceProvider;
 use \Moro\Platform\Provider\HttpCacheServiceProvider;
 use \Moro\Platform\Provider\Twig\ApplicationExtension;
 use \Moro\Platform\Provider\Twig\MarkdownExtension;
+use \Moro\Platform\Provider\SentryProvider;
 use \Moro\Platform\Security\User\ApiKeyUserProvider;
 use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
 use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
@@ -226,6 +227,12 @@ Application::getInstance(function (Application $app)
 
 	// Imagine Service Provider.
 	$app->register(new ImagineServiceProvider());
+
+	// Sentry Provider (Raven).
+	if ($app->getOption('sentry.active'))
+	{
+		$app->register(new SentryProvider());
+	}
 });
 
 

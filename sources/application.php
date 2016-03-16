@@ -27,7 +27,7 @@ class Application extends CApplication
 	use \Silex\Application\MonologTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.9.0";
+	const PLATFORM_VERSION = "1.10.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -46,6 +46,7 @@ class Application extends CApplication
 	const SERVICE_TAGS                = 'app.service.tags';
 	const SERVICE_API_KEY             = 'app.service.api_key';
 	const SERVICE_IMAGINE             = 'imagine';
+	const SERVICE_SENTRY              = 'sentry';
 
 	const BEHAVIOR_TAGS               = 'app.behavior.tags';
 	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
@@ -706,6 +707,14 @@ class Application extends CApplication
 	public function getServiceRelinkTool()
 	{
 		return $this->offsetGet(self::SERVICE_RELINK_TOOL);
+	}
+
+	/**
+	 * @return \Raven_Client|null
+	 */
+	public function getServiceSentry()
+	{
+		return $this->offsetExists(self::SERVICE_SENTRY) ? $this->offsetGet(self::SERVICE_SENTRY) : null;
 	}
 
 	/**
