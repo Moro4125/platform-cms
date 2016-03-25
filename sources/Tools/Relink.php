@@ -32,7 +32,12 @@ class Relink
 	/**
 	 * @var string  Used in text as <!--no-relink-->...<!--/no-relink-->
 	 */
-	protected $_skipMarker = 'no-relink';
+	protected $_ignoreMarker = 'no-relink';
+
+	/**
+	 * @var string  Used for create local black list: <!--skip-relink:...-->
+	 */
+	protected $_skipMarker = 'skip-relink';
 
 	/**
 	 * @var int
@@ -176,13 +181,15 @@ class Relink
 	{
 		if (empty($this->_regex) && $list = $this->_getLinks())
 		{
-			$noLinkMarker = preg_quote((string)$this->_skipMarker, '}');
+			$noLinkMarker = preg_quote((string)$this->_ignoreMarker, '}');
 			$blockMarker = preg_quote((string)$this->_blockMarker, '}');
+			$skipMarker = preg_quote((string)$this->_skipMarker, '}');
 
 			$count = count($list);
 			$limit = ceil($count / ceil($count / intval($this->_linksInRegex) ?: $count));
 
 			$prefix = '{';
+			$skipMarker   && $prefix .= '(?><!\-\-'.$skipMarker.':.+?\-\->)|';
 			$blockMarker  && $prefix .= '(?><!\-\-/'.$blockMarker.'\-\->(?:[^<]*<)+?!\-\-'.$blockMarker.'\-\->)|';
 			$noLinkMarker && $prefix .= '(?><!\-\-'.$noLinkMarker.'\-\->(?:[^<]*<)+?!\-\-/'.$noLinkMarker.'\-\->)|';
 			$prefix.= '(?><!\-(?:[-][^-]*)+?\-\->)|(?></?[A-Za-z]+[^>]*>)|';
@@ -253,9 +260,9 @@ class Relink
 	 * @param string $marker
 	 * @return $this
 	 */
-	public function setSkipMarker($marker)
+	public function setIgnoreMarker($marker)
 	{
-		$this->_skipMarker = (string)$marker;
+		$this->_ignoreMarker = (string)$marker;
 		$this->_regex = null;
 		return $this;
 	}
@@ -310,12 +317,16 @@ class Relink
 	{
 		$links = $this->_getLinks();
 		$result = [];
+		$blackList = [];
 		$spaceless = '{\\s+}'.($this->_utf8 ? 'u' : '');
 
 		if ($this->_blockMarker && $this->_useBlockMarker)
 		{
 			$html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
 		}
+
+		$m3t = '<!--'.$this->_skipMarker.':';
+		$m3c = $this->_skipMarker ? strlen($this->_skipMarker) + 5 : 0;
 
 		for ($i = 0; $regex = $this->_getRegex($i); $i++)
 		{
@@ -326,7 +337,19 @@ class Relink
 			{
 				if ($text[0] == '<')
 				{
-					if ($text[1] == '/')
+					if ($text[1] == '!')
+					{
+						if ($m3c && strncmp($text, $m3t, $m3c) === 0)
+						{
+							$words = preg_replace($spaceless, ' ', trim(substr($text, $m3c, -3)));
+
+							if (isset($links[$words]))
+							{
+								$blackList[$links[$words]] = true;
+							}
+						}
+					}
+					elseif ($text[1] == '/')
 					{
 						for ($u = 2, $tag = ''; empty($this->_tagNameEnd[$text[$u]]); $u++)
 						{
@@ -367,7 +390,7 @@ class Relink
 						}
 					}
 
-					if (empty($links[$key]))
+					if (empty($links[$key]) || isset($blackList[$links[$key]]))
 					{
 						continue;
 					}
@@ -399,9 +422,11 @@ class Relink
 		$spaceless = '{\\s+}'.($this->_utf8 ? 'u' : '');
 
 		$m1c = $this->_blockMarker ? strlen($this->_blockMarker) + 8 : 0;
-		$m2c = $this->_skipMarker ? strlen($this->_skipMarker) + 7 : 0;
+		$m2c = $this->_ignoreMarker ? strlen($this->_ignoreMarker) + 7 : 0;
+		$m3c = $this->_skipMarker ? strlen($this->_skipMarker) + 5 : 0;
 		$m1t = '<!--/'.$this->_blockMarker.'-->';
-		$m2t = '<!--'.$this->_skipMarker.'-->';
+		$m2t = '<!--'.$this->_ignoreMarker.'-->';
+		$m3t = '<!--'.$this->_skipMarker.':';
 
 		for ($i = 0; $regex = $this->_getRegex($i); $i++)
 		{
@@ -425,6 +450,16 @@ class Relink
 							$parts[$pos] = [$pos, $pos + $m2c, ''];
 							$pos += strlen($text) - $m2c - 1;
 							$parts[$pos] = [$pos, $pos + $m2c + 1, ''];
+						}
+						elseif ($m3c && strncmp($text, $m3t, $m3c) === 0)
+						{
+							$words = preg_replace($spaceless, ' ', trim(substr($text, $m3c, -3)));
+
+							if (isset($links[$words]))
+							{
+								$parts[$pos] = [$pos, $pos + strlen($text), ''];
+								$found[$links[$words]] = $this->_uniqueLinkLimit + 1;
+							}
 						}
 					}
 					elseif ($text[1] == '/')
@@ -473,11 +508,12 @@ class Relink
 						continue;
 					}
 
-					$found[$key] = isset($found[$key]) ?( $found[$key] + 1): 1;
+					$link = $links[$key];
+					$found[$link] = empty($found[$link]) ?( $this->_uniqueLinkLimit ? 1 : 0 ): $found[$link] + 1;
 
-					if ($total !== 0 && (!$this->_uniqueLinkLimit || $found[$key] <= $this->_uniqueLinkLimit))
+					if ($total !== 0 && $found[$link] <= $this->_uniqueLinkLimit)
 					{
-						$parts[$pos] = [$pos, $pos + strlen($text), str_replace('%text%', $words, $links[$key])];
+						$parts[$pos] = [$pos, $pos + strlen($text), str_replace('%text%', $words, $link)];
 						$total--;
 					}
 				}

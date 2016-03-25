@@ -87,6 +87,34 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 			$tags[] = normalizeTag('Ссылка: внешняя');
 		}
 
+		$parameters = $entity->getParameters();
+
+		if (empty($parameters['open_tab']))
+		{
+			$tags[] = normalizeTag('Переход: обычный');
+		}
+		else
+		{
+			$tags[] = normalizeTag('Переход: новая вкладка');
+		}
+
+		if (empty($parameters['nofollow']))
+		{
+			$tags[] = normalizeTag('Переход: индексируется');
+		}
+		else
+		{
+			$tags[] = normalizeTag('Переход: не для роботов');
+		}
+
+		if ($classes = $entity->getClass())
+		{
+			foreach (array_filter(explode(' ', $classes)) as $cssClass)
+			{
+				$tags[] = normalizeTag('CSS: '.$cssClass);
+			}
+		}
+
 		return $tags;
 	}
 
@@ -182,7 +210,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 
 		foreach (array_keys($list) as $key)
 		{
-			$data[$key] = isset($args[$key]) ? $args[$key] : '';
+			$data[$key] = isset($args[$key]) ?( is_array($args[$key]) ? implode(', ', $args[$key]) : $args[$key] ): '';
 		}
 
 		$data['open_tab'] = !empty($args['open_tab']);
@@ -214,7 +242,15 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 				'accusativus'      => 'Кого/Что',
 				'instrumentalis'   => 'Кем/Чем',
 				'praepositionalis' => 'О ком/чём',
-				'title' => 'Подсказка',
+			];
+
+			foreach (array_keys($list) as $key)
+			{
+				$parameters[$key] = isset($data[$key]) ? array_map('trim', explode(',', $data[$key])) : null;
+			}
+
+			$list = [
+				'title'    => 'Подсказка',
 				'open_tab' => 'Открывать ссылку в новой вкладке или окне',
 				'nofollow' => 'Запретить роботам переход по ссылке',
 			];
@@ -277,8 +313,11 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 					{
 						if (!empty($parameters[$key]))
 						{
-							$this->_links[$parameters[$key]] = $link;
-							$this->_idMap[$parameters[$key]] = $id;
+							foreach ((array)$parameters[$key] as $words)
+							{
+								$this->_links[$words] = $link;
+								$this->_idMap[$words] = $id;
+							}
 						}
 					}
 				}
