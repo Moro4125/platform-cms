@@ -57,6 +57,7 @@ class Application extends CApplication
 	const HEADER_CACHE_TAGS   = 'X-Cache-Tags';
 	const HEADER_CACHE_FILE   = 'X-Cache-File';
 	const HEADER_SURROGATE    = 'Surrogate-Capability';
+	const HEADER_ACCEPT       = 'Accept';
 
 	/**
 	 * @var string
@@ -87,6 +88,11 @@ class Application extends CApplication
 	 * @var array  Параметры приложения для текущего окружения.
 	 */
 	protected $_options;
+
+	/**
+	 * @var array  Список обработчиков, вызываемых перед обработки каждого запроса (основного или внутреннего).
+	 */
+	protected $_beforeAnyRequest;
 
 	/**
 	 * @var array  Список обработчиков, вызываемых после обработки каждого запроса (основного или внутреннего).
@@ -437,6 +443,21 @@ class Application extends CApplication
 	public function get($pattern, $to = null)
 	{
 		$controller = parent::get($pattern, $to);
+		$controller->before(function(Request $request)
+		{
+			if (isset($this->_beforeAnyRequest))
+			{
+				foreach ($this->_beforeAnyRequest as $callback)
+				{
+					if ($result = $callback($request))
+					{
+						return $result;
+					}
+				}
+			}
+
+			return null;
+		});
 		$controller->after(function(Request $request, Response $response)
 		{
 			if (isset($this->_afterAnyRequest))
@@ -453,6 +474,16 @@ class Application extends CApplication
 			return null;
 		});
 		return $controller;
+	}
+
+	/**
+	 * @param callable $callback
+	 * @return $this
+	 */
+	public function afore(callable $callback)
+	{
+		$this->_beforeAnyRequest[] = $callback;
+		return $this;
 	}
 
 	/**

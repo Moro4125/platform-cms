@@ -39,4 +39,21 @@ class UpdateRelinkAction extends AbstractUpdateAction
 
 		$routes->setCompileFlagForTag($tags);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function _getViewParameters()
+	{
+		$host = $this->getRequest()->getSchemeAndHttpHost();
+		$href = $this->getEntity()->getHref();
+
+		if (strncmp($href, $host, strlen($host)) === 0)
+		{
+			$msg = 'Пожалуйста, не указывайте имя хоста для ссылок на страницы данного сайта.';
+			$this->getApplication()->getServiceFlash()->alert($msg);
+		}
+
+		return parent::_getViewParameters();
+	}
 }

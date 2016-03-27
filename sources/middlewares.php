@@ -39,6 +39,36 @@ Application::getInstance(function(Application $app) {
 		}
 	});
 
+	// === Устновка игнорирования утилитой автоматической расстановки ссылок в тексте ссылки на текущую страницу.
+	$app->afore(function(Request $request) use ($app) {
+		$route = $request->get('_route');
+		$accept = $request->headers->get('Accept', '');
+		$flag = $app->getOption('content.relink') != false;
+
+		if ($flag && !preg_match('{^(GET_|admin-|_)}', $route) && false !== strpos($accept, 'text/html'))
+		{
+			$service = $app->getServiceRelinkTool();
+			$uri = substr($request->getRequestUri(), (strpos($request->getRequestUri(), 'index.php') ?: -9) + 9);
+			$uri = substr($uri, 0, strpos($uri, '?') ?: strlen($uri));
+			$skip = $service->getSkipMarker();
+			$prefix = '';
+
+			foreach ($app->getServiceRelink()->selectByHref($uri) as $entity)
+			{
+				$parameters = $entity->getParameters();
+				$words = isset($parameters['nominativus'])
+					?( is_array($parameters['nominativus'])
+						? $parameters['nominativus'][0]
+						: explode(',', $parameters['nominativus'])[0]
+					): '';
+
+				$prefix .= $words ? '<!--'.$skip.':'.$words.'-->' : '';
+			}
+
+			$prefix && $service->setContentPrefix($prefix);
+		}
+	});
+
 	// === Применение утилиты автоматической расстановки ссылок в тексте (для основного и внутренних запросов).
 	$app->behind(function(Request $request, Response $response) use ($app) {
 		$route = $request->get('_route');

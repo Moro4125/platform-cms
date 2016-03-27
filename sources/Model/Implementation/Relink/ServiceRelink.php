@@ -13,6 +13,7 @@ use \Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\RelinkForm;
 use \Moro\Platform\Application;
 use \Exception;
+use \PDO;
 
 /**
  * Class ServiceRelink
@@ -338,5 +339,31 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		}
 
 		return $this->_idMap;
+	}
+
+	/**
+	 * @param string $href
+	 * @return RelinkInterface[]
+	 *
+	 * @throws \Doctrine\DBAL\DBALException
+	 */
+	public function selectByHref($href)
+	{
+		assert(is_string($href));
+
+		$builder = $this->_connection->createQueryBuilder();
+		$sqlQuery = $builder->select('*')->from($this->_table)->where(RelinkInterface::PROP_HREF.'=?')->getSQL();
+		$statement = $this->_connection->prepare($sqlQuery);
+		$result = [];
+
+		if ($statement->execute([ (string)$href ]))
+		{
+			while ($record = $statement->fetch(PDO::FETCH_ASSOC))
+			{
+				$result[] = $this->_newEntityFromArray($record);
+			}
+		}
+
+		return $result;
 	}
 }

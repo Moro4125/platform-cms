@@ -163,6 +163,7 @@ class CompileRoutesAction
 			/** @var \Symfony\Component\HttpFoundation\Response $response */
 			$xRequest = Request::create($uri, 'GET', [], [], [], $request->server->all());
 			$xRequest->headers->set(Application::HEADER_SURROGATE, 'SSI/1.0');
+			strpos($uri, '.html') && $xRequest->headers->set(Application::HEADER_ACCEPT, 'text/html');
 			$response = $app->handle($xRequest, HttpKernelInterface::SUB_REQUEST, false);
 
 			if (200 != $statusCode = $response->getStatusCode())

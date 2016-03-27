@@ -73,6 +73,11 @@ class Relink
 	];
 
 	/**
+	 * @var string
+	 */
+	protected $_contentPrefix = '';
+
+	/**
 	 * @return array
 	 */
 	protected function _getLinks()
@@ -231,6 +236,16 @@ class Relink
 	}
 
 	/**
+	 * @param string $prefix
+	 * @return $this
+	 */
+	public function setContentPrefix($prefix)
+	{
+		$this->_contentPrefix = (string)$prefix;
+		return $this;
+	}
+
+	/**
 	 * @param bool $flag
 	 * @return $this
 	 */
@@ -257,6 +272,14 @@ class Relink
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getBlockMarker()
+	{
+		return $this->_blockMarker;
+	}
+
+	/**
 	 * @param string $marker
 	 * @return $this
 	 */
@@ -265,6 +288,33 @@ class Relink
 		$this->_ignoreMarker = (string)$marker;
 		$this->_regex = null;
 		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getIgnoreMarker()
+	{
+		return $this->_ignoreMarker;
+	}
+
+	/**
+	 * @param string $marker
+	 * @return $this
+	 */
+	public function setSkipMarker($marker)
+	{
+		$this->_skipMarker = (string)$marker;
+		$this->_regex = null;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSkipMarker()
+	{
+		return $this->_skipMarker;
 	}
 
 	/**
@@ -324,6 +374,8 @@ class Relink
 		{
 			$html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
 		}
+
+		$this->_contentPrefix && $html = $this->_contentPrefix.$html;
 
 		$m3t = '<!--'.$this->_skipMarker.':';
 		$m3c = $this->_skipMarker ? strlen($this->_skipMarker) + 5 : 0;
@@ -416,6 +468,8 @@ class Relink
 		{
 			$html = '<!--/'.$this->_blockMarker.'-->'.$html.'<!--'.$this->_blockMarker.'-->';
 		}
+
+		$this->_contentPrefix && $html = $this->_contentPrefix.$html;
 
 		$found = [];
 		$total = $this->_totalLinksLimit ?: -1;
