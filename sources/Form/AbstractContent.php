@@ -18,6 +18,10 @@ abstract class AbstractContent extends  AbstractType
 	 */
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
+		$builder->add('comment', 'hidden', [
+			'required' => false,
+		]);
+
 		$builder->add('commit', 'submit', [
 			'label' => 'Сохранить',
 			'attr' => [

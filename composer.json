@@ -97,6 +97,7 @@
       "name": "platform",
       "scripts": [
         "resources/scripts/bootstrap.js",
+        "resources/scripts/diff_match_patch.js",
         "resources/scripts/flash-message.js"
       ],
       "styles": [

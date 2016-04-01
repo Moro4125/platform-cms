@@ -38,18 +38,21 @@ class Application extends CApplication
 	const SERVICE_MENU_FACTORY        = 'knp_menu.factory';
 	const SERVICE_SECURITY_ACL        = 'security.authorization_checker';
 	const SERVICE_SECURITY_TOKEN      = 'security.token_storage';
-	const SERVICE_ROUTES              = 'app.service.routes';
-	const SERVICE_CONTENT             = 'app.service.content';
-	const SERVICE_FILE                = 'app.service.file';
-	const SERVICE_RELINK              = 'app.service.relink';
-	const SERVICE_RELINK_TOOL         = 'app.tool.relink';
-	const SERVICE_TAGS                = 'app.service.tags';
-	const SERVICE_API_KEY             = 'app.service.api_key';
+	const SERVICE_ROUTES              = 'srv.routes';
+	const SERVICE_CONTENT             = 'srv.content';
+	const SERVICE_FILE                = 'srv.file';
+	const SERVICE_RELINK              = 'srv.relink';
+	const SERVICE_RELINK_TOOL         = 'srv.tool.relink';
+	const SERVICE_TAGS                = 'srv.tags';
+	const SERVICE_API_KEY             = 'srv.api_key';
+	const SERVICE_HISTORY             = 'srv.history';
+	const SERVICE_DIFF_MATCH_PATCH    = 'srv.tool.diff';
 	const SERVICE_IMAGINE             = 'imagine';
 	const SERVICE_SENTRY              = 'sentry';
 
-	const BEHAVIOR_TAGS               = 'app.behavior.tags';
-	const BEHAVIOR_HEADINGS           = 'app.behavior.headings';
+	const BEHAVIOR_TAGS               = 'behavior.tags';
+	const BEHAVIOR_HEADINGS           = 'behavior.headings';
+	const BEHAVIOR_HISTORY            = 'behavior.history';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
 	const HEADER_USE_FULL_URL = 'X-Use-Full-URL';
@@ -749,6 +752,22 @@ class Application extends CApplication
 	}
 
 	/**
+	 * @return \Moro\Platform\Model\Implementation\History\ServiceHistory
+	 */
+	public function getServiceHistory()
+	{
+		return $this->offsetGet(self::SERVICE_HISTORY);
+	}
+
+	/**
+	 * @return \Moro\Platform\Tools\DiffMatchPatch
+	 */
+	public function getServiceDiffMatchPatch()
+	{
+		return $this->offsetGet(self::SERVICE_DIFF_MATCH_PATCH);
+	}
+
+	/**
 	 * @return \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior
 	 */
 	public function getBehaviorTags()
@@ -762,5 +781,13 @@ class Application extends CApplication
 	public function getBehaviorHeadings()
 	{
 		return $this->offsetGet(self::BEHAVIOR_HEADINGS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Accessory\HistoryBehavior
+	 */
+	public function getBehaviorHistory()
+	{
+		return $this->offsetGet(self::BEHAVIOR_HISTORY);
 	}
 }

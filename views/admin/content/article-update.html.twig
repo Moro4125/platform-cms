@@ -1,6 +1,6 @@
 {% extends "@PlatformCMS/admin/content/_form.html.twig" %}
 
-{% block workarea %}
+{%- block workarea -%}
 	{{ form_start(form) }}
 	<div class="has-error">
 	{{ form_errors(form.code) }}
@@ -96,48 +96,191 @@
 	</div>
 
 	<br/><hr/>
+{%- endblock workarea -%}
 
-	<!--
-		<div class="row">
-			<div class="btn-group-vertical btn-group-sm col-xs-2 col-sm-1" role="group">
-				<button type="submit" class="btn btn-default">
-					<span class="glyphicon glyphicon-th-large"></span>
-				</button>
-				<button type="submit" class="btn btn-default">1</button>
-				<button type="submit" class="btn btn-default">2</button>
-				<button type="submit" class="btn btn-default">3</button>
-				<button type="submit" class="btn btn-default">4</button>
-				<button type="submit" class="btn btn-default">5</button>
-				<button type="submit" class="btn btn-default">6</button>
-				<button type="submit" class="btn btn-default">7</button>
-				<button type="submit" class="btn btn-default">8</button>
-				<button type="submit" class="btn btn-default">9</button>
-				<button type="submit" class="btn btn-default">10</button>
-				<button type="submit" class="btn btn-default">99</button>
-				<button type="submit" class="btn btn-default">
-					<span class="glyphicon glyphicon-plus"></span>
-				</button>
-			</div>
 
-			<div class="col-xs-10 col-sm-11">
-				<div class="panel panel-default">
-					<div class="panel-body">
-						<div class="row">
-							<div class="col-xs-12">
-								Basic panel example
-							</div>
-						</div>
-						<hr/>
-						<div class="row">
-							<div class="col-xs-12">
-								Basic panel example
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+{%- block history -%}
+	<div id="history_lead" data-text="{{ (item.getParameters()|default([]))["lead"]|default(false) }}"></div>
+	<div id="history_text" data-text="{{ (item.getParameters()|default([]))["gallery_text"]|default(false) }}"></div>
+	{{- parent() -}}
+{%- endblock history -%}
 
-		<hr/>
-	-->
-{% endblock %}
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["code"]|default(false) %}
+		<li>
+			<strong>Символьный код</strong>
+			<span> изменён. Был </span>
+			<i>«{{ diff["code"][0] }}»,</i>
+			<span> стал </span>
+			<i>«{{ diff["code"][1] }}».</i>
+		</li>
+	{% endif %}
+
+	{% if diff["icon"]|default(false) %}
+		<li>
+			<strong>Анонсная картинка</strong>
+			{% if not diff["icon"][1] %}
+				<span> удалена. Была: </span>
+				<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: diff["icon"][0]}) }}" title="{{diff["icon"][0]}}">
+					<img src="{{ app.url("image", {width: 154, height: 96, silent: 1, hash: diff["icon"][0]}) }}" width="64" height="40">
+				</a>
+			{% elseif not diff["icon"][0] %}
+				<span> добавлена: </span>
+				<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: diff["icon"][1]}) }}" title="{{diff["icon"][1]}}">
+					<img src="{{ app.url("image", {width: 154, height: 96, silent: 1, hash: diff["icon"][1]}) }}" width="64" height="40">
+				</a>
+			{% else %}
+				<span> изменена. Была </span>
+				<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: diff["icon"][0]}) }}" title="{{diff["icon"][0]}}">
+					<img src="{{ app.url("image", {width: 154, height: 96, silent: 1, hash: diff["icon"][0]}) }}" width="64" height="40">
+				</a>,
+				<span> стала </span>
+				<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: diff["icon"][1]}) }}" title="{{diff["icon"][1]}}">
+					<img src="{{ app.url("image", {width: 154, height: 96, silent: 1, hash: diff["icon"][1]}) }}" width="64" height="40">
+				</a>.
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.lead"]|default(false) %}
+		<li>
+			<strong>Текст лида </strong>
+			<a class="history_diff" data-diff="{{ diff["parameters.lead"] }}" data-from="history_lead" data-title="Текст лида" href="#">
+				<span>был изменён</span>
+			</a>.
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.link"]|default(false) %}
+		<li>
+			<strong>Ссылка</strong>
+			{% if not diff["parameters.link"][1] %}
+				<span> удалена. Была: </span>
+				<i>«<a href="{{ diff["parameters.link"][0] }}" target="_blank">{{ diff["parameters.link"][0] }}</a>».</i>
+			{% elseif not diff["parameters.link"][0] %}
+				<span> установлена: </span>
+				<i>«<a href="{{ diff["parameters.link"][1] }}" target="_blank">{{ diff["parameters.link"][1] }}</a>».</i>
+			{% else %}
+				<span> изменена. Была </span>
+				<i>«<a href="{{ diff["parameters.link"][0] }}" target="_blank">{{ diff["parameters.link"][0] }}</a>»,</i>
+				<span> стала </span>
+				<i>«<a href="{{ diff["parameters.link"][1] }}" target="_blank">{{ diff["parameters.link"][1] }}</a>».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% if diff["parameters.gallery"]|default(false) %}
+		<li>
+			<strong>Блок фотогалереи</strong>
+			<span> был изменён. </span>
+			{% if diff["parameters.gallery"][0] %}
+				{%- if diff["parameters.gallery"][0]|length > 1 %}<span> Удалены: </span>{% else %}<span> Удалено изображение </span>{% endif -%}
+				{%- for hash in diff["parameters.gallery"][0] -%}
+					{%- if not loop.first -%}{{ " &nbsp; " }}{%- endif -%}
+					<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: hash}) }}" title="{{ hash }}">
+						<img src="{{ app.url("image", {width: 96, height: 96, silent: 1, hash: hash}) }}" width="40" height="40">
+					</a>
+				{%- endfor -%}.
+			{% endif %}
+			{% if diff["parameters.gallery"][1] %}
+				{%- if diff["parameters.gallery"][1]|length > 1 %}<span> Добавлены: </span>{% else %}<span> Добавлено изображение </span>{% endif -%}
+				{%- for hash in diff["parameters.gallery"][1] -%}
+					{%- if not loop.first -%}{{ " &nbsp; " }}{%- endif -%}
+					<a target="_blank" href="{{ app.url("image", {width: 0, height: 0, remember: 0, hash: hash}) }}" title="{{ hash }}">
+						<img src="{{ app.url("image", {width: 96, height: 96, silent: 1, hash: hash}) }}" width="40" height="40">
+					</a>
+				{%- endfor -%}.
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.gallery_text"]|default(false) %}
+		<li>
+			<strong>Блок текста статьи </strong>
+			<a class="history_diff" data-diff="{{ diff["parameters.gallery_text"] }}" data-from="history_text" data-title="Блок текста статьи" href="#">
+				<span>был изменён</span>
+			</a>.
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.articles"]|default(false) %}
+		{% set back = app.url("admin-about") ~ "#close=Y" %}
+		<li>
+			<strong>Связи со статьями</strong>
+			<span> были изменены. </span>
+			{% if diff["parameters.articles"][0] %}
+				{% if diff["parameters.articles"][0]|length == 1 %}<span> Удалена связь с </span>{% else %}<span> Удалены: </span>{% endif %}
+				{%- for id in diff["parameters.articles"][0] -%}
+					{%- if not loop.first -%}{{ ", " }}{%- endif -%}
+					{%- set entityA = app.serviceContent.getEntityById(id, true) -%}
+					{%- if entityA -%}
+						<i>«<a target="_blank" href="{{ app.url("admin-content-articles-update", {id: entityA.id, back: back}) }}">
+							{{- entityA.name -}}
+						</a>»</i>
+					{%- else -%}
+						<i>«{{- "связь со статьёй с ID:" ~ id -}}»</i>
+					{%- endif -%}
+				{%- endfor -%}.
+			{% endif %}
+			{% if diff["parameters.articles"][1] %}
+				{% if diff["parameters.articles"][1]|length == 1 %}<span> Добавлена связь с </span>{% else %}<span> Добавлены: </span>{% endif %}
+				{%- for id in diff["parameters.articles"][1] -%}
+					{%- if not loop.first -%}{{ ", " }}{%- endif -%}
+					{%- set entityA = app.serviceContent.getEntityById(id, true) -%}
+					{%- if entityA -%}
+						<i>«<a target="_blank" href="{{ app.url("admin-content-articles-update", {id: entityA.id, back: back}) }}">
+							{{- entityA.name -}}
+						</a>»</i>
+					{%- else -%}
+						<i>«{{- "связь со статьёй с ID:" ~ id -}}»</i>
+					{%- endif -%}
+				{%- endfor -%}.
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.attachments"]|default(false) %}
+		{% set back = app.url("admin-about") ~ "#close=Y" %}
+		<li>
+			<strong>Вложения</strong>
+			<span> были обновлены. </span>
+			{% if diff["parameters.attachments"][0] %}
+				{% if diff["parameters.attachments"][0]|length == 1 %}<span> Удалён файл </span>{% else %}<span> Удалены: </span>{% endif %}
+				<i>«
+				{%- for name in diff["parameters.attachments"][0] -%}
+					{%- if not loop.first -%}{{ "», «" }}{%- endif -%}
+					{{ name }}
+				{%- endfor -%}
+				».</i>
+			{% endif %}
+			{% if diff["parameters.attachments"][1] %}
+				{% if diff["parameters.attachments"][1]|length == 1 %}<span> Добавлен файл </span>{% else %}<span> Добавлены: </span>{% endif %}
+				<i>«
+				{%- for name in diff["parameters.attachments"][1] -%}
+					{%- if not loop.first -%}{{ "», «" }}{%- endif -%}
+					{{ name }}
+				{%- endfor -%}
+				».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+{%- endblock history_changes -%}

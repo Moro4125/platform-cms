@@ -3,6 +3,7 @@
  * Class AbstractDeleteAction
  */
 namespace Moro\Platform\Action;
+use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -28,6 +29,11 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	 * @var \Moro\Platform\Model\EntityInterface[]
 	 */
 	protected $_entities;
+
+	/**
+	 * @var array  Список полей, изменения которых должны игнорироваться в истории изменений.
+	 */
+	protected $_diffBlackKeys;
 
 	/**
 	 * @param Application|SilexApplication $app
@@ -70,6 +76,11 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 		if (($form = $this->getForm()) && $form->handleRequest($request)->isValid())
 		{
+			$service->attach($app->getBehaviorHistory());
+			/** @var HistoryBehavior $behavior */
+			$behavior = $service;
+			$behavior->setBlackFields((array)$this->_diffBlackKeys);
+
 			if ( ($result = $this->_doActions()) && $result instanceof Response)
 			{
 				return $result;

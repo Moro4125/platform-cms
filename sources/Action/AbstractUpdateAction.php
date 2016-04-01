@@ -3,6 +3,7 @@
  * Class AbstractUpdateAction
  */
 namespace Moro\Platform\Action;
+use Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\AbstractDecorator;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
@@ -54,6 +55,21 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	protected $_originalEntity;
 
 	/**
+	 * @var array  Список больших текстовых полей, которые требуют уменьшения при помощи утилиты нахождения изменений.
+	 */
+	protected $_patchTextKeys;
+
+	/**
+	 * @var array  Список полей, изменения которых должны игнорироваться в истории изменений.
+	 */
+	protected $_diffBlackKeys;
+
+	/**
+	 * @var array  Список полей, добавляемых в историю при наличии изменений в других полях.
+	 */
+	protected $_diffWhiteKeys = ['parameters.comment'];
+
+	/**
 	 * @param Application|SilexApplication $app
 	 * @param Request $request
 	 * @param integer $id
@@ -68,7 +84,9 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 		$this->setApplication($app);
 		$this->setRequest($request);
+
 		$service = $this->getService();
+		$service->attach($app->getBehaviorHistory());
 
 		if (!$request->query->has('back') && !$request->isXmlHttpRequest())
 		{
@@ -91,11 +109,12 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 		if ($request->query->has('lock'))
 		{
+			$headers = ['Content-Type' => 'plain/text'];
 			$result = ($request->query->get('lock') == 'Y')
 				? $service->tryLock($entity)
-				: $service->tryUnlock($entity);
+				: $service->tryUnlock($entity, null, $request->get('stamp'));
 
-			return new Response('', $result ? Response::HTTP_ACCEPTED : Response::HTTP_CONFLICT);
+			return new Response((string)$result, $result ? Response::HTTP_ACCEPTED : Response::HTTP_CONFLICT, $headers);
 		}
 
 		if ($request->isMethod('POST') && $form = $this->getForm())
@@ -155,6 +174,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	 */
 	protected function _getViewParameters()
 	{
+		$app = $this->getApplication();
 		$service = $this->getService();
 		$entity = $this->getEntity();
 
@@ -185,6 +205,9 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		return [
 			'form' => $this->getForm()->createView(),
 			'item' => $entity,
+			'history' => $app->getOption('content.history')
+				? $app->getServiceHistory()->findByServiceAndEntity($service, $entity)
+				: [],
 		];
 	}
 
@@ -308,6 +331,12 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		$application = $this->getApplication();
 		$entity = $this->getEntity();
 		$form = $this->getForm();
+
+		/** @var HistoryBehavior $behavior */
+		$behavior = $this->getService();
+		$behavior->setPatchFields((array)$this->_patchTextKeys);
+		$behavior->setBlackFields((array)$this->_diffBlackKeys);
+		$behavior->setWhiteFields((array)$this->_diffWhiteKeys);
 
 		$this->getService()->applyAdminUpdateForm($application, $entity, $form);
 	}

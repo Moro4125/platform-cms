@@ -3,7 +3,7 @@
  * File for providers and services initialization.
  */
 namespace Moro\Platform;
-use \Silex\Provider\DoctrineServiceProvider;
+use  \Silex\Provider\DoctrineServiceProvider;
 use \Silex\Provider\SecurityServiceProvider;
 use \Silex\Provider\UrlGeneratorServiceProvider;
 use \Silex\Provider\TwigServiceProvider;
@@ -33,6 +33,7 @@ use \Moro\Platform\Provider\Twig\MarkdownExtension;
 use \Moro\Platform\Provider\SentryProvider;
 use \Moro\Platform\Security\User\ApiKeyUserProvider;
 use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
+use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior;
 use \Moro\Platform\Model\Implementation\Routes\ServiceRoutes;
@@ -44,7 +45,9 @@ use \Moro\Platform\Model\Implementation\File\Decorator\HeadingDecorator as Headi
 use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
 use \Moro\Platform\Model\Implementation\ApiKey\ServiceApiKey;
+use \Moro\Platform\Model\Implementation\History\ServiceHistory;
 use \Moro\Platform\Tools\Relink;
+use \Moro\Platform\Tools\DiffMatchPatch;
 
 
 Application::getInstance(function (Application $app)
@@ -262,11 +265,40 @@ Application::getInstance(function (Application $app)
 		return $behavior;
 	});
 
+	// Model behavior HISTORY.
+	$app[Application::BEHAVIOR_HISTORY] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::BEHAVIOR_HISTORY.$suffixClass, HistoryBehavior::class);
+
+		/** @var HistoryBehavior $behavior */
+		$behavior = new $class();
+		$behavior->setServiceHistory($app->getServiceHistory());
+		$behavior->setServiceDiffMatchPatch($app->getServiceDiffMatchPatch());
+		return $behavior;
+	});
+
 	// Service ROUTES.
 	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
 
 		return new $class($app->getServiceDataBase());
+	});
+
+	// Service DIFF_MATCH_PATCH.
+	$app[Application::SERVICE_DIFF_MATCH_PATCH] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_DIFF_MATCH_PATCH.$suffixClass, DiffMatchPatch::class);
+
+		return new $class();
+	});
+
+	// Service HISTORY.
+	$app[Application::SERVICE_HISTORY] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::SERVICE_HISTORY.$suffixClass, ServiceHistory::class);
+
+		/** @var ServiceHistory $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_HISTORY);
+		$service->setServiceUser($app->getServiceSecurityToken());
+		return $service;
 	});
 
 	// Service OPTIONS.

@@ -235,6 +235,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		try
 		{
 			$parameters['tags'] = array_values($data['tags']);
+			$parameters['comment'] = $data['comment'];
 
 			$list = [
 				'nominativus'      => 'Кто/Что',

@@ -88,7 +88,7 @@ class TagsForm extends AbstractContent
 		]);
 
 		$builder->add('lead', 'text', [
-			'label' => 'Пояснение',
+			'label' => 'Описание',
 			'required' => false,
 		]);
 

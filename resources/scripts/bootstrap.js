@@ -284,12 +284,14 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 	});
 
 	jQuery("*[data-lock]:first").each(function() {
-		var check = function() {
+		var stamp,
+			check = function() {
 			jQuery.ajax({
 				method: "POST",
 				url: window.location.href.split('?', 1)[0] + "?lock=Y"
-			}).done(function() {
+			}).done(function(text) {
 				handler = setTimeout(check, 15000);
+				stamp = text;
 			}).fail(function() {
 				if (handler) {
 					handler = null;
@@ -309,10 +311,48 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				jQuery.ajax({
 					async: false,
 					method: "POST",
+					data: {"stamp": stamp},
 					url: window.location.href.split('?', 1)[0] + "?lock=N"
 				})
 			});
 		}
+	});
+
+	jQuery("#comment-area").each(function() {
+		var target = jQuery(this);
+		jQuery("#admin_update_comment").each(function() {
+			var self = jQuery(this),
+				text = "Пояснение к изменениям или просто комментарий к записи",
+				node = jQuery("<textarea>").attr("class", "form-control form-control").attr("placeholder", text);
+
+			target.append(node);
+			node.on({
+				change: function() {
+					self.val(node.val());
+				}
+			});
+
+			require(["textarea_autosize"], function(autosize) {
+				autosize(node);
+			});
+		});
+	});
+
+	jQuery("#buttons-area").each(function() {
+		var target = jQuery(this);
+		jQuery("#admin_update_commit,#admin_update_apply,#admin_update_cancel").each(function() {
+			var self = jQuery(this),
+				node = jQuery("<button>").attr("type", "submit").attr("class", self.attr("class")).html(self.html());
+
+			target.append(node);
+			node.on({
+				click: function(event) {
+					event.stopPropagation();
+					event.preventDefault();
+					self.click();
+				}
+			});
+		});
 	});
 
 	jQuery("#admin_update_cancel,#admin_update_delete").each(function() {
@@ -321,6 +361,66 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				jQuery(event.target).closest("form").find("input[required]").each(function() {
 					jQuery(this).val() || jQuery(this).val("-");
 				});
+			}
+		});
+	});
+
+	jQuery(".history_diff").each(function() {
+		jQuery(this).on({
+			click: function(event) {
+				var self = jQuery(this),
+					that = this,
+					modal = jQuery("#diffModal");
+
+				event.preventDefault();
+				modal.modal();
+				jQuery(".modal-content", modal).html("Расчёт изменений...");
+
+				setTimeout(function() {
+					//noinspection JSPotentiallyInvalidConstructorUsage
+					var service = new diff_match_patch(),
+						pattern = /&para;/g,
+						list = [],
+						from,
+						next,
+						text,
+						diff,
+						html,
+						i;
+
+					from = self.data("from");
+					text = jQuery("#" + from).data("text");
+
+					jQuery(".history_diff").each(function() {
+						var self = jQuery(this);
+						if (self.data("from") == from) {
+							list.push(this);
+						}
+					});
+
+					for (i = 0; i < list.length; i = (list[i] != that) ? i + 1 : list.length) {
+						next = text;
+						text = service.patch_apply(service.patch_fromText(jQuery(list[i]).data("diff")), text)[0];
+					}
+
+					diff = service.diff_main(text, next);
+					html = service.diff_prettyHtml(diff).replace(pattern, "\n");
+
+					html = ''
+						+ '<div class="modal-header">'
+						+ '<button type="button" class="close" data-dismiss="modal" aria-label="Close">'
+						+ '<span aria-hidden="true">×</span>'
+						+ '</button>'
+						+ '<h3 class="modal-title">'
+						+ self.data("title")
+						+ '</h3>'
+						+ '</div>'
+						+ '<div class="modal-body b-diff-text">'
+						+ html
+						+ '</div>';
+
+					jQuery(".modal-content", modal).html(html);
+				},1);
 			}
 		});
 	});

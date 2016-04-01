@@ -196,8 +196,9 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 
 		try
 		{
-			$parameters['tags'] = array_values($data['tags']);
-			$parameters['lead'] = $data['lead'];
+			$parameters['tags']    = array_values($data['tags']);
+			$parameters['lead']    = $data['lead'];
+			$parameters['comment'] = $data['comment'];
 
 			$entity->setName($data['name']);
 			$entity->setKind($data['kind']);

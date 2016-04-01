@@ -329,6 +329,45 @@ trait EntityTrait
 	}
 
 	/**
+	 * @param string $offset
+	 * @return bool
+	 */
+	public function offsetExists($offset)
+	{
+		return $this->hasProperty($offset);
+	}
+
+	/**
+	 * @param string $offset
+	 * @return mixed
+	 */
+	public function offsetGet($offset)
+	{
+		return $this->getProperty($offset);
+	}
+
+	/**
+	 * @param string $offset
+	 * @param mixed $value
+	 * @return $this
+	 */
+	public function offsetSet($offset, $value)
+	{
+		$this->setProperty($offset, $value);
+		return $this;
+	}
+
+	/**
+	 * @param string $offset
+	 * @return $this
+	 */
+	public function offsetUnset($offset)
+	{
+		$this->setProperty($offset, null);
+		return $this;
+	}
+
+	/**
 	 * @return void
 	 */
 	protected function _initEntityReflection()

@@ -11,6 +11,7 @@ namespace Moro\Platform\Model\Accessory\Parameters;
 interface ParametersInterface
 {
 	const PROP_PARAMETERS = 'parameters';
+	const IGNORED_COMMENT = 'comment';
 
 	/**
 	 * @return array

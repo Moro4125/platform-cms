@@ -4,6 +4,69 @@
 	{% form_theme form '@PlatformCMS/forms/content.html.twig' %}
 	{% block workarea %}
 	{% endblock %}
+
+	<div class="row">
+		<div class="col-md-8 col-sm-12"{% if app.getOption("content.history") %} id="comment-area"{% endif %}>
+		</div>
+		<div class="col-md-4 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group" id="buttons-area">
+				<br class="visible-sm visible-xs"/>
+			</div>
+		</div>
+	</div>
+
+	{% if history|default({})|length %}
+		{%- block history -%}
+		<br/><br/>
+		<div class="row">
+			<div class="col-md-12">
+				<h3>Последнии обновления</h3>
+				{%- for record in history -%}
+					{%- set diff = record.parameters -%}
+					<ol id="history-{{ record.id }}" class="breadcrumb">
+						<li>{{ record.createdAt|date }}</li>
+						<li>{{ record.createdBy }}</li>
+					</ol>
+
+					<ul class="history-changes">
+					{%- block history_changes -%}
+						{% if diff["parameters.tags"]|default(false) %}
+							<li>
+								<strong>Ярлыки</strong>
+								<span> были обновлены. </span>
+								{%- if diff["parameters.tags"][0] -%}
+									{%- if diff["parameters.tags"][0]|length > 1 -%}
+										<span> Удалены: </span>
+									{%- else -%}
+										<span> Удалён ярлык </span>
+									{%- endif -%}
+									<i>{{ '«' ~ diff["parameters.tags"][0]|join('», «') ~ '»' }}</i>.
+								{%- endif -%}
+								{%- if diff["parameters.tags"][1] -%}
+									{%- if diff["parameters.tags"][1]|length > 1 -%}
+										<span> Добавлены: </span>
+									{%- else -%}
+										<span> Добавлен ярлык </span>
+									{%- endif -%}
+									<i>{{ '«' ~ diff["parameters.tags"][1]|join('», «') ~ '»' }}</i>.
+								{%- endif -%}
+							</li>
+						{% endif %}
+					{%- endblock history_changes -%}
+					</ul>
+
+					{%- if diff["parameters.comment"]|default(false) -%}
+						<div class="history-changes">
+							{{ diff["parameters.comment"]|markdown }}
+						</div>
+					{%- endif -%}
+					<br/>
+				{%- endfor -%}
+			</div>
+		</div>
+		{%- endblock history -%}
+	{% endif %}
+
 	<br/>
 	{{ parent() }}
 {% endblock %}

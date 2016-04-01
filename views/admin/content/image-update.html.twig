@@ -101,4 +101,126 @@
 	{{- block("usedList") -}}
 
 	{{ form_end(form) }}
+	<hr/>
 {% endblock %}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.lead"]|default(false) %}
+		<li>
+			<strong>Текстовое описание</strong>
+			{% if not diff["parameters.lead"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["parameters.lead"][1] }}».</i>
+			{% elseif not diff["parameters.lead"][1] %}
+				<span> удалено. Было: </span>
+				<i>«{{ diff["parameters.lead"][0] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["parameters.lead"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["parameters.lead"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% if diff["parameters.kinds"]|default(false) %}
+		<li>
+			<strong>Список кропов</strong>
+			<span> был изменён. </span>
+			{% if diff["parameters.kinds"][0] %}
+				{% if diff["parameters.kinds"][0]|length > 1 %}<span> Удалены: </span>{% else %}<span> Удалён кроп </span>{% endif %}
+				<i>
+					{%- for kind in diff["parameters.kinds"][0] -%}
+						{%- if not loop.first %}{{ ", " }}{% endif -%}
+						«{{ kind }}»
+					{%- endfor -%}
+				.</i>
+			{% endif %}
+			{% if diff["parameters.kinds"][1] %}
+				{% if diff["parameters.kinds"][1]|length > 1 %}<span> Добавлены: </span>{% else %}<span> Добавлен кроп </span>{% endif %}
+				<i>
+					{%- for kind in diff["parameters.kinds"][1] -%}
+						{%- if not loop.first %}{{ ", " }}{% endif -%}
+						«{{ kind }}»
+					{%- endfor -%}
+					.</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% for entity in app.serviceHistory.findByRequestId(record.requestId) %}
+		{% set diff = entity.parameters %}
+		{% set watermark1 = ["", "правый верхний",   "правый нижний",   "левый нижний",   "левый верхний"]   %}
+		{% set watermark2 = ["", "правого верхнего", "правого нижнего", "левого нижнего", "левого верхнего"] %}
+		{% if diff["kind"]|default(false) and diff["parameters.crop"]|default(diff["parameters.watermark"]|default(diff["parameters.hide_mask"]|default(false))) %}
+			<li>Кроп под <i>«{{ diff["kind"] -}}»:</i>
+				<ul>
+					{% if diff["parameters.crop"]|default(false) %}
+						<li>
+							<strong>Область</strong>
+							{% if not diff["parameters.crop"][0] or diff["parameters.crop"][0] == "0,0,0,0" %}
+								<span> была добавлена: </span>
+								<i>«{{ diff["parameters.crop"][1] }}».</i>
+							{% elseif not diff["parameters.crop"][1] or diff["parameters.crop"][1] == "0,0,0,0" %}
+								<span> была удалена. Было </span>
+								<i>«{{ diff["parameters.crop"][0] }}».</i>
+							{% else %}
+								<span> была изменена. Было </span>
+								<i>«{{ diff["parameters.crop"][0] }}»,</i>
+								<span> стало </span>
+								<i>«{{ diff["parameters.crop"][1] }}».</i>
+							{% endif %}
+						</li>
+					{% endif %}
+
+					{% if diff["parameters.watermark"]|default(false) %}
+						<li>
+							<strong>Логотип</strong>
+							{%- if not diff["parameters.watermark"][0] -%}
+								<span> был установлен в </span>
+								<i>«{{ watermark1[diff["parameters.watermark"][1]] }}»</i> угол.
+							{%- elseif not diff["parameters.watermark"][1] -%}
+								<span> был убран. </span>
+							{%- else -%}
+								<span> был перемещён из </span>
+								<i>«{{ watermark2[diff["parameters.watermark"][0]] }}» угла,</i>
+								<span> в </span>
+								<i>«{{ watermark1[diff["parameters.watermark"][1]] }}»</i> угол.
+							{%- endif -%}
+						</li>
+					{% endif %}
+
+					{% if diff["parameters.hide_mask"]|default(false) %}
+						<li>
+							<strong>Маска</strong>
+							{%- if diff["parameters.hide_mask"][1] -%}
+								<span> была включена. </span>
+							{%- else -%}
+								<span> была отключена. </span>
+							{%- endif -%}
+						</li>
+					{% endif %}
+				</ul>
+			</li>
+		{% endif %}
+	{% endfor %}
+
+{%- endblock history_changes -%}

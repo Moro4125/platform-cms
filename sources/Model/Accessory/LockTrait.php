@@ -134,7 +134,7 @@ trait LockTrait
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
 	 * @param null|int $lockTime
-	 * @return bool
+	 * @return bool|string
 	 */
 	public function tryLock($entity, $lockTime = null)
 	{
@@ -142,14 +142,21 @@ trait LockTrait
 		{
 			/** @var Connection $connection */
 			$connection = $this->_connection;
+			$platform = $connection->getDatabasePlatform();
 			$id = $entity->getId();
-			$now = $connection->getDatabasePlatform()->getNowExpression();
+			$now = $platform->getNowExpression();
+			$time = gmdate($platform->getDateTimeFormatString());
 
 			if (empty($this->_lockRecords[$id]))
 			{
 				$query = $connection->createQueryBuilder()
 					->insert($this->_lockTable)
-					->values(['user' => '?', 'code' => '?', 'created_at' => $now, 'updated_at' => $now])
+					->values([
+						'user' => '?',
+						'code' => '?',
+						'created_at' => $now,
+						'updated_at' => $platform->quoteStringLiteral($time),
+					])
 					->getSQL();
 			}
 			else
@@ -157,13 +164,13 @@ trait LockTrait
 				$query = $connection->createQueryBuilder()
 					->update($this->_lockTable)
 					->set('user', '?')
-					->set('updated_at', $now)
+					->set('updated_at', $platform->quoteStringLiteral($time))
 					->where('code = ?')
 					->getSQL();
 			}
 
 			$connection->prepare($query)->execute([$this->_lockGetUser(), $this->_lockGetCode($entity)]);
-			return !$this->isLocked($entity, $lockTime) && !empty($this->_lockRecords[$id]);
+			return (!$this->isLocked($entity, $lockTime) && !empty($this->_lockRecords[$id])) ? $time : false;
 		}
 
 		return false;
@@ -172,9 +179,10 @@ trait LockTrait
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
 	 * @param null|int $lockTime
+	 * @param null|string $stamp
 	 * @return bool
 	 */
-	public function tryUnlock($entity, $lockTime = null)
+	public function tryUnlock($entity, $lockTime = null, $stamp = null)
 	{
 		if (!$this->isLocked($entity, $lockTime) && isset($this->_connection))
 		{
@@ -184,12 +192,18 @@ trait LockTrait
 
 			if (!empty($this->_lockRecords[$id]))
 			{
-				$query = $connection->createQueryBuilder()
+				$parameters = [$this->_lockGetCode($entity)];
+				$builder = $connection->createQueryBuilder()
 					->delete($this->_lockTable)
-					->where('code = ?')
-					->getSQL();
+					->where('code = ?');
 
-				$connection->prepare($query)->execute([$this->_lockGetCode($entity)]);
+				if ($stamp)
+				{
+					$parameters[] = $stamp;
+					$builder->andWhere('updated_at = ?');
+				}
+
+				$connection->prepare($builder->getSQL())->execute($parameters);
 				return !$this->isLocked($entity, $lockTime) && empty($this->_lockRecords[$id]);
 			}
 

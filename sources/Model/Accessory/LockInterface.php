@@ -27,7 +27,8 @@ interface LockInterface
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
 	 * @param null|int $lockTime
+	 * @param null|string $stamp
 	 * @return bool
 	 */
-	function tryUnlock($entity, $lockTime = null);
+	function tryUnlock($entity, $lockTime = null, $stamp = null);
 }

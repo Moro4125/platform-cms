@@ -133,6 +133,8 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$entity = $this->_newEntityFromArray([EntityFile::PROP_HASH => $hash, EntityFile::PROP_KIND => $kind ]);
 
 		$notCommit || $this->commit($entity);
+		$notCommit || $this->notify(self::STATE_ENTITY_LOADED, $entity);
+
 		return $entity;
 	}
 
@@ -166,7 +168,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 			return null;
 		}
 
-		return $this->createEntity($hash, $kind, true);
+		return $this->createEntity($hash, $kind, false);
 	}
 
 	/**
@@ -533,6 +535,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		{
 			$useWatermark = !empty($application->getOption('images.watermark'));
 			$useMask      = !empty($application->getOption('images.mask1'));
+			$diffFlag = false;
 
 			foreach (array_keys($this->_kinds) as $kind)
 			{
@@ -540,24 +543,40 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 				{
 					$item = $this->getByHashAndKind($hash, $kind, true, true);
 					$item->getId() === $entity->getId() && $item = $entity;
-					$options = array_merge($imgOptions, $item->getParameters());
+					$original = $options = array_merge($imgOptions, $item->getParameters());
+
+					$options['crop_x'] = max(0, (int)$data['crop'.$kind.'_x']);
+					$options['crop_y'] = max(0, (int)$data['crop'.$kind.'_y']);
+					$options['crop_w'] = min((int)$data['crop'.$kind.'_w'], $options['width']  - $options['crop_x']);
+					$options['crop_h'] = min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']);
+					$options['crop'] = "{$options['crop_x']},{$options['crop_y']},{$options['crop_w']},{$options['crop_h']}";
 
 					if ($kind == '1x1')
 					{
 						$item->setName($data['name']);
 						$options['tags'] = array_values($data['tags']);
 						$options['lead'] = $data['lead'];
+						$options['kinds'] = [];
+						$options['comment'] = $data['comment'];
+
+						foreach (array_keys($this->_kinds) as $kind2)
+						{
+							if ($data['crop'.$kind2.'_a'] && $kind2 != '1x1')
+							{
+								$options['kinds'][] = $kind2;
+							}
+						}
 					}
 					else
 					{
+						if ($this->calculateDiff($original, $options))
+						{
+							$diffFlag = true;
+						}
+
 						unset($options['tags']);
 						unset($options['lead']);
 					}
-
-					$options['crop_x'] = max(0, (int)$data['crop'.$kind.'_x']);
-					$options['crop_y'] = max(0, (int)$data['crop'.$kind.'_y']);
-					$options['crop_w'] = min((int)$data['crop'.$kind.'_w'], $options['width']  - $options['crop_x']);
-					$options['crop_h'] = min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']);
 
 					if ($useWatermark)
 					{
@@ -570,13 +589,16 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					}
 
 					$item->setParameters($options);
-					$this->commit($item);
+					$item === $entity || $this->commit($item);
 				}
 				else
 				{
 					$this->deleteByHashAndKind($hash, $kind, true);
 				}
 			}
+
+			$diffFlag && $entity->setProperty(EntityFile::PROP_UPDATED_AT, gmdate('Y-m-d H:i:s'));
+			$this->commit($entity);
 
 			$this->_connection->commit();
 			$application->getServiceFlash()->success('Изменения в записи изображения были успешно сохранены.');

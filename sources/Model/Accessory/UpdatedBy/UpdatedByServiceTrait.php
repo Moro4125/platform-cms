@@ -60,16 +60,19 @@ trait UpdatedByServiceTrait
 		{
 			$user = $this->_userToken->getUsername();
 
-			if ($insert)
+			if ($insert && $entity->hasProperty(UpdatedByInterface::PROP_CREATED_BY))
 			{
 				$key = ':'.UpdatedByInterface::PROP_CREATED_BY;
 				$list[UpdatedByInterface::PROP_CREATED_BY] = $key;
 				$params[$key] = $user;
 			}
 
-			$key = ':'.UpdatedByInterface::PROP_UPDATED_BY;
-			$list[UpdatedByInterface::PROP_UPDATED_BY] = $key;
-			$params[$key] = $user;
+			if ($entity->hasProperty(UpdatedByInterface::PROP_UPDATED_BY))
+			{
+				$key = ':'.UpdatedByInterface::PROP_UPDATED_BY;
+				$list[UpdatedByInterface::PROP_UPDATED_BY] = $key;
+				$params[$key] = $user;
+			}
 		}
 
 		unset($entity);

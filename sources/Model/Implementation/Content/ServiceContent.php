@@ -323,7 +323,14 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$parameters['tags']         = array_values($data['tags']);
 			$parameters['gallery']      = $data['gallery'];
 			$parameters['gallery_text'] = $data['gallery_text'];
-			$parameters['articles']     = $data['articles'];
+			$parameters['articles']     = array_values($data['articles']);
+			$parameters['comment']      = $data['comment'];
+
+			$parameters['attachments']  = [];
+			foreach ($this->selectAttachmentByEntity($entity) as $attachment)
+			{
+				$parameters['attachments'][] = $attachment->getName();
+			}
 
 			$entity->setName($data['name']);
 			$entity->setCode($data['code']);

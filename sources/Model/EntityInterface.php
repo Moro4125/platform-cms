@@ -5,12 +5,13 @@
 namespace Moro\Platform\Model;
 use \Moro\Platform\Model\Exception\UnknownPropertyException;
 use \JsonSerializable;
+use \ArrayAccess;
 
 /**
  * Interface EntityInterface
  * @package Model
  */
-interface EntityInterface extends JsonSerializable
+interface EntityInterface extends JsonSerializable, ArrayAccess
 {
 	const PROP_ID         = 'id';
 	const PROP_CREATED_AT = 'created_at';

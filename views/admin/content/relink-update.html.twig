@@ -40,3 +40,98 @@
 
 	<br/><hr/>
 {% endblock %}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% for key, name in {"parameters.nominativus": "Кто/Что","parameters.genitivus": "Кого/Чего","parameters.dativus": "Кому/Чему","parameters.accusativus": "Кого/Что","parameters.instrumentalis": "Кем/Чем","parameters.praepositionalis": "О ком/чём"} %}
+		{% if diff[key]|default(false) %}
+			<li>
+				<strong>{{ name }}</strong>
+				{% if not diff[key][0] %}
+					<span> добавлено: </span>
+					<i>«{{ diff[key][1]|join("», «") }}».</i>
+				{% elseif not diff[key][1] %}
+					<span> удалено. Было </span>
+					<i>«{{ diff[key][0]|join("», «") }}».</i>
+				{% else %}
+					<span> изменено. Было </span>
+					<i>«{{ diff[key][0]|join("», «") }}»,</i>
+					<span> стало </span>
+					<i>«{{ diff[key][1]|join("», «") }}».</i>
+				{% endif %}
+			</li>
+		{% endif %}
+	{% endfor %}
+
+	{% for key, name in {"href": "Ссылка","parameters.title": "Подсказка"} %}
+		{% if diff[key]|default(false) %}
+			<li>
+				<strong>{{ name }}</strong>
+				{% if not diff[key][0] %}
+					<span> добавлена: </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% elseif not diff[key][1] %}
+					<span> удалена. Было </span>
+					<i>«{{ diff[key][0] }}».</i>
+				{% else %}
+					<span> изменена. Было </span>
+					<i>«{{ diff[key][0] }}»,</i>
+					<span> стало </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% endif %}
+			</li>
+		{% endif %}
+	{% endfor %}
+
+	{% if diff["class"]|default(false) %}
+		<li>
+			<strong>CSS класс</strong>
+			{% if not diff["class"][0] %}
+				<span> добавлен: </span>
+				<i>«{{ diff["class"][1] }}».</i>
+			{% elseif not diff["class"][1] %}
+				<span> удалён. Было </span>
+				<i>«{{ diff["class"][0] }}».</i>
+			{% else %}
+				<span> изменён. Было </span>
+				<i>«{{ diff["class"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["class"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% for key, name in {"parameters.open_tab": "открытия в новой вкладке","parameters.nofollow": "запрета индексации роботами"} %}
+		{% if diff[key]|default(false) %}
+			<li>
+				<strong>Флаг</strong>
+				<span> {{ name }} </span>
+				{% if diff[key][1] %}
+					<span> установлен. </span>
+				{% else %}
+					<span> снят. </span>
+				{% endif %}
+			</li>
+		{% endif %}
+	{% endfor %}
+
+
+
+{%- endblock history_changes -%}

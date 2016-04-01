@@ -34,6 +34,16 @@ class UpdateArticlesAction extends AbstractUpdateAction
 	protected $_prevEntityId;
 
 	/**
+	 * @var array
+	 */
+	protected $_patchTextKeys = ['parameters.lead', 'parameters.gallery_text'];
+
+	/**
+	 * @var array
+	 */
+	protected $_diffBlackKeys = ['parameters.chain'];
+
+	/**
 	 * @return array
 	 */
 	protected function _getViewParameters()

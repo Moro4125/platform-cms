@@ -26,6 +26,7 @@ trait ParametersEntityTrait
 
 		if (isset($this->_flags) && ($this->_flags & EntityInterface::FLAG_DATABASE))
 		{
+			unset($options[ParametersInterface::IGNORED_COMMENT]);
 			$options = json_encode($options, JSON_UNESCAPED_UNICODE);
 		}
 

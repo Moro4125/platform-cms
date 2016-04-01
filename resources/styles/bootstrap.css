@@ -513,3 +513,18 @@ form > table.table {
 .b-admin-panel {
     position: relative !important;
 }
+
+.history-changes img {
+    vertical-align: bottom;
+    padding: 1px;
+    border: solid 1px silver;
+}
+
+.b-diff-text {
+    font-family: monospace, Courier;
+}
+
+.history-changes p {
+    padding-left: 15px;
+    padding-right: 15px;
+}

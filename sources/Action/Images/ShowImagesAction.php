@@ -3,6 +3,7 @@
  * Class ShowImagesAction
  */
 namespace Moro\Platform\Action\Images;
+use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
 use \Imagine\Image\Box;
@@ -34,6 +35,7 @@ class ShowImagesAction
 
 	/**
 	 * @param \Moro\Platform\Application|SilexApplication $app
+	 * @param Request $request
 	 * @param string $salt
 	 * @param string $hash
 	 * @param integer $width
@@ -41,11 +43,15 @@ class ShowImagesAction
 	 * @param string $format
 	 * @return Response
 	 */
-	public function __invoke(SilexApplication $app, $salt, $hash, $width, $height, $format = 'jpg')
+	public function __invoke(SilexApplication $app, Request $request, $salt, $hash, $width, $height, $format = 'jpg')
 	{
 		if (!file_exists($file = $app->getServiceFile()->getPathForHash($hash)))
 		{
-			$app->getServiceFlash()->error("Отсутствует изображение с хэшем \"$hash\".");
+			if (!$request->query->has('silent') || !$request->query->get('silent'))
+			{
+				$app->getServiceFlash()->error("Отсутствует изображение с хэшем \"$hash\".");
+			}
+
 			return $app->redirect($app->getOption('images.not_found')."{$width}_{$height}.jpg?original={$hash}");
 		}
 

@@ -22,6 +22,11 @@ class DeleteArticlesAction extends AbstractDeleteAction
 	public $routeIndex  = 'admin-content-articles';
 
 	/**
+	 * @var array
+	 */
+	protected $_diffBlackKeys = ['parameters.chain'];
+
+	/**
 	 * @return \Symfony\Component\HttpFoundation\RedirectResponse
 	 */
 	protected function _doDelete()

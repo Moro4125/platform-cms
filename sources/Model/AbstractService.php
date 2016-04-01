@@ -28,16 +28,17 @@ abstract class AbstractService implements SplSubject
 	const STATE_BEFORE_SELECT   =  3;
 	const STATE_SELECT_ENTITIES =  4;
 	const STATE_PREPARE_ENTITY  =  5;
-	const STATE_COMMIT_STARTED  =  6;
-	const STATE_PREPARE_COMMIT  =  7;
-	const STATE_COMMIT_FINISHED =  8;
-	const STATE_COMMIT_SUCCESS  =  9;
-	const STATE_COMMIT_FAILED   = 10;
-	const STATE_DELETE_STARTED  = 11;
-	const STATE_DELETE_FINISHED = 12;
-	const STATE_DELETE_SUCCESS  = 13;
-	const STATE_DELETE_FAILED   = 14;
-	const STATE_BEHAVIOR_METHOD = 15;
+	const STATE_ENTITY_LOADED   =  6;
+	const STATE_COMMIT_STARTED  =  7;
+	const STATE_PREPARE_COMMIT  =  8;
+	const STATE_COMMIT_FINISHED =  9;
+	const STATE_COMMIT_SUCCESS  = 10;
+	const STATE_COMMIT_FAILED   = 11;
+	const STATE_DELETE_STARTED  = 12;
+	const STATE_DELETE_FINISHED = 13;
+	const STATE_DELETE_SUCCESS  = 14;
+	const STATE_DELETE_FAILED   = 15;
+	const STATE_BEHAVIOR_METHOD = 16;
 
 	/**
 	 * @var Connection
@@ -396,6 +397,9 @@ abstract class AbstractService implements SplSubject
 		$entity->setFlags($flags | $entity->getFlags());
 		$entity->setProperties($record);
 		$entity->setFlags($entity->getFlags() & ~EntityInterface::FLAG_DATABASE);
+
+		$this->notify(self::STATE_ENTITY_LOADED, $entity);
+
 		$entity = $this->_decorator ? $this->_applyDecorator($entity) : $entity;
 
 		return $entity;
@@ -808,28 +812,53 @@ abstract class AbstractService implements SplSubject
 	}
 
 	/**
-	 * @param EntityInterface $a
-	 * @param EntityInterface $b
+	 * @param EntityInterface|array $a
+	 * @param EntityInterface|array $b
 	 * @return array
 	 */
-	public function calculateDiff(EntityInterface $a, EntityInterface $b)
+	public function calculateDiff($a, $b)
 	{
 		$result = [];
 
 		$a instanceof AbstractDecorator && $a = $a->decorate(false);
 		$b instanceof AbstractDecorator && $b = $b->decorate(false);
 
-		$a = $a->getProperties();
-		$b = $b->getProperties();
+		is_array($a) || $a = $a->getProperties();
+		is_array($b) || $b = $b->getProperties();
 
-		$a = array_merge($a, array_map('json_encode', array_filter($a, 'is_array')));
-		$b = array_merge($b, array_map('json_encode', array_filter($b, 'is_array')));
+		$handler = function($a, $b, $prefix = '') use (&$result, &$handler) {
+			$keys = array_unique(array_merge(array_keys($a), array_keys($b)));
 
-		foreach (array_keys(array_diff_assoc($a, $b)) as $property)
-		{
-			$result[$property] = [$a[$property], $b[$property]];
-		}
+			if (is_numeric(reset($keys)))
+			{
+				$av = array_diff($a, $b);
+				$bv = array_diff($b, $a);
 
+				if (count($av) || count($bv))
+				{
+					$result[substr($prefix, 0, -1)] = [array_values($av), array_values($bv)];
+				}
+
+				return;
+			}
+
+			foreach ($keys as $property)
+			{
+				$av = isset($a[$property]) ? $a[$property] : null;
+				$bv = isset($b[$property]) ? $b[$property] : null;
+
+				if ((is_array($av) || $av === null) && (is_array($bv) || $bv === null))
+				{
+					$handler((array)$av, (array)$bv, $prefix.$property.'.');
+				}
+				elseif (empty($av) != empty($bv) && gettype($av) != gettype($bv) || $av != $bv)
+				{
+					$result[$prefix.$property] = [$av, $bv];
+				}
+			}
+		};
+
+		$handler($a, $b);
 		return $result;
 	}
 }

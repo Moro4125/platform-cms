@@ -40,7 +40,7 @@
 	<br/>
 	<div class="row">
 		<div class="col-md-12">
-			{{ form_widget(form.lead, {attr: {placeholder: "Пояснение"}}) }}
+			{{ form_widget(form.lead, {attr: {placeholder: "Описание ярлыка и его назначения"}}) }}
 		</div>
 	</div>
 
@@ -48,3 +48,53 @@
 
 	<br/><hr/>
 {% endblock %}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["kind"]|default(false) %}
+		{% set kinds = ["обычный", "синоним", "системный"] %}
+		<li>
+			<strong>Тип</strong>
+			<span> изменён. Был </span>
+			<i>«{{ kinds[diff["kind"][0]]|default("неизвестный") }}»,</i>
+			<span> стал </span>
+			<i>«{{ kinds[diff["kind"][1]]|default("неизвестный") }}».</i>
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% if diff["parameters.lead"]|default(false) %}
+		<li>
+			<strong>Описание</strong>
+			{% if not diff["parameters.lead"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["parameters.lead"][1] }}».</i>
+			{% elseif not diff["parameters.lead"][1] %}
+				<span> удалено. Было: </span>
+				<i>«{{ diff["parameters.lead"][0] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["parameters.lead"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["parameters.lead"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+{%- endblock history_changes -%}
