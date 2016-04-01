@@ -551,6 +551,16 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					$options['crop_h'] = min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']);
 					$options['crop'] = "{$options['crop_x']},{$options['crop_y']},{$options['crop_w']},{$options['crop_h']}";
 
+					if ($useWatermark)
+					{
+						$options['watermark'] = min(max(0, (int)$data['watermark'.$kind]), 4);
+					}
+
+					if ($useMask)
+					{
+						$options['hide_mask'] = min(max(0, (int)$data['hide_mask'.$kind]), 1);
+					}
+
 					if ($kind == '1x1')
 					{
 						$item->setName($data['name']);
@@ -576,16 +586,6 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 						unset($options['tags']);
 						unset($options['lead']);
-					}
-
-					if ($useWatermark)
-					{
-						$options['watermark'] = min(max(0, (int)$data['watermark'.$kind]), 4);
-					}
-
-					if ($useMask)
-					{
-						$options['hide_mask'] = min(max(0, (int)$data['hide_mask'.$kind]), 1);
 					}
 
 					$item->setParameters($options);
