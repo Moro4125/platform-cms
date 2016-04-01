@@ -11,6 +11,7 @@ use \Symfony\Component\Routing\Exception\ResourceNotFoundException;
 //    Преобразование объектов запроса и ответа    //
 // ============================================== //
 Application::getInstance(function(Application $app) {
+	$relinkRouteId = null;
 	$lastRouteId = null;
 	$usedURI = [];
 
@@ -40,7 +41,7 @@ Application::getInstance(function(Application $app) {
 	});
 
 	// === Устновка игнорирования утилитой автоматической расстановки ссылок в тексте ссылки на текущую страницу.
-	$app->afore(function(Request $request) use ($app) {
+	$app->afore(function(Request $request) use ($app, &$relinkRouteId) {
 		$route = $request->get('_route');
 		$accept = $request->headers->get('Accept', '');
 		$flag = $app->getOption('content.relink') != false;
@@ -65,12 +66,16 @@ Application::getInstance(function(Application $app) {
 				$prefix .= $words ? '<!--'.$skip.':'.$words.'-->' : '';
 			}
 
-			$prefix && $service->setContentPrefix($prefix);
+			if ($prefix)
+			{
+				$service->setContentPrefix($prefix);
+				$relinkRouteId = $route;
+			}
 		}
 	});
 
 	// === Применение утилиты автоматической расстановки ссылок в тексте (для основного и внутренних запросов).
-	$app->behind(function(Request $request, Response $response) use ($app) {
+	$app->behind(function(Request $request, Response $response) use ($app, &$relinkRouteId) {
 		$route = $request->get('_route');
 		$contentType = $response->headers->get('Content-Type');
 		$flag = $app->getOption('content.relink') == 'global';
@@ -95,6 +100,13 @@ Application::getInstance(function(Application $app) {
 
 			$content = $service->apply($content);
 			$response->setContent($content);
+		}
+
+		if ($route === $relinkRouteId)
+		{
+			$service = $app->getServiceRelinkTool();
+			$service->setContentPrefix('');
+			$relinkRouteId = null;
 		}
 	});
 
