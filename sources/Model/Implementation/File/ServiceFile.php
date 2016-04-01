@@ -399,7 +399,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		try
 		{
-			$tags = array_map('trim', explode(',', rtrim((string)$tags, '.')));
+			$tags = array_filter(array_map('trim', explode(',', rtrim((string)$tags, '.'))));
 
 			foreach ($form->getData() as $name => $value)
 			{
