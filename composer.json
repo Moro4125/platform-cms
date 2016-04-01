@@ -23,9 +23,9 @@
       "type": "package",
       "package": {
         "name": "fengyuanchen/cropperp",
-        "version": "0.11.1",
+        "version": "2.3.0",
         "dist": {
-          "url": "https://github.com/fengyuanchen/cropper/archive/v0.11.1.zip",
+          "url": "https://github.com/fengyuanchen/cropper/archive/v2.3.0.zip",
           "type": "zip"
         }
       }
@@ -71,7 +71,7 @@
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.6",
     "moro/platform-cms-installer": "~1.0",
-    "fengyuanchen/cropperp": "~0.11",
+    "fengyuanchen/cropperp": "~2.0",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
     "saxulum/saxulum-bootstrap-provider": "~1.0",

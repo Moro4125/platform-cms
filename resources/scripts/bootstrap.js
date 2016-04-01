@@ -105,13 +105,14 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 	});
 
 	jQuery("div.img-cropper[role=tabpanel]").each(function() {
-		var tabpanel = this;
+		var tabPanel = this;
 		require(["bootstrap-cropper"], function() {
-			var cropper = jQuery(".cropper", tabpanel),
-				panelId = jQuery(tabpanel).attr("id"),
-				preview = jQuery(".img-preview-container", tabpanel),
+			var cropper = jQuery(".cropper", tabPanel),
+				panelId = jQuery(tabPanel).attr("id"),
+				preview = jQuery(".img-preview-container", tabPanel),
 				prLabel = preview.closest(".panel").find(".label-default"),
-				prSizeR = preview.closest(".panel").find(".label-info"),
+				prPoint = preview.closest(".panel").find(".label-info"),
+				prSizeR = preview.closest(".panel").find(".label-success"),
 				showTab = function(tab) {
 					var kind = tab.data("kind"),
 						ratio = parseFloat(tab.data("ratio")),
@@ -128,9 +129,11 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					cropper.cropper({
 						aspectRatio: ratio,
 						autoCrop: true,
-						autoCropArea: 1,
+						autoCropArea: 0.99,
 						responsive: true,
 						rotatable: false,
+						zoomable: false,
+						viewMode: 1,
 						preview: "#" + panelId + " .img-preview",
 						data: {
 							x:      parseInt(jQuery("#" + prefix + "_x").val()),
@@ -140,6 +143,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 							rotate: 0
 						},
 						crop: function(data) {
+							prPoint.html(Math.round(data.x) + "x" + Math.round(data.y));
 							prSizeR.html(Math.round(data.width) + "x" + Math.round(data.height));
 							jQuery("#" + prefix + "_x").val(Math.round(data.x));
 							jQuery("#" + prefix + "_y").val(Math.round(data.y));
@@ -151,7 +155,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					tab.tab("show");
 				};
 
-			jQuery("ul[role=tablist] a", tabpanel).click(function(event) {
+			jQuery("ul[role=tablist] a", tabPanel).click(function(event) {
 				var tab = jQuery(event.currentTarget);
 				if (tab.parent().hasClass("disabled")) {
 					return false;
@@ -170,15 +174,15 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				});
 			});
 
-			jQuery("ul[role=tablist] label", tabpanel).click(function(event) {
+			jQuery("ul[role=tablist] label", tabPanel).click(function(event) {
 				event.stopPropagation();
 			});
 
-			jQuery(".tab-pane input[type=checkbox]", tabpanel).on("change", function() {
+			jQuery(".tab-pane input[type=checkbox]", tabPanel).on("change", function() {
 				preview.toggleClass("hide-mask", jQuery(this).is(":checked"));
 			});
 
-			jQuery(".tab-pane select", tabpanel).on("change", function() {
+			jQuery(".tab-pane select", tabPanel).on("change", function() {
 				for (var i = 0; i <= 4; i++) {
 					preview.toggleClass("w-" + i, false);
 				}
@@ -188,7 +192,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			(function(){
 				var target, search = "a[href=\""+(window.location.hash || "").replace(/^.tab/, "#")+"\"]";
 
-				jQuery("ul[role=tablist] li", tabpanel).each(function() {
+				jQuery("ul[role=tablist] li", tabPanel).each(function() {
 					if (jQuery(this).is(":first-child") || jQuery(search, this).length){
 						target = jQuery("a", this)[0];
 					}
