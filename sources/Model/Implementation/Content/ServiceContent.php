@@ -457,4 +457,21 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	{
 		return $this->_serviceFile->selectByKind('a'.$entity->getId());
 	}
+
+	/**
+	 * @param array|EntityInterface $a
+	 * @param array|EntityInterface $b
+	 * @return array
+	 */
+	public function calculateDiff($a, $b)
+	{
+		$diff = parent::calculateDiff($a, $b);
+
+		if (!empty($diff['code']) && strncmp($diff['code'][0], 'temp_', 5) === 0)
+		{
+			$diff['code'][0] = null;
+		}
+
+		return $diff;
+	}
 }

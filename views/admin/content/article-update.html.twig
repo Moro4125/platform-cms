@@ -125,10 +125,15 @@
 	{% if diff["code"]|default(false) %}
 		<li>
 			<strong>Символьный код</strong>
-			<span> изменён. Был </span>
-			<i>«{{ diff["code"][0] }}»,</i>
-			<span> стал </span>
-			<i>«{{ diff["code"][1] }}».</i>
+			{% if not diff["code"][0] %}
+				<span> добавлен: </span>
+				<i>«{{ diff["code"][1] }}».</i>
+			{% else %}
+				<span> изменён. Был </span>
+				<i>«{{ diff["code"][0] }}»,</i>
+				<span> стал </span>
+				<i>«{{ diff["code"][1] }}».</i>
+			{% endif %}
 		</li>
 	{% endif %}
 

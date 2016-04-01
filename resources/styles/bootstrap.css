@@ -528,3 +528,11 @@ form > table.table {
     padding-left: 15px;
     padding-right: 15px;
 }
+
+.breadcrumb > li.right {
+    float: right;
+}
+
+.breadcrumb > li + li.right:last-child:before {
+    content: "";
+}
