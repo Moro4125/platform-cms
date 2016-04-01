@@ -6,7 +6,7 @@ namespace Moro\Platform\Security\Http\Firewall;
 use \Symfony\Component\Security\Http\Firewall\ListenerInterface;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use \Symfony\Component\Security\Core\SecurityContextInterface;
+use \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use \Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
 use \Symfony\Component\Security\Core\Exception\AuthenticationException;
 use \Moro\Platform\Security\Authentication\Token\ApiKeyToken;
@@ -18,9 +18,9 @@ use \Moro\Platform\Security\Authentication\Token\ApiKeyToken;
 class ApiKeyAuthenticationListener implements ListenerInterface
 {
 	/**
-	 * @var SecurityContextInterface
+	 * @var TokenStorageInterface
 	 */
-	protected $securityContext;
+	protected $tokenStorage;
 
 	/**
 	 * @var AuthenticationManagerInterface
@@ -28,12 +28,12 @@ class ApiKeyAuthenticationListener implements ListenerInterface
 	protected $authenticationManager;
 
 	/**
-	 * @param SecurityContextInterface $securityContext
+	 * @param TokenStorageInterface $tokenStorage
 	 * @param AuthenticationManagerInterface $authenticationManager
 	 */
-	public function __construct(SecurityContextInterface $securityContext, AuthenticationManagerInterface $authenticationManager)
+	public function __construct(TokenStorageInterface $tokenStorage, AuthenticationManagerInterface $authenticationManager)
 	{
-		$this->securityContext = $securityContext;
+		$this->tokenStorage = $tokenStorage;
 		$this->authenticationManager = $authenticationManager;
 	}
 
@@ -54,11 +54,11 @@ class ApiKeyAuthenticationListener implements ListenerInterface
 		try
 		{
 			$token = $this->authenticationManager->authenticate(new ApiKeyToken($apiKey));
-			$this->securityContext->setToken($token);
+			$this->tokenStorage->setToken($token);
 		}
 		catch (AuthenticationException $failed)
 		{
-			$this->securityContext->setToken(null);
+			$this->tokenStorage->setToken(null);
 			$this->doFailureResponse($event);
 		}
 	}

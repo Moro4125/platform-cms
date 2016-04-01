@@ -33,7 +33,7 @@ class ApiKeyServiceProvider implements ServiceProviderInterface
 
 			$app['security.authentication_listener.' . $name . '.api_key'] = $app->share(function () use ($app)
 			{
-				return new ApiKeyAuthenticationListener($app['security'], $app['security.authentication_manager']);
+				return new ApiKeyAuthenticationListener($app['security.token_storage'], $app['security.authentication_manager']);
 			});
 
 			return array(
