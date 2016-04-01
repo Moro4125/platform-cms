@@ -383,7 +383,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				setTimeout(function() {
 					//noinspection JSPotentiallyInvalidConstructorUsage
 					var service = new diff_match_patch(),
-						pattern = /&para;/g,
+						pattern = /&para;|\n/g,
 						list = [],
 						from,
 						next,
@@ -408,7 +408,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					}
 
 					diff = service.diff_main(text, next);
-					html = service.diff_prettyHtml(diff).replace(pattern, "\n");
+					html = service.diff_prettyHtml(diff).replace(pattern, "");
 
 					html = ''
 						+ '<div class="modal-header">'

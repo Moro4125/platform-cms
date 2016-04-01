@@ -522,6 +522,7 @@ form > table.table {
 
 .b-diff-text {
     font-family: monospace, Courier;
+    white-space: pre-wrap;
 }
 
 .history-changes p {
