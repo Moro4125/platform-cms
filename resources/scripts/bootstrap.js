@@ -383,7 +383,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				setTimeout(function() {
 					//noinspection JSPotentiallyInvalidConstructorUsage
 					var service = new diff_match_patch(),
-						pattern = /&para;|\n/g,
+						pattern = /&para;|\r|\n/g,
 						list = [],
 						from,
 						next,
