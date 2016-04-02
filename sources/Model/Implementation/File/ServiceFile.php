@@ -35,6 +35,8 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
+	const DELTA = 0.007;
+
 	/**
 	 * @var string
 	 */
@@ -545,10 +547,28 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 					$item->getId() === $entity->getId() && $item = $entity;
 					$original = $options = array_merge($imgOptions, $item->getParameters());
 
-					$options['crop_x'] = max(0, (int)$data['crop'.$kind.'_x']);
-					$options['crop_y'] = max(0, (int)$data['crop'.$kind.'_y']);
-					$options['crop_w'] = min((int)$data['crop'.$kind.'_w'], $options['width']  - $options['crop_x']);
-					$options['crop_h'] = min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']);
+					$options['crop_x'] = max(0, min((int)$data['crop'.$kind.'_x'], $options['width']  - 8));
+					$options['crop_y'] = max(0, min((int)$data['crop'.$kind.'_y'], $options['height'] - 8));
+					$options['crop_w'] = max(8, min((int)$data['crop'.$kind.'_w'], $options['width']  - $options['crop_x']));
+					$options['crop_h'] = max(8, min((int)$data['crop'.$kind.'_h'], $options['height'] - $options['crop_y']));
+
+					$ratio = ($p = strpos($kind, 'x')) ?( (int)substr($kind, 0, $p) / (int)substr($kind, $p + 1) ): 1;
+
+					if (abs($options['crop_w'] / $options['crop_h'] - $ratio) >= self::DELTA)
+					{
+						$newW = max(8, (int)($options['crop_h'] * $ratio));
+						$newH = max(8, (int)($options['crop_w'] / $ratio));
+
+						if ($newW - $options['crop_w'] < $newH - $options['crop_h'])
+						{
+							$options['crop_w'] = $newW;
+						}
+						else
+						{
+							$options['crop_h'] = $newH;
+						}
+					}
+
 					$options['crop'] = "{$options['crop_x']},{$options['crop_y']},{$options['crop_w']},{$options['crop_h']}";
 
 					if ($useWatermark)

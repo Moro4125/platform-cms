@@ -129,7 +129,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					cropper.cropper({
 						aspectRatio: ratio,
 						autoCrop: true,
-						autoCropArea: 0.99,
+						autoCropArea: 0.995,
 						responsive: true,
 						rotatable: false,
 						zoomable: false,

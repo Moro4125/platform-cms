@@ -84,7 +84,7 @@ class ShowImagesAction
 		// Кроп и ресайз оригинальной картинки.
 		if ($width && $height)
 		{
-			$difference = abs($width / $height - (int)$size->getWidth() / (int)$size->getHeight());
+			$difference = PHP_INT_MAX;
 
 			foreach ($app->getServiceFile()->selectByHash($hash) as $entity)
 			{
@@ -101,6 +101,20 @@ class ShowImagesAction
 				}
 			}
 
+			$difference = abs($width / $height - $size->getWidth() / $size->getHeight());
+			$delta = abs($width / $height - $parameters['crop_w'] / $parameters['crop_h']);
+
+			// Когда отсутствует кроп под нужное соотношение сторон, а картинка имеет подходящие соотношение размеров.
+			if ($delta - $difference > self::DELTA * 3)
+			{
+				$parameters = array_merge($parameters, [
+					'crop_x'    => 0,
+					'crop_y'    => 0,
+					'crop_w'    => $size->getWidth(),
+					'crop_h'    => $size->getHeight(),
+				]);
+			}
+
 			$point = new Point(@$parameters['crop_x'] ?: 0, @$parameters['crop_y'] ?: 0);
 			$sizes = new Box($parameters['crop_w'], $parameters['crop_h']);
 			$image->crop($point, $sizes);
@@ -112,7 +126,6 @@ class ShowImagesAction
 			}
 
 			$image = $image->thumbnail(new Box($width, $height), ImageInterface::THUMBNAIL_OUTBOUND);
-			/** @noinspection PhpUndefinedMethodInspection */
 			$size = $image->getSize();
 		}
 
@@ -182,7 +195,6 @@ class ShowImagesAction
 
 		// Завершающие действия.
 		$name = strtr($name.' '.$size->getWidth().'x'.$size->getHeight(), '"', "'");
-		/** @noinspection PhpUndefinedMethodInspection */
 		return Response::create(
 			$image->get($format, ['jpeg_quality' => ($size->getWidth()) < 112 ? 100 : 90]),
 			Response::HTTP_OK,
