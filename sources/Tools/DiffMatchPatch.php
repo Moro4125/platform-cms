@@ -76,6 +76,7 @@ class DiffMatchPatch
 	public function __construct()
 	{
 		$this->MATCH_MAX_BITS *= 8;
+		mb_internal_encoding('UTF-8');
 	}
 
 	//  DIFF FUNCTIONS
@@ -91,7 +92,7 @@ class DiffMatchPatch
 	 *     Defaults to true, which does a faster, slightly less optimal diff
 	 * @return array <number|string> Array of diff tuples.
 	 */
-	function diffMain($text1, $text2, $checkLines = true)
+	public function diffMain($text1, $text2, $checkLines = true)
 	{
 		// Check for equality (speedup)
 		if ($text1 === $text2)
@@ -141,7 +142,7 @@ class DiffMatchPatch
 	 * @return array <number|string> Array of diff tuples.
 	 * @private
 	 */
-	function diffCompute($text1, $text2, $checkLines)
+	protected function diffCompute($text1, $text2, $checkLines)
 	{
 		if ($text1 === '')
 		{
@@ -155,8 +156,9 @@ class DiffMatchPatch
 			return array(array(self::DIFF_DELETE, $text1));
 		}
 
-		$longText  = mb_strlen($text1) > mb_strlen($text2) ? $text1 : $text2;
-		$shortText = mb_strlen($text1) > mb_strlen($text2) ? $text2 : $text1;
+		$flag = mb_strlen($text1) > mb_strlen($text2);
+		$longText  = $flag ? $text1 : $text2;
+		$shortText = $flag ? $text2 : $text1;
 		$i = mb_strpos($longText, $shortText);
 
 		if ($i !== false)
@@ -169,7 +171,7 @@ class DiffMatchPatch
 			);
 
 			// Swap insertions for deletions if diff is reversed.
-			if (mb_strlen($text1) > mb_strlen($text2))
+			if ($flag)
 			{
 				$diffs[0][0] = $diffs[2][0] = self::DIFF_DELETE;
 			}
@@ -336,14 +338,15 @@ class DiffMatchPatch
 
 		// Keeping our own length variable is faster than looking it up.
 		$lineArrayLength = count($lineArray);
+		$textLength = mb_strlen($text);
 
-		while ($lineEnd < mb_strlen($text) - 1)
+		while ($lineEnd < $textLength - 1)
 		{
 			$lineEnd = mb_strpos($text, "\n", $lineStart);
 
 			if ($lineEnd === false)
 			{
-				$lineEnd = mb_strlen($text) - 1;
+				$lineEnd = $textLength - 1;
 			}
 
 			$line = mb_substr($text, $lineStart, $lineEnd + 1 - $lineStart);
@@ -351,11 +354,11 @@ class DiffMatchPatch
 
 			if (isset($lineHash[$line]))
 			{
-				$chars .= $this->mb_chr($lineHash[$line]);
+				$chars .= mb_convert_encoding('&#' . intval($lineHash[$line]) . ';', 'UTF-8', 'HTML-ENTITIES');
 			}
 			else
 			{
-				$chars .= $this->mb_chr($lineArrayLength);
+				$chars .= mb_convert_encoding('&#' . intval($lineArrayLength) . ';', 'UTF-8', 'HTML-ENTITIES');
 				$lineHash[$line] = $lineArrayLength;
 				$lineArray[$lineArrayLength++] = $line;
 			}
@@ -380,7 +383,11 @@ class DiffMatchPatch
 
 			for ($y = 0, $l2 = mb_strlen($chars); $y < $l2; $y++)
 			{
-				$text[$y] = $lineArray[$this->_charCodeAt($chars, $y)];
+				$v = mb_substr($chars, $y, 1);
+				$k = mb_convert_encoding($v, 'UCS-2LE', 'UTF-8');
+				$k1 = ord(substr($k, 0, 1));
+				$k2 = ord(substr($k, 1, 1));
+				$text[$y] = $lineArray[$k2 * 256 + $k1];
 			}
 
 			$diffs[$x][1] = implode('', $text);
@@ -401,9 +408,9 @@ class DiffMatchPatch
 		$ms_end = microtime(true) + $this->Diff_Timeout;
 
 		// Cache the text lengths to prevent multiple calls.
-		$text1_length = mb_strlen($text1);
-		$text2_length = mb_strlen($text2);
-		$max_d = $text1_length + $text2_length - 1;
+		$text1length = mb_strlen($text1);
+		$text2length = mb_strlen($text2);
+		$max_d = $text1length + $text2length - 1;
 		$doubleEnd = $this->Diff_DualThreshold * 2 < $max_d;
 		$v_map1 = array();
 		$v_map2 = array();
@@ -421,7 +428,7 @@ class DiffMatchPatch
 		//?    $hasOwnProperty = !!(footsteps.hasOwnProperty);
 		// If the total number of characters is odd, then the front path will collide
 		// with the reverse path.
-		$front = ($text1_length + $text2_length) % 2;
+		$front = ($text1length + $text2length) % 2;
 
 		for ($d = 0; $d < $max_d; $d++)
 		{
@@ -462,7 +469,7 @@ class DiffMatchPatch
 					}
 				}
 
-				while (!$done && ($x < $text1_length) && ($y < $text2_length) && (mb_substr($text1, $x, 1) == mb_substr($text2, $y, 1)))
+				while (!$done && ($x < $text1length) && ($y < $text2length) && (mb_substr($text1, $x, 1) == mb_substr($text2, $y, 1)))
 				{
 					$x++;
 					$y++;
@@ -486,7 +493,7 @@ class DiffMatchPatch
 				$v1[$k] = $x;
 				$v_map1[$d][$x . ',' . $y] = true;
 
-				if ($x == $text1_length && $y == $text2_length)
+				if ($x == $text1length && $y == $text2length)
 				{
 					// Reached the end in single-path mode.
 					return $this->diffPath1($v_map1, $text1, $text2);
@@ -518,7 +525,7 @@ class DiffMatchPatch
 					}
 
 					$y = $x - $k;
-					$footstep = ($text1_length - $x) . ',' . ($text2_length - $y);
+					$footstep = ($text1length - $x) . ',' . ($text2length - $y);
 
 					if (!$front && isset ($footsteps[$footstep]))
 					{
@@ -530,11 +537,11 @@ class DiffMatchPatch
 						$footsteps[$footstep] = $d;
 					}
 
-					while (!$done && $x < $text1_length && $y < $text2_length && mb_substr($text1, $text1_length - $x - 1, 1) == mb_substr($text2, $text2_length - $y - 1, 1))
+					while (!$done && $x < $text1length && $y < $text2length && mb_substr($text1, $text1length - $x - 1, 1) == mb_substr($text2, $text2length - $y - 1, 1))
 					{
 						$x++;
 						$y++;
-						$footstep = ($text1_length - $x) . ',' . ($text2_length - $y);
+						$footstep = ($text1length - $x) . ',' . ($text2length - $y);
 
 						if (!$front && isset ($footsteps[$footstep]))
 						{
@@ -554,8 +561,9 @@ class DiffMatchPatch
 					{
 						// Reverse path ran over front path.
 						$v_map1 = array_slice($v_map1, 0, $footsteps[$footstep] + 1);
-						$a = $this->diffPath1($v_map1, mb_substr($text1, 0, $text1_length - $x), mb_substr($text2, 0, $text2_length - $y));
-						return array_merge($a, $this->diffPath2($v_map2, mb_substr($text1, $text1_length - $x), mb_substr($text2, $text2_length - $y)));
+						$a = $this->diffPath1($v_map1, mb_substr($text1, 0, $text1length - $x), mb_substr($text2, 0, $text2length - $y));
+
+						return array_merge($a, $this->diffPath2($v_map2, mb_substr($text1, $text1length - $x), mb_substr($text2, $text2length - $y)));
 					}
 				}
 			}
@@ -651,8 +659,8 @@ class DiffMatchPatch
 	{
 		$path = array();
 		$pathLength = 0;
-		$x = mb_strlen($text1);
-		$y = mb_strlen($text2);
+		$x = $length1 = mb_strlen($text1);
+		$y = $length2 = mb_strlen($text2);
 		/** @type {number?} */
 		$last_op = null;
 
@@ -666,11 +674,11 @@ class DiffMatchPatch
 
 					if ($last_op === self::DIFF_DELETE)
 					{
-						$path[$pathLength - 1][1] .= $text1[mb_strlen($text1) - $x - 1];
+						$path[$pathLength - 1][1] .= mb_substr($text1, $length1 - $x - 1, 1);
 					}
 					else
 					{
-						$path[$pathLength++] = array(self::DIFF_DELETE, $text1[mb_strlen($text1) - $x - 1]);
+						$path[$pathLength++] = array(self::DIFF_DELETE, mb_substr($text1, $length1 - $x - 1, 1));
 					}
 
 					$last_op = self::DIFF_DELETE;
@@ -682,11 +690,11 @@ class DiffMatchPatch
 
 					if ($last_op === self::DIFF_INSERT)
 					{
-						$path[$pathLength - 1][1] .= $text2[mb_strlen($text2) - $y - 1];
+						$path[$pathLength - 1][1] .= mb_substr($text2, $length2 - $y - 1, 1);
 					}
 					else
 					{
-						$path[$pathLength++] = array(self::DIFF_INSERT, $text2[mb_strlen($text2) - $y - 1]);
+						$path[$pathLength++] = array(self::DIFF_INSERT, mb_substr($text2, $length2 - $y - 1, 1));
 					}
 
 					$last_op = self::DIFF_INSERT;
@@ -699,11 +707,11 @@ class DiffMatchPatch
 
 					if ($last_op === self::DIFF_EQUAL)
 					{
-						$path[$pathLength - 1][1] .= $text1[mb_strlen($text1) - $x - 1];
+						$path[$pathLength - 1][1] .= mb_substr($text1, $length1 - $x - 1, 1);
 					}
 					else
 					{
-						$path[$pathLength++] = array(self::DIFF_EQUAL, $text1[mb_strlen($text1) - $x - 1]);
+						$path[$pathLength++] = array(self::DIFF_EQUAL, mb_substr($text1, $length1 - $x - 1, 1));
 					}
 
 					$last_op = self::DIFF_EQUAL;
@@ -746,12 +754,14 @@ class DiffMatchPatch
 	 */
 	protected function diffCommonSuffix($text1, $text2)
 	{
-		for ($i = -1; 1; $i--)
+		$l = min(mb_strlen($text1), mb_strlen($text2));
+
+		for ($i = -1; $l + $i + 1 > 0; $i--)
 		{
 			$t1 = mb_substr($text1, $i, 1);
 			$t2 = mb_substr($text2, $i, 1);
 
-			if ($t1 === '' || $t2 === '' || $t1 !== $t2)
+			if ($t1 !== $t2)
 			{
 				return -1 * ($i + 1);
 			}
@@ -772,8 +782,9 @@ class DiffMatchPatch
 	 */
 	protected function diffHalfMatch($text1, $text2)
 	{
-		$longText = mb_strlen($text1) > mb_strlen($text2) ? $text1 : $text2;
-		$shortText = mb_strlen($text1) > mb_strlen($text2) ? $text2 : $text1;
+		$flag = mb_strlen($text1) > mb_strlen($text2);
+		$longText = $flag ? $text1 : $text2;
+		$shortText = $flag ? $text2 : $text1;
 
 		if (mb_strlen($longText) < 10 || mb_strlen($shortText) < 1)
 		{
@@ -804,7 +815,7 @@ class DiffMatchPatch
 		}
 
 		// A half-match was found, sort out the return data.
-		if (mb_strlen($text1) > mb_strlen($text2))
+		if ($flag)
 		{
 			$text1_a = $hm[0];
 			$text1_b = $hm[1];
@@ -878,7 +889,7 @@ class DiffMatchPatch
 	 *
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 */
-	function diffCleanupSemantic(&$diffs)
+	protected function diffCleanupSemantic(&$diffs)
 	{
 		$changes = false;
 		$equalities = array(); // Stack of indices where equalities are found.
@@ -946,7 +957,7 @@ class DiffMatchPatch
 	 *
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 */
-	function diffCleanupSemanticLossless(&$diffs)
+	protected function diffCleanupSemanticLossless(&$diffs)
 	{
 		$pointer = 1;
 
@@ -1035,7 +1046,7 @@ class DiffMatchPatch
 	 * @param string $two Second string
 	 * @return int The score.
 	 */
-	function diffCleanupSemanticScore($one, $two)
+	protected function diffCleanupSemanticScore($one, $two)
 	{
 		// Define some regex patterns for matching boundaries.
 		$punctuation    = '/[^a-zA-Z0-9]/';
@@ -1058,17 +1069,18 @@ class DiffMatchPatch
 		$score = 0;
 
 		// One point for non-alphanumeric.
-		if (preg_match($punctuation, $one[mb_strlen($one) - 1]) || preg_match($punctuation, $two[0]))
+		$char = $one[mb_strlen($one) - 1];
+		if (preg_match($punctuation, $char) || preg_match($punctuation, $two[0]))
 		{
 			$score++;
 
 			// Two points for whitespace.
-			if (preg_match($whitespace, $one[mb_strlen($one) - 1]) || preg_match($whitespace, $two[0]))
+			if (preg_match($whitespace, $char) || preg_match($whitespace, $two[0]))
 			{
 				$score++;
 
 				// Three points for line breaks.
-				if (preg_match($linebreak, $one[mb_strlen($one) - 1]) || preg_match($linebreak, $two[0]))
+				if (preg_match($linebreak, $char) || preg_match($linebreak, $two[0]))
 				{
 					$score++;
 
@@ -1089,7 +1101,7 @@ class DiffMatchPatch
 	 *
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 */
-	function diffCleanupEfficiency(&$diffs)
+	protected function diffCleanupEfficiency(&$diffs)
 	{
 		$changes = false;
 		$equalities = array(); // Stack of indices where equalities are found.
@@ -1191,7 +1203,7 @@ class DiffMatchPatch
 	 *
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 */
-	function diffCleanupMerge(&$diffs)
+	protected function diffCleanupMerge(&$diffs)
 	{
 		array_push($diffs, array(self::DIFF_EQUAL, '')); // Add a dummy entry at the end.
 		$pointer = 0;
@@ -1352,7 +1364,7 @@ class DiffMatchPatch
 	 * @param int $loc Location within text1.
 	 * @return int Location within text2.
 	 */
-	function diffXIndex($diffs, $loc)
+	public function diffXIndex($diffs, $loc)
 	{
 		$chars1 = 0;
 		$chars2 = 0;
@@ -1396,7 +1408,7 @@ class DiffMatchPatch
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @return string HTML representation.
 	 */
-	function diffPrettyHtml($diffs)
+	public function diffPrettyHtml($diffs)
 	{
 		$html = array();
 		$i = 0;
@@ -1441,7 +1453,7 @@ class DiffMatchPatch
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @return string Source text.
 	 */
-	function diffText1($diffs)
+	public function diffText1($diffs)
 	{
 		$text = array();
 
@@ -1462,7 +1474,7 @@ class DiffMatchPatch
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @return string Destination text.
 	 */
-	function diffText2($diffs)
+	public function diffText2($diffs)
 	{
 		$text = array();
 
@@ -1484,7 +1496,7 @@ class DiffMatchPatch
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @return int Number of changes.
 	 */
-	function diffLevenshtein($diffs)
+	public function diffLevenshtein($diffs)
 	{
 		$levenshtein = 0;
 		$insertions = 0;
@@ -1528,7 +1540,7 @@ class DiffMatchPatch
 	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @return string Delta text.
 	 */
-	function diffToDelta($diffs)
+	public function diffToDelta($diffs)
 	{
 		$text = array();
 
@@ -1562,7 +1574,7 @@ class DiffMatchPatch
 	 * @return array {Array.<Array.<number|string>>} Array of diff tuples.
 	 * @throws Exception If invalid input.
 	 */
-	function diffFromDelta($text1, $delta)
+	public function diffFromDelta($text1, $delta)
 	{
 		$diffs = array();
 		$diffsLength = 0; // Keeping our own length var is faster in JS.
@@ -1641,7 +1653,7 @@ class DiffMatchPatch
 	 * @param integer $loc The location to search around.
 	 * @return int Best match index or -1.
 	 */
-	function matchMain($text, $pattern, $loc)
+	public function matchMain($text, $pattern, $loc)
 	{
 		$loc = max(0, min($loc, mb_strlen($text)));
 
@@ -1681,7 +1693,7 @@ class DiffMatchPatch
 	{
 		if (mb_strlen($pattern) > $this->MATCH_MAX_BITS)
 		{
-			throw new Exception('Pattern too long for this browser.');
+			throw new Exception('Pattern too long for this system.');
 		}
 
 		// Initialise the alphabet.
@@ -1699,7 +1711,9 @@ class DiffMatchPatch
 		}
 
 		// What about in the other direction? (speedup)
-		$best_loc = mb_strrpos($text, $pattern, min($loc + mb_strlen($pattern), mb_strlen($text)));
+		$textLength = mb_strlen($text);
+		$patternLength = mb_strlen($pattern);
+		$best_loc = mb_strrpos($text, $pattern, min($loc + $patternLength, $textLength));
 
 		if ($best_loc !== false)
 		{
@@ -1707,15 +1721,15 @@ class DiffMatchPatch
 		}
 
 		// Initialise the bit arrays.
-		$matchMask = 1 << (mb_strlen($pattern) - 1);
+		$matchMask = 1 << ($patternLength - 1);
 		$best_loc = -1;
 
 		$bin_min = null;
 		$bin_mid = null;
-		$bin_max = mb_strlen($pattern) + mb_strlen($text);
+		$bin_max = $patternLength + $textLength;
 		$last_rd = null;
 
-		for ($d = 0, $l = mb_strlen($pattern); $d < $l; $d++)
+		for ($d = 0, $l = $patternLength; $d < $l; $d++)
 		{
 			// Scan for the best match; each iteration allows for one more error.
 			// Run a binary search to determine how far from 'loc' we can stray at this
@@ -1740,7 +1754,7 @@ class DiffMatchPatch
 			// Use the result from this iteration as the maximum for the next.
 			$bin_max = $bin_mid;
 			$start = max(1, $loc - $bin_mid + 1);
-			$finish = min($loc + $bin_mid, mb_strlen($text)) + mb_strlen($pattern);
+			$finish = min($loc + $bin_mid, $textLength) + $patternLength;
 
 			$rd = Array($finish + 2);
 			$rd[$finish + 1] = (1 << $d) - 1;
@@ -1749,7 +1763,8 @@ class DiffMatchPatch
 			{
 				// The alphabet (s) is a sparse hash, so the following line generates
 				// warnings.
-				$charMatch = (isset($text[$j - 1]) && isset($s[$text[$j - 1]])) ? $s[$text[$j - 1]] : null;
+				$c = mb_substr($text, $j - 1, 1);
+				$charMatch = isset($s[$c]) ? $s[$c] : null;
 
 				if ($d === 0)
 				{ // First pass: exact match.
@@ -1829,15 +1844,17 @@ class DiffMatchPatch
 	protected function matchAlphabet($pattern)
 	{
 		$s = array();
+		$a = preg_split('/(?<!^)(?!$)/u', $pattern);
+		$l = count($a);
 
-		for ($i = 0, $l = mb_strlen($pattern); $i < $l; $i++)
+		for ($i = 0; $i < $l; $i++)
 		{
-			$s[$pattern[$i]] = 0;
+			$s[$a[$i]] = 0;
 		}
 
-		for ($i = 0, $l = mb_strlen($pattern); $i < $l; $i++)
+		for ($i = 0; $i < $l; $i++)
 		{
-			$s[$pattern[$i]] |= 1 << (mb_strlen($pattern) - $i - 1);
+			$s[$a[$i]] |= 1 << ($l - $i - 1);
 		}
 
 		return $s;
@@ -1886,13 +1903,15 @@ class DiffMatchPatch
 			array_push($patch->diffs, array(self::DIFF_EQUAL, $suffix));
 		}
 
+		$prefixLength = mb_strlen($prefix);
+
 		// Roll back the start points.
-		$patch->start1 -= mb_strlen($prefix);
-		$patch->start2 -= mb_strlen($prefix);
+		$patch->start1 -= $prefixLength;
+		$patch->start2 -= $prefixLength;
 
 		// Extend the lengths.
-		$patch->length1 += mb_strlen($prefix) + mb_strlen($suffix);
-		$patch->length2 += mb_strlen($prefix) + mb_strlen($suffix);
+		$patch->length1 += $prefixLength + mb_strlen($suffix);
+		$patch->length2 += $prefixLength + mb_strlen($suffix);
 	}
 
 	/**
@@ -1919,7 +1938,7 @@ class DiffMatchPatch
 	 * Array of patch objects.
 	 * @throws Exception
 	 */
-	function patchMake($a, $opt_b = null, $opt_c = null)
+	public function patchMake($a, $opt_b = null, $opt_c = null)
 	{
 		if (is_string($a) && is_string($opt_b) && $opt_c === null)
 		{
@@ -1977,43 +1996,47 @@ class DiffMatchPatch
 
 		for ($x = 0, $l = count($diffs); $x < $l; $x++)
 		{
-			$diff_type = $diffs[$x][0];
-			$diff_text = $diffs[$x][1];
+			$diffType = $diffs[$x][0];
+			$diffText = $diffs[$x][1];
 
-			if (!$patchDiffLength && $diff_type !== self::DIFF_EQUAL)
+			$diffTextLength = mb_strlen($diffText);
+
+			if (!$patchDiffLength && $diffType !== self::DIFF_EQUAL)
 			{
 				// A new patch starts here.
 				$patch->start1 = $charCount1;
 				$patch->start2 = $charCount2;
 			}
 
-			switch ($diff_type)
+			switch ($diffType)
 			{
 				case self::DIFF_INSERT :
 					$patch->diffs[$patchDiffLength++] = $diffs[$x];
-					$patch->length2 += mb_strlen($diff_text);
-					$postPatchText = mb_substr($postPatchText, 0, $charCount2) . $diff_text . mb_substr($postPatchText, $charCount2);
+
+					$patch->length2 += $diffTextLength;
+					$postPatchText = mb_substr($postPatchText, 0, $charCount2) . $diffText . mb_substr($postPatchText, $charCount2);
 					break;
 
 				case self::DIFF_DELETE :
-					$patch->length1 += mb_strlen($diff_text);
+					$patch->length1 += $diffTextLength;
 					$patch->diffs[$patchDiffLength++] = $diffs[$x];
-					$postPatchText = mb_substr($postPatchText, 0, $charCount2) . mb_substr($postPatchText, $charCount2 + mb_strlen($diff_text));
+					$postPatchText = mb_substr($postPatchText, 0, $charCount2) . mb_substr($postPatchText, $charCount2 + $diffTextLength);
 					break;
 
 				case self::DIFF_EQUAL :
-					if (mb_strlen($diff_text) <= 2 * $this->Patch_Margin && $patchDiffLength && count($diffs) != $x + 1)
+					if ($diffTextLength <= 2 * $this->Patch_Margin && $patchDiffLength && count($diffs) != $x + 1)
 					{
 						// Small equality inside a patch.
 						$patch->diffs[$patchDiffLength++] = $diffs[$x];
-						$patch->length1 += mb_strlen($diff_text);
-						$patch->length2 += mb_strlen($diff_text);
+						$patch->length1 += $diffTextLength;
+						$patch->length2 += $diffTextLength;
 					}
 					// Time for a new patch.
-					elseif (mb_strlen($diff_text) >= 2 * $this->Patch_Margin && $patchDiffLength)
+					elseif ($diffTextLength >= 2 * $this->Patch_Margin && $patchDiffLength)
 					{
 						$this->patchAddContext($patch, $prePatchText);
 						array_push($patches, $patch);
+
 						$patch = new PatchObj();
 						$patchDiffLength = 0;
 						// Unlike Unidiff, our patch lists have a rolling context.
@@ -2027,14 +2050,14 @@ class DiffMatchPatch
 			}
 
 			// Update the current character count.
-			if ($diff_type !== self::DIFF_INSERT)
+			if ($diffType !== self::DIFF_INSERT)
 			{
-				$charCount1 += mb_strlen($diff_text);
+				$charCount1 += $diffTextLength;
 			}
 
-			if ($diff_type !== self::DIFF_DELETE)
+			if ($diffType !== self::DIFF_DELETE)
 			{
-				$charCount2 += mb_strlen($diff_text);
+				$charCount2 += $diffTextLength;
 			}
 		}
 
@@ -2054,7 +2077,7 @@ class DiffMatchPatch
 	 * @param PatchObj[] $patches {Array.<patch_obj>} Array of patch objects.
 	 * @return PatchObj[] {Array.<patch_obj>} Array of patch objects.
 	 */
-	function patchDeepCopy($patches)
+	protected function patchDeepCopy($patches)
 	{
 		// Making deep copies is hard in JavaScript.
 		$patchesCopy = array();
@@ -2088,7 +2111,7 @@ class DiffMatchPatch
 	 * @return PatchObj[] {Array.<string|Array.<boolean>>} Two element Array, containing the
 	 *      new text and an array of boolean values.
 	 */
-	function patchApply($patches, $text)
+	public function patchApply($patches, $text)
 	{
 		if (count($patches) == 0)
 		{
@@ -2111,34 +2134,35 @@ class DiffMatchPatch
 
 		for ($x = 0; $x < count($patches); $x++)
 		{
-			$expected_loc = $patches[$x]->start2 + $delta;
+			$expectedLoc = $patches[$x]->start2 + $delta;
 			$text1 = $this->diffText1($patches[$x]->diffs);
-			$start_loc = null;
-			$end_loc = -1;
+			$text1length = mb_strlen($text1);
+			$startLoc = null;
+			$endLoc = -1;
 
-			if (mb_strlen($text1) > $this->MATCH_MAX_BITS)
+			if ($text1length > $this->MATCH_MAX_BITS)
 			{
 				// patchSplitMax will only provide an oversized pattern in the case of
 				// a monster delete.
-				$start_loc = $this->matchMain($text, mb_substr($text1, 0, $this->MATCH_MAX_BITS), $expected_loc);
+				$startLoc = $this->matchMain($text, mb_substr($text1, 0, $this->MATCH_MAX_BITS), $expectedLoc);
 
-				if ($start_loc != -1)
+				if ($startLoc != -1)
 				{
-					$end_loc = $this->matchMain($text, mb_substr($text1, mb_strlen($text1) - $this->MATCH_MAX_BITS), $expected_loc + mb_strlen($text1) - $this->MATCH_MAX_BITS);
+					$endLoc = $this->matchMain($text, mb_substr($text1, $text1length - $this->MATCH_MAX_BITS), $expectedLoc + $text1length - $this->MATCH_MAX_BITS);
 
-					if ($end_loc == -1 || $start_loc >= $end_loc)
+					if ($endLoc == -1 || $startLoc >= $endLoc)
 					{
 						// Can't find valid trailing context.  Drop this patch.
-						$start_loc = -1;
+						$startLoc = -1;
 					}
 				}
 			}
 			else
 			{
-				$start_loc = $this->matchMain($text, $text1, $expected_loc);
+				$startLoc = $this->matchMain($text, $text1, $expectedLoc);
 			}
 
-			if ($start_loc == -1)
+			if ($startLoc == -1)
 			{
 				// No match found.  :(
 				$results[$x] = false;
@@ -2149,22 +2173,22 @@ class DiffMatchPatch
 			{
 				// Found a match.  :)
 				$results[$x] = true;
-				$delta = $start_loc - $expected_loc;
+				$delta = $startLoc - $expectedLoc;
 				$text2 = null;
 
-				if ($end_loc == -1)
+				if ($endLoc == -1)
 				{
-					$text2 = mb_substr($text, $start_loc, mb_strlen($text1));
+					$text2 = mb_substr($text, $startLoc, $text1length);
 				}
 				else
 				{
-					$text2 = mb_substr($text, $start_loc, $end_loc + $this->MATCH_MAX_BITS - $start_loc);
+					$text2 = mb_substr($text, $startLoc, $endLoc + $this->MATCH_MAX_BITS - $startLoc);
 				}
 
 				if ($text1 == $text2)
 				{
 					// Perfect match, just shove the replacement text in.
-					$text = mb_substr($text, 0, $start_loc) . $this->diffText2($patches[$x]->diffs) . mb_substr($text, $start_loc + mb_strlen($text1));
+					$text = mb_substr($text, 0, $startLoc) . $this->diffText2($patches[$x]->diffs) . mb_substr($text, $startLoc + $text1length);
 				}
 				else
 				{
@@ -2172,7 +2196,7 @@ class DiffMatchPatch
 					// indices.
 					$diffs = $this->diffMain($text1, $text2, false);
 
-					if (mb_strlen($text1) > $this->MATCH_MAX_BITS && $this->diffLevenshtein($diffs) / mb_strlen($text1) > $this->Patch_DeleteThreshold)
+					if ($text1length > $this->MATCH_MAX_BITS && $this->diffLevenshtein($diffs) / $text1length > $this->Patch_DeleteThreshold)
 					{
 						// The end points match, but the content is unacceptably bad.
 						$results[$x] = false;
@@ -2195,12 +2219,12 @@ class DiffMatchPatch
 							if ($mod[0] === self::DIFF_INSERT)
 							{
 								// Insertion
-								$text = mb_substr($text, 0, $start_loc + $index2) . $mod[1] . mb_substr($text, $start_loc + $index2);
+								$text = mb_substr($text, 0, $startLoc + $index2) . $mod[1] . mb_substr($text, $startLoc + $index2);
 							}
 							elseif ($mod[0] === self::DIFF_DELETE)
 							{
 								// Deletion
-								$text = mb_substr($text, 0, $start_loc + $index2) . mb_substr($text, $start_loc + $this->diffXIndex($diffs, $index1 + mb_strlen($mod[1])));
+								$text = mb_substr($text, 0, $startLoc + $index2) . mb_substr($text, $startLoc + $this->diffXIndex($diffs, $index1 + mb_strlen($mod[1])));
 							}
 
 							if ($mod[0] !== self::DIFF_DELETE)
@@ -2226,14 +2250,14 @@ class DiffMatchPatch
 	 * @param PatchObj[] $patches {Array.<patch_obj>} Array of patch objects.
 	 * @return string The padding string added to each side.
 	 */
-	function patchAddPadding(&$patches)
+	protected function patchAddPadding(&$patches)
 	{
 		$paddingLength = $this->Patch_Margin;
 		$nullPadding = '';
 
 		for ($x = 1; $x <= $paddingLength; $x++)
 		{
-			$nullPadding .= $this->mb_chr($x);
+			$nullPadding .= mb_convert_encoding('&#' . intval($x) . ';', 'UTF-8', 'HTML-ENTITIES');
 		}
 
 		// Bump all the patches forward.
@@ -2256,11 +2280,11 @@ class DiffMatchPatch
 			$patch->length1 += $paddingLength;
 			$patch->length2 += $paddingLength;
 		}
-		elseif ($paddingLength > mb_strlen($diffs[0][1]))
+		elseif ($paddingLength > $diffs01length = mb_strlen($diffs[0][1]))
 		{
 			// Grow first equality.
-			$extraLength = $paddingLength - mb_strlen($diffs[0][1]);
-			$diffs[0][1] = mb_substr($nullPadding, mb_strlen($diffs[0][1])) . $diffs[0][1];
+			$extraLength = $paddingLength - $diffs01length;
+			$diffs[0][1] = mb_substr($nullPadding, $diffs01length) . $diffs[0][1];
 			$patch->start1 -= $extraLength;
 			$patch->start2 -= $extraLength;
 			$patch->length1 += $extraLength;
@@ -2278,10 +2302,10 @@ class DiffMatchPatch
 			$patch->length1 += $paddingLength;
 			$patch->length2 += $paddingLength;
 		}
-		elseif ($paddingLength > mb_strlen($diffs[count($diffs) - 1][1]))
+		elseif ($paddingLength > $diffs11length = mb_strlen($diffs[count($diffs) - 1][1]))
 		{
 			// Grow last equality.
-			$extraLength = $paddingLength - mb_strlen($diffs[count($diffs) - 1][1]);
+			$extraLength = $paddingLength - $diffs11length;
 			$diffs[count($diffs) - 1][1] .= mb_substr($nullPadding, 0, $extraLength);
 			$patch->length1 += $extraLength;
 			$patch->length2 += $extraLength;
@@ -2296,7 +2320,7 @@ class DiffMatchPatch
 	 *
 	 * @param PatchObj[] $patches {Array.<patch_obj>} Array of patch objects.
 	 */
-	function patchSplitMax(&$patches)
+	protected function patchSplitMax(&$patches)
 	{
 		for ($x = 0; $x < count($patches); $x++)
 		{
@@ -2315,12 +2339,13 @@ class DiffMatchPatch
 					// Create one of several smaller patches.
 					$patch = new PatchObj();
 					$empty = true;
-					$patch->start1 = $start1 - mb_strlen($preContext);
-					$patch->start2 = $start2 - mb_strlen($preContext);
+					$preContextLength = mb_strlen($preContext);
+					$patch->start1 = $start1 - $preContextLength;
+					$patch->start2 = $start2 - $preContextLength;
 
 					if ($preContext !== '')
 					{
-						$patch->length1 = $patch->length2 = mb_strlen($preContext);
+						$patch->length1 = $patch->length2 = $preContextLength;
 						array_push($patch->diffs, array(self::DIFF_EQUAL, $preContext));
 					}
 					while (count($bigPatch->diffs) !== 0 && $patch->length1 < $patch_size - $this->Patch_Margin)
@@ -2336,7 +2361,7 @@ class DiffMatchPatch
 							array_push($patch->diffs, array_shift($bigPatch->diffs));
 							$empty = false;
 						}
-						else if ($diff_type === self::DIFF_DELETE && count($patch->diffs) == 1 && $patch->diffs[0][0] == self::DIFF_EQUAL && (mb_strlen($diff_text) > 2 * $patch_size))
+						elseif ($diff_type === self::DIFF_DELETE && count($patch->diffs) == 1 && $patch->diffs[0][0] == self::DIFF_EQUAL && (mb_strlen($diff_text) > 2 * $patch_size))
 						{
 							// This is a large deletion.  Let it pass in one chunk.
 							$patch->length1 += mb_strlen($diff_text);
@@ -2349,13 +2374,14 @@ class DiffMatchPatch
 						{
 							// Deletion or equality.  Only take as much as we can stomach.
 							$diff_text = mb_substr($diff_text, 0, $patch_size - $patch->length1 - $this->Patch_Margin);
-							$patch->length1 += mb_strlen($diff_text);
-							$start1 += mb_strlen($diff_text);
+							$diffTextLength = mb_strlen($diff_text);
+							$patch->length1 += $diffTextLength;
+							$start1 += $diffTextLength;
 
 							if ($diff_type === self::DIFF_EQUAL)
 							{
-								$patch->length2 += mb_strlen($diff_text);
-								$start2 += mb_strlen($diff_text);
+								$patch->length2 += $diffTextLength;
+								$start2 += $diffTextLength;
 							}
 							else
 							{
@@ -2370,7 +2396,7 @@ class DiffMatchPatch
 							}
 							else
 							{
-								$bigPatch->diffs[0][1] = mb_substr($bigPatch->diffs[0][1], mb_strlen($diff_text));
+								$bigPatch->diffs[0][1] = mb_substr($bigPatch->diffs[0][1], $diffTextLength);
 							}
 						}
 					}
@@ -2412,7 +2438,7 @@ class DiffMatchPatch
 	 * @param PatchObj[] $patches {Array.<patch_obj>} Array of patch objects.
 	 * @return string Text representation of patches.
 	 */
-	function patchToText($patches)
+	public function patchToText($patches)
 	{
 		$text = array();
 
@@ -2431,7 +2457,7 @@ class DiffMatchPatch
 	 * @return PatchObj[] {Array.<patch_obj>} Array of patch objects.
 	 * @throws Exception If invalid input.
 	 */
-	function patchFromText($textLine)
+	public function patchFromText($textLine)
 	{
 		$patches = array();
 
@@ -2552,37 +2578,6 @@ class DiffMatchPatch
 	}
 
 	/**
-	 * @param string $str
-	 * @param int $pos
-	 * @return int
-	 */
-	protected function _charCodeAt($str, $pos)
-	{
-		return $this->mb_ord(mb_substr($str, $pos, 1));
-	}
-
-	/**
-	 * @param string $v
-	 * @return int
-	 */
-	protected function mb_ord($v)
-	{
-		$k = mb_convert_encoding($v, 'UCS-2LE', 'UTF-8');
-		$k1 = ord(substr($k, 0, 1));
-		$k2 = ord(substr($k, 1, 1));
-		return $k2 * 256 + $k1;
-	}
-
-	/**
-	 * @param string $num
-	 * @return string
-	 */
-	protected function mb_chr($num)
-	{
-		return mb_convert_encoding('&#' . intval($num) . ';', 'UTF-8', 'HTML-ENTITIES');
-	}
-
-	/**
 	 * @var array
 	 */
 	protected static $_table = array(
@@ -2609,6 +2604,11 @@ class DiffMatchPatch
 	);
 
 	/**
+	 * @var array
+	 */
+	protected static $_doNotDecode;
+
+	/**
 	 * as in javascript encodeURI() following the MDN description
 	 *
 	 * @link https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURI
@@ -2626,19 +2626,17 @@ class DiffMatchPatch
 	 */
 	public static function decodeURI($encoded)
 	{
-		static $doNotDecode;
-
-		if (!$doNotDecode)
+		if (self::$_doNotDecode === null)
 		{
-			$doNotDecode = array();
+			self::$_doNotDecode = array();
 
 			foreach (self::$_table as $k => $v)
 			{
-				$doNotDecode[$k] = self::encodeURI($k);
+				self::$_doNotDecode[$k] = self::encodeURI($k);
 			}
 		}
 
-		return rawurldecode(strtr($encoded, $doNotDecode));
+		return rawurldecode(strtr($encoded, self::$_doNotDecode));
 	}
 }
 
