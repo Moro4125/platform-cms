@@ -8,6 +8,21 @@
 			{{ form_row(form.name) }}
 		</div>
 		<div class="col-md-2 col-sm-4">
+			<span class="hidden-xs" style="margin-left: -15px;"></span>
+			<span class="label label-default" title="{{ item.hash }}">
+				{{- item.smallHash -}}
+			</span>
+			{{- "&nbsp;" -}}
+			<span class="label label-default">
+				{{- (item.parameters|default({})).width|default('') -}}
+				x
+				{{- (item.parameters|default({})).height|default('') -}}
+			</span>
+			{{- "&nbsp;" -}}
+			{%- set size = (item.parameters|default({})).size|default('0') -%}
+			<span class="label label-default" title="{{ size }} bayts">
+				{{- (size // 1024) ~ "K" -}}
+			</span>
 		</div>
 		<div class="col-md-5 col-sm-12 text-right">
 			<div class="btn-group btn-group-sm" role="group">
