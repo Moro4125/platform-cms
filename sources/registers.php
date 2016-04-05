@@ -3,7 +3,7 @@
  * File for providers and services initialization.
  */
 namespace Moro\Platform;
-use  \Silex\Provider\DoctrineServiceProvider;
+use \Silex\Provider\DoctrineServiceProvider;
 use \Silex\Provider\SecurityServiceProvider;
 use \Silex\Provider\UrlGeneratorServiceProvider;
 use \Silex\Provider\TwigServiceProvider;
@@ -33,6 +33,7 @@ use \Moro\Platform\Provider\Twig\MarkdownExtension;
 use \Moro\Platform\Provider\SentryProvider;
 use \Moro\Platform\Security\User\ApiKeyUserProvider;
 use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
+use \Moro\Platform\Model\Accessory\ClientRoleBehavior;
 use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior;
@@ -66,7 +67,7 @@ Application::getInstance(function (Application $app)
 
 	foreach ($users as &$user)
 	{
-		$rights = explode(',', $user);
+		$rights = array_map('trim', explode(',', $user));
 		$secret = array_pop($rights);
 		$user = [$rights, $secret];
 	}
@@ -276,11 +277,37 @@ Application::getInstance(function (Application $app)
 		return $behavior;
 	});
 
+	// Model behavior CLIENT_ROLE.
+	$app[Application::BEHAVIOR_CLIENT_ROLE] = $app->share(function() use ($app, $suffixClass) {
+		$class = $app->offsetGet(Application::BEHAVIOR_CLIENT_ROLE.$suffixClass, ClientRoleBehavior::class);
+
+		/** @var ClientRoleBehavior $behavior */
+		$behavior = new $class();
+		$behavior->setClient($app->getServiceSecurityToken()->getUsername());
+
+		/** @var \Symfony\Component\HttpFoundation\Request $request */
+		$request = $app['request'];
+		$route   = $request->attributes->get('_route');
+		$behavior->setEnabled(strncmp($route, 'admin-', 6) === 0 && $route != 'admin-compile');
+
+		return $behavior;
+	});
+
 	// Service ROUTES.
 	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
 
-		return new $class($app->getServiceDataBase());
+		/** @var ServiceRoutes $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceUser($app->getServiceSecurityToken());
+
+		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		{
+			$service->setClient($app->getServiceSecurityToken()->getUsername());
+			$service->attach($app->getBehaviorClientRole());
+		}
+
+		return $service;
 	});
 
 	// Service DIFF_MATCH_PATCH.
@@ -332,6 +359,11 @@ Application::getInstance(function (Application $app)
 			$service->appendDecorator(new HeadingContentDecorator($app));
 		}
 
+		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		{
+			$service->attach($app->getBehaviorClientRole());
+		}
+
 		return $service;
 	});
 
@@ -353,6 +385,11 @@ Application::getInstance(function (Application $app)
 		{
 			$service->attach($app->getBehaviorHeadings());
 			$service->appendDecorator(new HeadingFileDecorator($app));
+		}
+
+		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		{
+			$service->attach($app->getBehaviorClientRole());
 		}
 
 		return $service;
@@ -498,8 +535,12 @@ Application::getInstance(function (Application $app)
 			]);
 		}
 
-		$menu->addChild('Предпросмотр',   ['uri' => '/admin/index.php/index.html']);
-		$menu->addChild('Публикация',     ['route' => 'admin-compile-list']);
+		if (strncmp($url = $app->url('index'), '#error', 6))
+		{
+			$menu->addChild('Предпросмотр', ['uri' => $url]);
+		}
+
+		$menu->addChild('Публикация', ['route' => 'admin-compile-list']);
 
 		return $menu;
 	};

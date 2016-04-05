@@ -32,7 +32,7 @@ class UploadImagesAction
 
 		if ($form->handleRequest($request)->isValid())
 		{
-			if ($app->isGranted('ROLE_EDITOR'))
+			if ($app->isGranted('ROLE_EDITOR') or $app->isGranted('ROLE_CLIENT'))
 			{
 				$idList = $service->applyAdminUploadForm($app, $form, $request->query->get('tags'));
 			}

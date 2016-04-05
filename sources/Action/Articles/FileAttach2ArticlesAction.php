@@ -56,7 +56,7 @@ class FileAttach2ArticlesAction extends AbstractContentAction
 				break;
 			}
 
-			if (!$app->isGranted('ROLE_EDITOR'))
+			if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 			{
 				$result['error'] = 'У вас недостаточно прав для загрузки файлов на сервер.';
 				break;
@@ -84,7 +84,7 @@ class FileAttach2ArticlesAction extends AbstractContentAction
 
 		$fileService = $app->getServiceFile();
 		$flag = $result['append'] && isset($idList);
-		$list = $flag ? $fileService->selectByIds($idList) : $fileService->selectByKind("a$id");
+		$list = $flag ? $fileService->selectByIds($idList, 0) : $fileService->selectByKind("a$id");
 
 		foreach ($list as $file)
 		{

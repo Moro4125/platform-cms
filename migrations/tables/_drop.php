@@ -5,9 +5,10 @@
 /** @var $arguments *///* Arguments for this script from apply action.
 
 $schema = $service->getSchema();
-$tableName = reset($arguments);
+$tableName = array_shift($arguments);
+$dropTable = strncmp($tableName, '!', 1);
 
-if ($tableName && $schema->hasTable($tableName))
+if (($tableName = $dropTable ? $tableName : substr($tableName, 1)) && $schema->hasTable($tableName))
 {
 	$table = $schema->getTable($tableName);
 
@@ -18,10 +19,18 @@ if ($tableName && $schema->hasTable($tableName))
 			$table->dropIndex($indexName);
 			$service->writeln("Delete index \"$indexName\".");
 		}
+		elseif ($table->hasColumn($indexName))
+		{
+			$table->dropColumn($indexName);
+			$service->writeln("Delete column \"$indexName\".");
+		}
 	}
 
-	$schema->dropTable($tableName);
-	$service->writeln("Delete table \"$tableName\".");
+	if ($dropTable)
+	{
+		$schema->dropTable($tableName);
+		$service->writeln("Delete table \"$tableName\".");
+	}
 }
 else
 {

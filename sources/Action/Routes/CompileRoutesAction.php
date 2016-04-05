@@ -67,7 +67,7 @@ class CompileRoutesAction
 
 		$this->_workLimit = round((intval(ini_get("max_execution_time")) ?: 30) * 0.7);
 
-		if (!$app->isGranted('ROLE_EDITOR'))
+		if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 		{
 			$app->getServiceFlash()->error('У вас недостаточно прав для компиляции страниц сайта.');
 			return $app->redirect($request->query->get('back', $app->url('admin-about')));

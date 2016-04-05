@@ -124,7 +124,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	 */
 	public function createEntity()
 	{
-		$entity = $this->_newEntityFromArray([]);
+		$entity = $this->_newEntityFromArray([], EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		$this->commit($entity);
 		return $entity;
@@ -140,7 +140,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	 */
 	public function selectEntitiesForAdminListForm($offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
-		return $this->selectEntities($offset, $count, $order, $where, $value);
+		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -150,7 +150,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	 */
 	public function getCountForAdminListForm($where = null, $value = null)
 	{
-		return $this->getCount($where, $value);
+		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -361,7 +361,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		{
 			while ($record = $statement->fetch(PDO::FETCH_ASSOC))
 			{
-				$result[] = $this->_newEntityFromArray($record);
+				$result[] = $this->_newEntityFromArray($record, 0);
 			}
 		}
 

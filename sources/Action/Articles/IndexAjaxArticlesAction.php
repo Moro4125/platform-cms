@@ -3,6 +3,7 @@
  * Class IndexAjaxArticlesAction
  */
 namespace Moro\Platform\Action\Articles;
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -39,11 +40,11 @@ class IndexAjaxArticlesAction
 
 		($dots = strpos($query, '…')) && $query = substr($query, 0, $dots);
 
-		if ($size = $service->getCount([$field = '~name'], [$query]))
+		if ($size = $service->getCount([$field = '~name'], [$query], EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
 			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['~name'], [$query]);
 		}
-		elseif ($size = $service->getCount([$field = strpos($query, ',') ? 'tag' : '~tag'], [$query]))
+		elseif ($size = $service->getCount([$field = strpos($query, ',') ? 'tag' : '~tag'], [$query], EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
 			$list = $service->selectEntities($offset, $pageSize, $orderBy, [$field], [$query]);
 		}

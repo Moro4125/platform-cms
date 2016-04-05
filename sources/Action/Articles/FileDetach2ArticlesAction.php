@@ -8,6 +8,7 @@ use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use \Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use \Silex\Application as SilexApplication;
+use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Action\AbstractContentAction;
 use \Moro\Platform\Application;
 
@@ -46,14 +47,14 @@ class FileDetach2ArticlesAction extends AbstractContentAction
 			throw new NotFoundHttpException(sprintf('Article with ID %1$s is not exists.', $id));
 		}
 
-		if ($request->getMethod() != 'POST' || !$app->isGranted('ROLE_EDITOR'))
+		if ($request->getMethod() != 'POST' || !($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 		{
 			throw new AccessDeniedHttpException();
 		}
 
 		$fileId = (int)$request->get('key');
 
-		if ($file = $serviceFile->getEntityById($fileId, true))
+		if ($file = $serviceFile->getEntityById($fileId, true, EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
 			if ($file->getKind() != "a$id")
 			{

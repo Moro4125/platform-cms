@@ -163,31 +163,34 @@ Application::getInstance(function(Application $app) {
 		$ignore = ((bool)$request->query->get('compiled') || $response->headers->get(Application::HEADER_EXPERIMENTAL));
 		$type = $response->headers->get('Content-Type');
 
-		if ($app->isGranted('ROLE_EDITOR') && !preg_match('{^(GET_|admin-|_)}', $route) && strncmp($type, 'image/', 6))
+		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($type, 'image/', 6))
 		{
-			$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
-			$parameters = array_filter($request->attributes->all(), 'is_scalar');
-			unset($parameters['_route'], $parameters['_controller']);
-
-			$service = $app->getServiceRoutes();
-			$entity = $service->getByRouteAndQuery($route, $parameters);
-
-			$entity->setTitle(htmlspecialchars_decode($title));
-			$entity->setCompileFlag(true);
-			$entity->setTags(['предпросмотр']);
-
-			if ($file = $response->headers->get(Application::HEADER_CACHE_FILE))
+			if ($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT'))
 			{
-				$entity->setFile($file);
-			}
+				$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
+				$parameters = array_filter($request->attributes->all(), 'is_scalar');
+				unset($parameters['_route'], $parameters['_controller']);
 
-			if ($tags = $response->headers->get(Application::HEADER_CACHE_TAGS))
-			{
-				$entity->addTags(explode(',', $tags));
-			}
+				$service = $app->getServiceRoutes();
+				$entity = $service->getByRouteAndQuery($route, $parameters);
 
-			$ignore || $service->commit($entity);
-			$lastRouteId = $entity->getId();
+				$entity->setTitle(htmlspecialchars_decode($title));
+				$entity->setCompileFlag(true);
+				$entity->setTags(['предпросмотр']);
+
+				if ($file = $response->headers->get(Application::HEADER_CACHE_FILE))
+				{
+					$entity->setFile($file);
+				}
+
+				if ($tags = $response->headers->get(Application::HEADER_CACHE_TAGS))
+				{
+					$entity->addTags(explode(',', $tags));
+				}
+
+				$ignore || $service->commit($entity);
+				$app->isGranted('ROLE_EDITOR') && $lastRouteId = $entity->getId();
+			}
 		}
 	});
 
@@ -197,7 +200,7 @@ Application::getInstance(function(Application $app) {
 		$contentType = $response->headers->get('Content-Type');
 		$back = rtrim(preg_replace('{\\?(compiled=Y)?|$}', '?compiled=Y&', $request->getRequestUri(), 1), '&');
 
-		if (strncmp($route, 'admin-', 6) !== 0 && strncmp($contentType, 'text/html', 9) === 0)
+		if (strncmp($route, 'admin-', 6) !== 0 && $route != 'download' && strncmp($contentType, 'text/html', 9) === 0)
 		{
 			$url1 = $app->url('admin-compile-list');
 			$url2 = $lastRouteId ? $app->url('admin-compile', ['back' => $back, 'id' => $lastRouteId]) : 0;

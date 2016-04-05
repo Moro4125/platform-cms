@@ -4,10 +4,9 @@
  */
 namespace Moro\Platform\Model;
 use \Doctrine\DBAL\Connection;
-
-
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
 use \Moro\Platform\Model\Exception\CommitFailedException;
+use \Moro\Platform\Model\Exception\ReadOnlyEntityException;
 use \ArrayObject;
 use \ReflectionObject;
 use \SplObserver;
@@ -381,12 +380,13 @@ abstract class AbstractService implements SplSubject
 
 	/**
 	 * @param array $record
+	 * @param int $flags
 	 * @return mixed
 	 */
-	protected function _newEntityFromArray(array $record)
+	protected function _newEntityFromArray(array $record, $flags)
 	{
 		$record = new ArrayObject($record);
-		$record['_flags'] = EntityInterface::FLAG_DATABASE;
+		$record['_flags'] = EntityInterface::FLAG_DATABASE | $flags;
 
 		$this->notify(self::STATE_PREPARE_ENTITY, $record);
 
@@ -450,30 +450,44 @@ abstract class AbstractService implements SplSubject
 	 * @param null|string $orderBy
 	 * @param null|string $filter
 	 * @param null|mixed $value
+	 * @param null|int $flags
 	 * @return EntityInterface[]
 	 */
-	public function selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null)
+	public function selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null, $flags = null)
 	{
 		if (null === $this->_cachedItemsList || $this->_cacheDependency !== $key = serialize(func_get_args()))
 		{
 			$this->_cacheDependency = isset($key) ? $key : serialize(func_get_args());
 			$builder = $this->_connection->createQueryBuilder()->select('m.*')->from($this->_table, 'm');
 			$values = [];
+			$args = new ArrayObject([
+				'offset'  => $offset,
+				'count'   => $count,
+				'orderBy' => $orderBy,
+				'filter'  => $filter,
+				'value'   => $value,
+				'flags'   => $flags,
+			]);
 
-			if (null !== $args = $this->notify(self::STATE_BEFORE_SELECT, $offset, $count, $orderBy, $filter, $value))
-			{
-				list($offset, $count, $orderBy, $filter, $value) = $args;
-			}
+			$this->notify(self::STATE_BEFORE_SELECT, $args);
+			list($offset, $count, $orderBy, $filter, $value, $flags) = [
+				$args['offset'],
+				$args['count'],
+				$args['orderBy'],
+				$args['filter'],
+				$args['value'],
+				$args['flags'],
+			];
 
 			$offset !== null && $builder->setFirstResult((int)$offset);
 			(intval($count) || $offset !== null) && $builder->setMaxResults(intval($count) ?: 1024);
+
+			$isArray = is_array($filter) && is_array($value);
 
 			foreach ((array)$orderBy as $field)
 			{
 				$builder->addOrderBy(ltrim($field, '!'), ($field[0] == '!') ? 'DESC' : 'ASC');
 			}
-
-			$isArray = is_array($filter) && is_array($value);
 
 			foreach ((array)$filter as $index => $field)
 			{
@@ -497,8 +511,8 @@ abstract class AbstractService implements SplSubject
 
 			$statement = $this->_connection->prepare($builder->getSQL());
 
-			$this->_cachedItemsList = array_map(function($record) {
-				return $this->_newEntityFromArray($record);
+			$this->_cachedItemsList = array_map(function($record) use ($flags) {
+				return $this->_newEntityFromArray($record, (int)$flags);
 			}, $statement->execute($values ?: null) ? $statement->fetchAll(PDO::FETCH_ASSOC) : []);
 
 			$this->_cachedItemsList = array_combine(array_map(function(EntityInterface $entity) {
@@ -512,11 +526,12 @@ abstract class AbstractService implements SplSubject
 	/**
 	 * @param integer $id
 	 * @param null|bool $withoutException
+	 * @param null|integer $flags
 	 * @return EntityInterface|null
 	 * @throws \Doctrine\DBAL\DBALException
 	 * @throws EntityNotFoundException
 	 */
-	public function getEntityById($id, $withoutException = null)
+	public function getEntityById($id, $withoutException = null, $flags = null)
 	{
 		assert(is_int($id) || (string)$id === (string)(int)$id);
 
@@ -526,7 +541,7 @@ abstract class AbstractService implements SplSubject
 
 		if ($statement->execute([ (int)$id ]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, (int)$flags);
 		}
 
 		if (empty($withoutException))
@@ -540,10 +555,11 @@ abstract class AbstractService implements SplSubject
 
 	/**
 	 * @param array $idList
+	 * @param null|int $flags
 	 * @return EntityInterface[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function getEntitiesById(array $idList)
+	public function getEntitiesById(array $idList, $flags = null)
 	{
 		$results = [];
 
@@ -555,7 +571,7 @@ abstract class AbstractService implements SplSubject
 		{
 			if ($statement->execute([ (int)$id ]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 			{
-				$results[(int)$id] = $this->_newEntityFromArray($record);
+				$results[(int)$id] = $this->_newEntityFromArray($record, (int)$flags);
 			}
 		}
 
@@ -569,6 +585,11 @@ abstract class AbstractService implements SplSubject
 	public function commit(EntityInterface $entity)
 	{
 		assert(!empty($this->_table));
+
+		if (!($entity->getFlags() & (EntityInterface::FLAG_GET_FOR_UPDATE | EntityInterface::FLAG_SYSTEM_CHANGES)))
+		{
+			throw new ReadOnlyEntityException('Entity with ID '.$entity->getId().' is in "read only" state.');
+		}
 
 		$this->notify(self::STATE_COMMIT_STARTED, $entity, $this->_table);
 
@@ -762,19 +783,25 @@ abstract class AbstractService implements SplSubject
 	/**
 	 * @param string $filter
 	 * @param string $value
+	 * @param null|int $flags
 	 * @return int
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function getCount($filter = null, $value = null)
+	public function getCount($filter = null, $value = null, $flags  = null)
 	{
 		$builder = $this->_connection->createQueryBuilder()->select('COUNT(m.id)')->from($this->_table, 'm');
 		$values = [];
+		$args = new ArrayObject([
+			'filter'  => $filter,
+			'value'   => $value,
+			'flags'   => $flags,
+		]);
 
-		if (null !== $args = $this->notify(self::STATE_BEFORE_SELECT, null, null, null, $filter, $value))
-		{
-			list($offset, $count, $orderBy, $filter, $value) = $args;
-			unset($offset, $count, $orderBy);
-		}
+		$this->notify(self::STATE_BEFORE_SELECT, $args);
+		list($filter, $value) = [
+			$args['filter'],
+			$args['value'],
+		];
 
 		$isArray = is_array($filter) && is_array($value);
 

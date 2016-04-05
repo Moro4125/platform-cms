@@ -17,10 +17,11 @@ interface EntityInterface extends JsonSerializable, ArrayAccess
 	const PROP_CREATED_AT = 'created_at';
 	const PROP_UPDATED_AT = 'updated_at';
 
-	const FLAG_CLONED              = 1;
-	const FLAG_DATABASE            = 2;
-	const FLAG_TIMESTAMP_CONVERTED = 4;
-	const FLAG_SYSTEM_CHANGES      = 8;
+	const FLAG_CLONED              =  1;
+	const FLAG_DATABASE            =  2;
+	const FLAG_TIMESTAMP_CONVERTED =  4;
+	const FLAG_SYSTEM_CHANGES      =  8;
+	const FLAG_GET_FOR_UPDATE      = 16;
 
 	/**
 	 * @param string $name

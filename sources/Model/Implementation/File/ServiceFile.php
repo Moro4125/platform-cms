@@ -26,7 +26,7 @@ use \PDO;
  * Class ServiceFile
  * @package Model\File
  *
- * @method FileInterface getEntityById($id, $withoutException = null)
+ * @method FileInterface getEntityById($id, $withoutException = null, $flags = null)
  */
 class ServiceFile extends AbstractService implements ContentActionsInterface, TagsServiceInterface
 {
@@ -132,7 +132,13 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function createEntity($hash, $kind, $notCommit = null)
 	{
-		$entity = $this->_newEntityFromArray([EntityFile::PROP_HASH => $hash, EntityFile::PROP_KIND => $kind ]);
+		$flags = EntityInterface::FLAG_GET_FOR_UPDATE;
+		$entity = $this->_newEntityFromArray([
+			EntityFile::PROP_HASH => $hash,
+			EntityFile::PROP_KIND => $kind,
+			EntityFile::PROP_CREATED_BY => $this->_userToken->getUsername(),
+			EntityFile::PROP_UPDATED_BY => $this->_userToken->getUsername(),
+		], $flags);
 
 		$notCommit || $this->commit($entity);
 		$notCommit || $this->notify(self::STATE_ENTITY_LOADED, $entity);
@@ -145,10 +151,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 * @param string $kind
 	 * @param null|bool $withoutException
 	 * @param null|bool $createOnFail
+	 * @param null|integer $flags
 	 * @return FileInterface|null
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function getByHashAndKind($hash, $kind, $withoutException = null, $createOnFail = null)
+	public function getByHashAndKind($hash, $kind, $withoutException = null, $createOnFail = null, $flags = null)
 	{
 		$builder = $this->_connection->createQueryBuilder();
 		$sqlQuery = $builder->select('*')->from($this->_table)->where('hash = ?')->andWhere('kind = ?')->getSQL();
@@ -156,7 +163,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		if ($statement->execute([ $hash, $kind]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, $flags);
 		}
 
 		if (empty($withoutException))
@@ -190,10 +197,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 	/**
 	 * @param array $ids
+	 * @param null|int $flags
 	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function selectByIds(array $ids)
+	public function selectByIds(array $ids, $flags)
 	{
 		if (empty($ids))
 		{
@@ -210,7 +218,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		foreach ($statement->execute($ids) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
 		{
-			$result[] = $this->_newEntityFromArray($record);
+			$result[] = $this->_newEntityFromArray($record, $flags);
 		}
 
 		return $result;
@@ -218,10 +226,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 	/**
 	 * @param string $hash
+	 * @param null|int $flags
 	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function selectByHash($hash)
+	public function selectByHash($hash, $flags = null)
 	{
 		$result = [];
 
@@ -231,7 +240,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		foreach ($statement->execute([ $hash ]) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
 		{
-			$result[] = $this->_newEntityFromArray($record);
+			$result[] = $this->_newEntityFromArray($record, $flags);
 		}
 
 		return $result;
@@ -239,10 +248,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 	/**
 	 * @param string $kind
+	 * @param null|int $flags
 	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function selectByKind($kind)
+	public function selectByKind($kind, $flags = null)
 	{
 		$result = [];
 
@@ -252,7 +262,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		foreach ($statement->execute([$kind ]) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
 		{
-			$result[] = $this->_newEntityFromArray($record);
+			$result[] = $this->_newEntityFromArray($record, $flags);
 		}
 
 		return $result;
@@ -290,7 +300,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		is_array($where) && (false !== $index = array_search('~code', $where, true)) && ($where[$index] = '~hash');
 
-		return $this->selectEntities($offset, $count, $order, $where, $value);
+		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -303,7 +313,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$where === '~code' && $where = '~hash';
 		is_array($where) && (false !== $index = array_search('~code', $where, true)) && ($where[$index] = '~hash');
 
-		return $this->getCount($where, $value);
+		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -385,7 +395,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function getHashForFile($path)
 	{
-		return convertSha1toX32(sha1_file($path));
+		return convertSha1toX32(sha1($this->_userToken->getUsername().sha1_file($path)));
 	}
 
 	/**
@@ -448,9 +458,9 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 								'crop_h' => $minSize,
 							]);
 							$entity->addTags($tags);
+							$this->commit($entity);
 						}
 
-						$this->commit($entity);
 						$idList[] = $entity->getId();
 					}
 				}
@@ -462,6 +472,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		{
 			$this->_connection->rollBack();
 			$application->getServiceFlash()->error(get_class($exception).': '.$exception->getMessage());
+			($sentry = $application->getServiceSentry()) && $sentry->captureException($exception);
 		}
 
 		return $idList;

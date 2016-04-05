@@ -6,6 +6,7 @@ namespace Moro\Platform\Action\Images;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
+use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Implementation\File\Decorator\AjaxSelectDecorator;
 
 
@@ -39,17 +40,17 @@ class IndexAjaxImagesAction
 
 		($dots = strpos($query, '…')) && $query = substr($query, 0, $dots);
 
-		if ($size = $service->getCount(['kind', $field = '~name'], ['1x1', $query]))
+		if ($size = $service->getCount(['kind', $field = '~name'], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
-			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', '~name'], ['1x1', $query]);
+			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', '~name'], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
-		elseif ($size = $service->getCount(['kind', $field = strpos($query, ',') ? 'tag' : '~tag'], ['1x1', $query]))
+		elseif ($size = $service->getCount(['kind', $field = strpos($query, ',') ? 'tag' : '~tag'], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
-			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', $field], ['1x1', $query]);
+			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', $field], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
-		elseif ($size = $service->getCount(['kind', $field = ($dots ? '~hash' : 'hash')], ['1x1', $query]))
+		elseif ($size = $service->getCount(['kind', $field = ($dots ? '~hash' : 'hash')], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
-			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', $field], ['1x1', $query]);
+			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['kind', $field], ['1x1', $query], EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
 		else
 		{

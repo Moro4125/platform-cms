@@ -1,5 +1,6 @@
 body {
     overflow-y: scroll;
+    padding-top: 70px;
 }
 
 input[type="checkbox"].sr-only ~ .btn-group.tac-small {
@@ -536,4 +537,12 @@ form > table.table {
 
 .breadcrumb > li + li.right:last-child:before {
     content: "";
+}
+
+#platform-footer {
+    margin-bottom: 0;
+}
+
+#platform-footer > .container > .navbar-text {
+    margin-right: 2px;
 }

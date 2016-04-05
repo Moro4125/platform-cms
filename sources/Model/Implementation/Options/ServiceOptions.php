@@ -6,9 +6,10 @@ namespace Moro\Platform\Model\Implementation\Options;
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Form\OptionsForm;
-
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\Form\Form;
 use \ArrayAccess;
+
 
 /**
  * Class ServiceOptions
@@ -35,11 +36,12 @@ class ServiceOptions extends AbstractService implements ArrayAccess
 	public function getAllOptions()
 	{
 		$result = [];
-		$statement = $this->_connection->prepare("SELECT * FROM {$this->_table} ORDER BY ".EntityOptions::PROP_SORT);
+		$sql = "SELECT"." * "."FROM {$this->_table} ORDER BY " .EntityOptions::PROP_SORT;
+		$statement = $this->_connection->prepare($sql);
 
 		foreach ($statement->execute() ? $statement->fetchAll() : [] as $record)
 		{
-			$result[$record['code']] = $this->_newEntityFromArray($record);
+			$result[$record['code']] = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
 
 		return $result;

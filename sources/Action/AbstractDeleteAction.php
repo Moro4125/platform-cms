@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action;
 use \Moro\Platform\Model\Accessory\HistoryBehavior;
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -54,7 +55,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 		$list = array_filter(array_map('str_to_int', explode(',', $ids)));
 		$this->_setEntities(array_filter(array_map(function($id) use ($service) {
-			return $service->getEntityById($id, true);
+			return $service->getEntityById($id, true, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}, $list)));
 
 		if (!$request->query->has('back'))
@@ -67,7 +68,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 			]));
 		}
 
-		if (!$app->isGranted('ROLE_EDITOR'))
+		if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 		{
 			$app->getServiceFlash()->error('У вас недостаточно прав для удаления записей.');
 

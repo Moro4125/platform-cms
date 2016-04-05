@@ -50,7 +50,7 @@ abstract class AbstractCreateAction extends AbstractContentAction
 			]));
 		}
 
-		if (!$app->isGranted('ROLE_EDITOR'))
+		if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 		{
 			$app->getServiceFlash()->error('У вас недостаточно прав для создания новой записи.');
 

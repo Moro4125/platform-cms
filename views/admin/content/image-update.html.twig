@@ -27,7 +27,7 @@
 		<div class="col-md-5 col-sm-12 text-right">
 			<div class="btn-group btn-group-sm" role="group">
 				<br class="visible-xs"/>
-				{% if is_granted("ROLE_EDITOR") and not locked %}
+				{% if (is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT")) and not locked %}
 					{{ form_widget(form.commit) }}
 					{{ form_widget(form.apply) }}
 					{{ form_widget(form.cancel) }}

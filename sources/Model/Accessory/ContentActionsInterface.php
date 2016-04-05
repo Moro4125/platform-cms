@@ -57,10 +57,11 @@ interface ContentActionsInterface extends LockInterface
 
 	/**
 	 * @param integer $id
+	 * @param null|int $flags
 	 * @param null|bool $withoutException
 	 * @return mixed
 	 */
-	function getEntityById($id, $withoutException = null);
+	function getEntityById($id, $withoutException = null, $flags = null);
 
 	/**
 	 * @param array $idList

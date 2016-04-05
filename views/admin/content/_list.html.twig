@@ -25,7 +25,7 @@
 {% block content %}
 	{{ knp_menu_render('admin_content', {style: 'tabs'}, 'twig') }}
 	{% set icon_col_width = icon_col_width|default(0) %}
-	{% set ignore_create = ignore_create|default(not (form.create is defined and is_granted("ROLE_EDITOR"))) %}
+	{% set ignore_create = ignore_create|default(not (form.create is defined and (is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT")))) %}
 	<br/>
 	{% block workarea %}
 		{%- if tags|length -%}
@@ -119,7 +119,7 @@
 								</button>
 							</li>
 
-							{% if is_granted("ROLE_EDITOR") %}
+							{% if is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT") %}
 								<li>
 									<button class="btn btn-default btn-xs" type="submit" name="admin_list[delete]" value="1">
 										<span class="glyphicon glyphicon-trash" aria-hidden="true">&nbsp;</span>
@@ -185,7 +185,7 @@
 								{% do form.create.setRendered %}
 							{% endif -%}
 							{{- form_widget(form.update) -}}
-							{%- if is_granted("ROLE_EDITOR") -%}
+							{%- if is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT") -%}
 								{{- form_widget(form.delete) -}}
 							{% else %}
 								{% do form.delete.setRendered %}
@@ -246,7 +246,7 @@
 			<p>
 				<span>Далее располагается непосредственно список найденных элементов. </span>
 				<span>Для каждой записи списка есть блок действий. </span>
-				<span>Запись можно выделить для использования в групповых действиях или выбрать подходящее действияе из выпадающего списка. </span>
+				<span>Запись можно выделить для использования в групповых действиях или выбрать подходящее действие из выпадающего списка. </span>
 			</p>
 			<p>
 				<span>Список завершается управляющей панелью, на которой располагаются цветные кнопки. </span>
@@ -274,7 +274,7 @@
 					<span class="caret"></span>
 					<span class="sr-only">Выбор действия</span>
 				</button>
-			{% if is_granted("ROLE_EDITOR") %}
+			{% if is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT") %}
 				<ul class="dropdown-menu" role="menu">
 					{{- block("list_column_todo__actions") -}}
 				</ul>

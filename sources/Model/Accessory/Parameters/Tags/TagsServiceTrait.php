@@ -3,6 +3,7 @@
  * Trait TagsServiceTrait
  */
 namespace Moro\Platform\Model\Accessory\Parameters\Tags;
+use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\AbstractService;
 use \PDO;
 
@@ -23,9 +24,10 @@ trait TagsServiceTrait
 	/**
 	 * @param null|string|array $tags
 	 * @param null|bool $useNamespace
+	 * @param null|string $createdBy
 	 * @return array
 	 */
-	public function selectActiveTags($tags = null, $useNamespace = null)
+	public function selectActiveTags($tags = null, $useNamespace = null, $createdBy = null)
 	{
 		assert(!$tags || is_string($tags) || is_array($tags) && count($tags) == count(array_filter($tags, 'is_string')));
 
@@ -48,11 +50,21 @@ trait TagsServiceTrait
 			$builder1->addSelect('ct.name, ct.parameters');
 			$parameters = null;
 
-			if ($tags)
+			if ($tags || $createdBy)
 			{
 				$builder2 = $this->_connection->createQueryBuilder();
 				$builder2->select('m.id')->from($table, 'm');
-				$parameters = $this->_tagsSelectEntities($builder2, 'tag', $tags, ':t');
+
+				if ($tags)
+				{
+					$parameters = $this->_tagsSelectEntities($builder2, 'tag', $tags, ':t');
+				}
+
+				if ($createdBy)
+				{
+					$builder2->andWhere(UpdatedByInterface::PROP_CREATED_BY.'= :createdBy');
+					$parameters[':createdBy'] = $createdBy;
+				}
 
 				$builder1->andWhere('a.target IN ('.$builder2->getSQL().')');
 			}

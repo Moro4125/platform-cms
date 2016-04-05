@@ -23,7 +23,7 @@ use \Exception;
  * Class ServiceContent
  * @package Model\Content
  *
- * @method EntityContent[] getEntitiesById(array $idList)
+ * @method EntityContent[] getEntitiesById(array $idList, $flags)
  */
 class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
 {
@@ -124,7 +124,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 */
 	public function createEntity()
 	{
-		$entity = $this->_newEntityFromArray([]);
+		$entity = $this->_newEntityFromArray([], EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		$this->commit($entity);
 		return $entity;
@@ -132,12 +132,13 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 	/**
 	 * @param string $code
+	 * @param null|int $flags
 	 * @param null|bool $withoutException
 	 * @return ContentInterface|null
 	 *
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function getEntityByCode($code, $withoutException = null)
+	public function getEntityByCode($code, $withoutException = null, $flags = null)
 	{
 		assert(is_string($code));
 
@@ -147,7 +148,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 		if ($statement->execute([ (string)$code ]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, $flags);
 		}
 
 		if (empty($withoutException))
@@ -169,7 +170,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 */
 	public function selectEntitiesForAdminListForm($offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
-		return $this->selectEntities($offset, $count, $order, $where, $value);
+		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -179,7 +180,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 */
 	public function getCountForAdminListForm($where = null, $value = null)
 	{
-		return $this->getCount($where, $value);
+		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**

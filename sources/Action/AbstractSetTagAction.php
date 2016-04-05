@@ -50,7 +50,7 @@ class AbstractSetTagAction extends AbstractContentAction
 
 		$list = array_filter(array_map('str_to_int', explode(',', $ids)));
 		$this->_setEntities(array_filter(array_map(function($id) use ($service) {
-			return $service->getEntityById($id, true);
+			return $service->getEntityById($id, true, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}, $list)));
 
 		if (!$request->query->has('back'))

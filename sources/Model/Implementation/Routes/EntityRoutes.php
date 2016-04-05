@@ -12,6 +12,7 @@ namespace Moro\Platform\Model\Implementation\Routes;
 class EntityRoutes implements RoutesInterface
 {
 	use \Moro\Platform\Model\EntityTrait;
+	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
 

@@ -78,25 +78,22 @@ trait HeadingServiceTrait
 	}
 
 	/**
-	 * @param null|int $offset
-	 * @param null|int $count
-	 * @param null|string $orderBy
-	 * @param null|string|array $filter
-	 * @param null|mixed $value
-	 * @return mixed
+	 * @param \ArrayObject $args
 	 */
-	protected function _headingBeforeSelect($offset, $count, $orderBy, $filter, $value)
+	protected function _headingBeforeSelect($args)
 	{
 		assert(isset($this->_traitHeadingTagsService));
 
-		if (is_string($filter) && $filter == 'heading')
+		if (is_string($args['filter']) && $args['filter'] == 'heading')
 		{
-			$value  = $this->_searchHeadingTag($value);
-			$filter = $value ? 'tag' :( ($value = 0) ?: 'id');
-			return [$offset, $count, $orderBy, $filter, $value];
+			$args['value']  = $this->_searchHeadingTag($args['value']);
+			$args['filter'] = $args['value'] ? 'tag' :( ($args['value'] = 0) ?: 'id');
 		}
-		elseif (is_array($filter) && false !== $index = array_search('heading', $filter, true))
+		elseif (is_array($args['filter']) && false !== $index = array_search('heading', $args['filter'], true))
 		{
+			$filter = $args['filter'];
+			$value  = $args['value'];
+
 			if ($tag = $this->_searchHeadingTag($value[$index]))
 			{
 				unset($filter[$index]);
@@ -120,10 +117,9 @@ trait HeadingServiceTrait
 				$value = [0];
 			}
 
-			return [$offset, $count, $orderBy, $filter ? array_values($filter) : null, array_values($value)];
+			$args['filter'] = $filter ? array_values($filter) : null;
+			$args['value']  = array_values($value);
 		}
-
-		return null;
 	}
 
 	/**

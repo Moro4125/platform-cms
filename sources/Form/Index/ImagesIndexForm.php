@@ -19,7 +19,7 @@ class ImagesIndexForm extends AbstractIndexForm
 	{
 		parent::buildForm($builder, $options);
 
-		if ($this->_application->isGranted('ROLE_EDITOR'))
+		if ($this->_application->isGranted('ROLE_EDITOR') || $this->_application->isGranted('ROLE_CLIENT'))
 		{
 			if ($this->_application->getOption('images.watermark'))
 			{

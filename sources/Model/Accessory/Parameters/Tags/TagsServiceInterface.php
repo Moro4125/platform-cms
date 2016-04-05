@@ -15,7 +15,8 @@ interface TagsServiceInterface
 	/**
 	 * @param null|string|array $tags
 	 * @param null|bool $useNamespace
+	 * @param null|string $createdBy
 	 * @return array
 	 */
-	function selectActiveTags($tags = null, $useNamespace = null);
+	function selectActiveTags($tags = null, $useNamespace = null, $createdBy = null);
 }

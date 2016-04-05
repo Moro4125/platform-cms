@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Model\Implementation\ApiKey;
 use \Moro\Platform\Model\AbstractService;
+use \Moro\Platform\Model\EntityInterface;
 use \Doctrine\DBAL\DBALException;
 use \PDO;
 use \RuntimeException;
@@ -84,7 +85,7 @@ class ServiceApiKey extends AbstractService
 		if ($statement->execute([$key]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
 			/** @var \Moro\Platform\Model\Implementation\ApiKey\ApiKeyInterface $entity */
-			if ($this->_checkEntity($entity = $this->_newEntityFromArray($record)))
+			if ($this->_checkEntity($entity = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE)))
 			{
 				return $entity;
 			}
@@ -118,7 +119,7 @@ class ServiceApiKey extends AbstractService
 		if ($statement->execute([$user, $target]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
 			/** @var \Moro\Platform\Model\Implementation\ApiKey\ApiKeyInterface $entity */
-			if ($this->_checkEntity($entity = $this->_newEntityFromArray($record), $groups))
+			if ($this->_checkEntity($entity = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE), $groups))
 			{
 				return $entity;
 			}
@@ -168,7 +169,7 @@ class ServiceApiKey extends AbstractService
 
 			try
 			{
-				$entity = $this->_newEntityFromArray($record);
+				$entity = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE);
 				$this->commit($entity);
 
 				return $entity;

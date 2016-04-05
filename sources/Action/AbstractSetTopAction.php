@@ -39,11 +39,11 @@ class AbstractSetTopAction extends AbstractContentAction
 
 		$back = $request->headers->get('Referer', $app->url($this->routeIndex), true);
 
-		if (!$app->isGranted('ROLE_EDITOR'))
+		if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 		{
 			$app->getServiceFlash()->error('У вас недостаточно прав для изменения порядка записей.');
 		}
-		elseif ($entity = $this->getService()->getEntityById($id, true))
+		elseif ($entity = $this->getService()->getEntityById($id, true, EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
 			$this->_setEntity($entity);
 			$this->execute();

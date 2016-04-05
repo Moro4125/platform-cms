@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Model\Implementation\Routes;
 use \Moro\Platform\Model\EntityInterface;
+use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
 
@@ -11,7 +12,7 @@ use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
  * Interface RoutesInterface
  * @package Model\Routes
  */
-interface RoutesInterface extends EntityInterface, ParametersInterface, TagsEntityInterface
+interface RoutesInterface extends EntityInterface, ParametersInterface, TagsEntityInterface, UpdatedByInterface
 {
 	const PROP_ROUTE        = 'route';
 	const PROP_QUERY        = 'query';

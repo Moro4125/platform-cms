@@ -3,13 +3,12 @@
  * Class ServiceTags
  */
 namespace Moro\Platform\Model\Implementation\Tags;
-
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
-use Moro\Platform\Form\Index\AbstractIndexForm;
+use \Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\TagsForm;
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
@@ -21,7 +20,7 @@ use \PDO;
  * Class ServiceTags
  * @package Model\Content
  *
- * @method EntityTags[] selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null)
+ * @method EntityTags[] selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null, $flags = null)
  */
 class ServiceTags extends AbstractService implements ContentActionsInterface, TagsServiceInterface
 {
@@ -74,7 +73,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function createEntity()
 	{
-		$entity = $this->_newEntityFromArray([]);
+		$entity = $this->_newEntityFromArray([], EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		$this->commit($entity);
 		return $entity;
@@ -82,12 +81,13 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 
 	/**
 	 * @param string $code
+	 * @param null|int $flags
 	 * @param null|bool $withoutException
 	 * @return TagsInterface|null
 	 *
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function getEntityByCode($code, $withoutException = null)
+	public function getEntityByCode($code, $withoutException = null, $flags = null)
 	{
 		assert(is_string($code));
 
@@ -97,7 +97,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 
 		if ($statement->execute([ (string)$code ]) && $record = $statement->fetch(PDO::FETCH_ASSOC))
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, $flags);
 		}
 
 		if (empty($withoutException))
@@ -119,7 +119,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function selectEntitiesForAdminListForm($offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
-		return $this->selectEntities($offset, $count, $order, $where, $value);
+		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**
@@ -129,7 +129,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function getCountForAdminListForm($where = null, $value = null)
 	{
-		return $this->getCount($where, $value);
+		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
 	/**

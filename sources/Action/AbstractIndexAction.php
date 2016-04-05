@@ -3,7 +3,7 @@
  * Class AbstractIndexAction
  */
 namespace Moro\Platform\Action;
-
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -188,6 +188,10 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			}
 		}
 
+		$createdBy = $this->getApplication()->getServiceSecurityAcl()->isGranted('ROLE_CLIENT')
+			? $this->getApplication()->getServiceSecurityToken()->getUsername()
+			: null;
+
 		$title = $search ?( $search.' / ' ):( $searchTags ? implode(', ', array_keys($searchTags)).' / ' : '' );
 
 		return [
@@ -204,7 +208,9 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			'search'         => $search,
 			'searchTags'     => $searchTags,
 			'searchTagsMeta' => $searchTagsMeta,
-			'tags' => $service instanceof TagsServiceInterface ? $service->selectActiveTags($this->_tags, true) : [],
+			'tags' => $service instanceof TagsServiceInterface
+				? $service->selectActiveTags($this->_tags, true, $createdBy)
+				: [],
 			'next' => ($offset + $count < $total) ? $next->getRequestUri() : false,
 			'prev' => ($page > 1) ? $prev->getRequestUri() : false,
 			'rfc822' => DateTime::RFC822,
@@ -283,7 +289,8 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			return $this->_cached = [0, 1, 'id', 'id', 0, 0];
 		}
 
-		return $this->_cached = [$start, $count, $order, $where, $value, $service->getCount($where, $value)];
+		$totalCount = $service->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
+		return $this->_cached = [$start, $count, $order, $where, $value, $totalCount];
 	}
 
 	/**

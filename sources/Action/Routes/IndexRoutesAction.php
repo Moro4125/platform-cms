@@ -6,6 +6,7 @@ namespace Moro\Platform\Action\Routes;
 use \Silex\Application;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
+use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Implementation\Routes\Decorator\AdminDecorator;
 use \Moro\Platform\Model\Implementation\Routes\RoutesInterface;
 
@@ -42,7 +43,7 @@ class IndexRoutesAction
 			/** @var \Moro\Platform\Model\Implementation\Routes\ServiceRoutes $service */
 			$list = $service->selectEntities($offset, $this->_count, $order, array_keys($filter), array_values($filter));
 			$form = $service->createAdminListForm($app, $list);
-			$total = $service->getCount(array_keys($filter), array_values($filter));
+			$total = $service->getCount(array_keys($filter), array_values($filter), EntityInterface::FLAG_GET_FOR_UPDATE);
 
 			if ($form->handleRequest($request)->isValid())
 			{

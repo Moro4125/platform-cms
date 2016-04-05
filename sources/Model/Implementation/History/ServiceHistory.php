@@ -47,7 +47,7 @@ class ServiceHistory extends AbstractService
 			HistoryInterface::PROP_ENTITY_ID => (int)$entityId,
 			HistoryInterface::PROP_REQUEST_ID => $this->getCurrentRequestId(),
 			HistoryInterface::PROP_PARAMETERS => (array)$diff,
-		]);
+		], EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		$this->commit($entity);
 		return $entity;

@@ -6,10 +6,8 @@ namespace Moro\Platform\Model\Implementation\Routes;
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
-
 use \Moro\Platform\Form\RoutesForm;
-
-
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\Form\Form;
 use \Exception;
 use \PDO;
@@ -18,16 +16,32 @@ use \PDO;
  * Class ServiceRoutes
  * @package Model\Routes
  *
- * @method RoutesInterface[] selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null)
+ * @method RoutesInterface[] selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null, $flags = null)
  */
 class ServiceRoutes extends AbstractService implements TagsServiceInterface
 {
+	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
 
 	/**
 	 * @var string
 	 */
 	protected $_table = 'routes';
+
+	/**
+	 * @var string
+	 */
+	protected $_client;
+
+	/**
+	 * @param string $user
+	 * @return $this
+	 */
+	public function setClient($user)
+	{
+		$this->_client = (string)$user;
+		return $this;
+	}
 
 	/**
 	 * @param string $route
@@ -37,7 +51,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	 */
 	public function getByRouteAndQuery($route, array $query)
 	{
-		$entity = $this->_newEntityFromArray([]);
+		$entity = $this->_newEntityFromArray([], EntityInterface::FLAG_GET_FOR_UPDATE);
 		$entity->setRoute($route);
 		$entity->setQuery($query);
 		$entity->setFlags(EntityRoutes::FLAG_DATABASE | $entity->getFlags());
@@ -53,7 +67,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 		if ($statement->execute([ $entity->getRoute(), $entity->getQuery() ]) && $record = $statement->fetch())
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
 
 		$entity->setFlags($entity->getFlags() & ~EntityRoutes::FLAG_DATABASE);
@@ -78,7 +92,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 		if ($statement->execute([ $fileName ]) && $record = $statement->fetch())
 		{
-			return $this->_newEntityFromArray($record);
+			return $this->_newEntityFromArray($record, 0);
 		}
 
 		return null;
@@ -127,7 +141,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 			foreach ((array)$tag as $tagEx)
 			{
-				foreach ($this->selectEntities(null, null, null, 'tag', $tagEx) as $entity)
+				foreach ($this->selectEntities(null, null, null, 'tag', $tagEx, EntityInterface::FLAG_SYSTEM_CHANGES) as $entity)
 				{
 					$entity->delTags(['предпросмотр']);
 					$entity->setCompileFlag(2);
@@ -169,18 +183,25 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	public function selectActiveOnly()
 	{
 		$list = [];
+		$parameters = [1];
 
-		$builder = $this->_connection->createQueryBuilder();
-		$sqlQuery = $builder->select('*')
+		$builder = $this->_connection->createQueryBuilder()
+			->select('*')
 			->from($this->_table)
-			->where(EntityRoutes::PROP_COMPILE_FLAG.'=1')
-			->orderBy(EntityRoutes::PROP_UPDATED_AT, 'desc')
-			->getSQL();
-		$statement = $this->_connection->prepare($sqlQuery);
+			->where(EntityRoutes::PROP_COMPILE_FLAG.'=?')
+			->orderBy(EntityRoutes::PROP_UPDATED_AT, 'desc');
 
-		foreach ($statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) :[] as $record)
+		if ($this->_client)
 		{
-			$list[] = $this->_newEntityFromArray($record);
+			$builder->andWhere(EntityRoutes::PROP_CREATED_BY.'=?');
+			$parameters[] = $this->_client;
+		}
+
+		$statement = $this->_connection->prepare($builder->getSQL());
+
+		foreach ($statement->execute($parameters) ? $statement->fetchAll(PDO::FETCH_ASSOC) :[] as $record)
+		{
+			$list[] = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
 
 		return $list;
@@ -200,7 +221,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 		foreach ($statement->execute() ? $statement->fetchAll(PDO::FETCH_ASSOC) :[] as $record)
 		{
-			$list[] = $this->_newEntityFromArray($record);
+			$list[] = $this->_newEntityFromArray($record, EntityInterface::FLAG_GET_FOR_UPDATE);
 		}
 
 		return $list;
@@ -228,7 +249,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 		foreach ($statement->execute($routes) ? $statement->fetchAll(PDO::FETCH_ASSOC) : [] as $record)
 		{
-			$list[] = $this->_newEntityFromArray($record);
+			$list[] = $this->_newEntityFromArray($record, 0);
 		}
 
 		return $list;
@@ -278,7 +299,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	public function commitAdminListForm(Application $application, Form $form)
 	{
 		$affected =  0;
-		$list = $this->selectEntities();
+		$list = $this->selectEntities(null, null, null, null, null, EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		foreach ($form->getData() as $code => $value)
 		{

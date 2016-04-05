@@ -14,6 +14,7 @@ use \Exception;
  */
 class AdminDecorator extends AbstractDecorator implements RoutesInterface
 {
+	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsDecoratorTrait;
 

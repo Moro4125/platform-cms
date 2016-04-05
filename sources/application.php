@@ -27,7 +27,7 @@ class Application extends CApplication
 	use \Silex\Application\MonologTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.10.0";
+	const PLATFORM_VERSION = "1.13";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -53,6 +53,7 @@ class Application extends CApplication
 	const BEHAVIOR_TAGS               = 'behavior.tags';
 	const BEHAVIOR_HEADINGS           = 'behavior.headings';
 	const BEHAVIOR_HISTORY            = 'behavior.history';
+	const BEHAVIOR_CLIENT_ROLE        = 'behavior.client_role';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
 	const HEADER_USE_FULL_URL = 'X-Use-Full-URL';
@@ -187,6 +188,14 @@ class Application extends CApplication
 	public function getVersion()
 	{
 		return $this->VERSION;
+	}
+
+	/**
+	 * @return string
+	 */
+	final public function getPlatformVersion()
+	{
+		return self::PLATFORM_VERSION;
 	}
 
 	/**
@@ -789,5 +798,13 @@ class Application extends CApplication
 	public function getBehaviorHistory()
 	{
 		return $this->offsetGet(self::BEHAVIOR_HISTORY);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Accessory\ClientRoleBehavior
+	 */
+	public function getBehaviorClientRole()
+	{
+		return $this->offsetGet(self::BEHAVIOR_CLIENT_ROLE);
 	}
 }

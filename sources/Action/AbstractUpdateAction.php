@@ -3,11 +3,12 @@
  * Class AbstractUpdateAction
  */
 namespace Moro\Platform\Action;
-use Moro\Platform\Model\Accessory\HistoryBehavior;
+use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\AbstractDecorator;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
+use \Moro\Platform\Model\Exception\AlienEntityException;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -98,14 +99,30 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 			]));
 		}
 
-		if (!$entity = $this->getEntity() ?: $service->getEntityById($id, true))
+		$entity = null;
+
+		try
+		{
+			$entity = $this->getEntity() ?: $service->getEntityById($id, true, EntityInterface::FLAG_GET_FOR_UPDATE) ?: null;
+
+			if ($entity instanceof AbstractDecorator)
+			{
+				$entity = $entity->decorate(false);
+			}
+		}
+		catch (AlienEntityException $exception)
+		{
+			$app->getServiceFlash()->error("У вас нет прав на доступ к записи с идентификатором $id.");
+			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
+		}
+
+		if (!isset($entity))
 		{
 			$app->getServiceFlash()->error("Записи с идентификатором $id не существует.");
 			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
 		}
 
-		$entity instanceof AbstractDecorator && $entity = $entity->decorate(false);
-		$this->_setEntity($entity);
+		$entity instanceof EntityInterface && $this->_setEntity($entity);
 
 		if ($request->query->has('lock'))
 		{
@@ -273,7 +290,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		/** @noinspection PhpUndefinedMethodInspection */
 		if ($form->get('delete')->isClicked())
 		{
-			if (!$app->isGranted('ROLE_EDITOR'))
+			if (!($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT')))
 			{
 				$app->getServiceFlash()->error('У вас недостаточно прав для удаления записи.');
 			}
@@ -298,13 +315,13 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		/** @noinspection PhpUndefinedMethodInspection */
 		elseif (!$form->get('cancel')->isClicked())
 		{
-			if (!$app->isGranted('ROLE_EDITOR'))
+			if ($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT'))
 			{
-				$app->getServiceFlash()->error('У вас недостаточно прав для изменения записи.');
+				$this->_applyForm();
 			}
 			else
 			{
-				$this->_applyForm();
+				$app->getServiceFlash()->error('У вас недостаточно прав для изменения записи.');
 			}
 		}
 

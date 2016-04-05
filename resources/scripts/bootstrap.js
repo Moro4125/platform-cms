@@ -327,9 +327,11 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		jQuery("#admin_update_comment").each(function() {
 			var self = jQuery(this),
 				text = "Пояснение к изменениям или просто комментарий к записи",
-				node = jQuery("<textarea>").attr("class", "form-control form-control").attr("placeholder", text);
+				node = jQuery("<textarea>").attr("class", "form-control form-control").attr("placeholder", text),
+				info = jQuery(".markdown-help-link")[0].outerHTML;
 
-			target.append(node);
+			target.append(node).append(info);
+
 			node.on({
 				change: function() {
 					self.val(node.val());

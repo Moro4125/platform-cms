@@ -4,13 +4,14 @@
 {% block content %}
 	{% form_theme form _self %}
 	{{ form_start(form, {'method': 'POST'}) }}
+	{% set accessAllow = is_granted("ROLE_EDITOR") or is_granted("ROLE_CLIENT") %}
 
 	<div class="panel panel-default">
 		<div class="panel-heading">Страницы сайта</div>
 
 		<table class="table with-highlight">
 			<colgroup>
-				{% if is_granted("ROLE_EDITOR") %}
+				{% if accessAllow %}
 					<col width="64" />
 				{% endif %}
 				<col width="40%" />
@@ -18,7 +19,7 @@
 			</colgroup>
 			<thead>
 				<tr>
-					{% if is_granted("ROLE_EDITOR") %}
+					{% if accessAllow %}
 						<td><button type="submit" class="btn btn-xs btn-default" name="admin_routes[compile]" title="Скомпилировать выбранные страницы"><small>Запуск.</small></button></td>
 					{% endif %}
 					<td><strong>URL</strong> (скомпилированный)</td>
@@ -29,7 +30,7 @@
 			{% set c_url = url('admin-compile', {id: '__ID__', back: app.request.uri}) %}
 			{% for code, route in routes %}
 				<tr{% if not route.hasTag("предпросмотр") and not route.isInner %} class="require-preview"{% endif %}>
-					{% if is_granted("ROLE_EDITOR") %}
+					{% if accessAllow %}
 					<td>
 						{{ form_widget(form[code], {attr: {class: "sr-only"}}) }}
 						<div class="btn-group btn-group-xs tac-small">
@@ -42,6 +43,8 @@
 							</a>
 						</div>
 					</td>
+					{% else %}
+						{{ form_widget(form[code], {attr: {class: "sr-only"}}) }}
 					{% endif %}
 					{% if not route.isInner %}
 						<td>
@@ -62,9 +65,9 @@
 				</tr>
 			{% endfor %}
 			</tbody>
-			{% if is_granted("ROLE_EDITOR") %}
-				<tfoot>
-					<tr>
+			<tfoot>
+				<tr>
+					{% if accessAllow %}
 						<td colspan="2" class="panel-footer">
 							<div class="btn-group" role="group" aria-label="Действия">
 								{{ form_widget(form.compile, {attr: {class: 'btn btn-warning'}}) }}
@@ -75,11 +78,15 @@
 						<td class="panel-footer text-right">
 							{{  macros.pager_widget(page, pages, "admin-compile-list", app.request.query) }}
 						</td>
-					</tr>
-				</tfoot>
-			{% else %}
-				{% do form.compile.setRendered %}
-			{% endif %}
+					{% else %}
+						{% do form.compile.setRendered %}
+						{% do form.select_all.setRendered %}
+						<td colspan="3" class="panel-footer text-right">
+							{{  macros.pager_widget(page, pages, "admin-compile-list", app.request.query) }}
+						</td>
+					{% endif %}
+				</tr>
+			</tfoot>
 		</table>
 	</div>
 

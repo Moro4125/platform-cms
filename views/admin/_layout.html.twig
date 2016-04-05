@@ -2,7 +2,7 @@
 
 {% block layout %}
 	{% block navbar %}
-	<nav class="navbar navbar-inverse">
+	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -46,6 +46,22 @@
 
 	<script id="templateSelect2Image" type="text/x-mustache">{{ block("templateSelect2Image") }}</script>
 	<script id="templateSelect2Article" type="text/x-mustache">{{ block("templateSelect2Article") }}</script>
+
+	<nav id="platform-footer" class="navbar navbar-default">
+		<div class="container">
+			<p class="navbar-text navbar-right text-center">
+				{%- if app.name != "Platform CMS" -%}
+					<strong>{{ app.name }}</strong> v.{{ app.version }} (build <i>{{ app.build }}</i>)
+					{{- " powered&nbsp;by&nbsp;"|raw -}}
+					<a target="_blank" href="https://github.com/Moro4125/platform-cms">Platform&nbsp;CMS</a>
+					{{- ("&nbsp;v." ~ app.platformVersion)|raw -}}
+				{%- else -%}
+					<a target="_blank" href="https://github.com/Moro4125/platform-cms">Platform CMS</a>
+					{{- (" v." ~ app.platformVersion)|raw }} (build <i>{{ app.build }}</i>)
+				{%- endif -%}
+			</p>
+		</div>
+	</nav>
 {% endblock %}
 
 {% block usedList %}

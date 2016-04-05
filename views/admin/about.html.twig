@@ -21,15 +21,17 @@
 						<span>Изображения</span>
 					</li>
 					{% if app.isGranted("ROLE_RS_RELINK") %}
-					<li class="list-group-item">
-						<span class="badge">{{ app.serviceRelink.count }}</span>
-						<span>Правила перелинковки</span>
-					</li>
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceRelink.count }}</span>
+							<span>Правила перелинковки</span>
+						</li>
 					{% endif %}
-					<li class="list-group-item">
-						<span class="badge">{{ app.serviceTags.count }}</span>
-						<span>Ярлыков</span>
-					</li>
+					{% if app.isGranted("ROLE_RS_TAGS") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceTags.count }}</span>
+							<span>Ярлыков</span>
+						</li>
+					{% endif %}
 				</ul>
 			</div>
 		</div>
