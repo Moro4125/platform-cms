@@ -107,6 +107,9 @@ class UpdateArticlesAction extends AbstractUpdateAction
 			}
 		}
 
+		$anonsFields = ['name', 'code', 'icon', 'parameters.lead', 'parameters.link', 'parameters.tags'];
+		(array_intersect_key($changes, array_fill_keys($anonsFields, 1))) && ($tags[] = 'ann-'.$entity->getId());
+
 		$routes->setCompileFlagForTag(array_unique($tags));
 		$this->_checkFields();
 	}
