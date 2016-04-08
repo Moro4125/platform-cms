@@ -33,6 +33,9 @@ Application::getInstance(function (Application $app)
 		'admin-content-articles-delete'  => ['content/article/delete/{ids}',  'Articles\\DeleteArticlesAction'],
 		'admin-content-articles-set-top' => ['content/article/set-top/{id}',  'Articles\\SetTopArticlesAction'],
 		'admin-content-articles-set-tag' => ['content/article/set-tag/{ids}', 'Articles\\SetTagArticlesAction'],
+		'admin-content-chunks-create'    => ['content/article/create/{id}',    'Articles\\Chunks\\CreateChunksAction'],
+		'admin-content-chunks-update'    => ['content/article/update/{id}/{n}','Articles\\Chunks\\UpdateChunksAction'],
+		'admin-content-chunks-delete'    => ['content/article/delete/{id}/{n}','Articles\\Chunks\\DeleteChunksAction'],
 		'admin-content-relink'           => ['content/relink',                'Relink\\IndexRelinkAction'],
 		'admin-content-relink-create'    => ['content/relink/create',         'Relink\\CreateRelinkAction'],
 		'admin-content-relink-update'    => ['content/relink/update/{id}',    'Relink\\UpdateRelinkAction'],
@@ -60,6 +63,7 @@ Application::getInstance(function (Application $app)
 	];
 
 	$assertRules = [
+		'n'         => '\\d+',
 		'id'        => '\\d+',
 		'ids'       => '\\d+(,\\d+)*',
 		'salt'      => '[0-9a-v]{2}',
@@ -71,6 +75,7 @@ Application::getInstance(function (Application $app)
 	];
 
 	$convertRules = [
+		'n'      => 'str_to_int',
 		'id'     => 'str_to_int',
 		'width'  => 'str_to_int',
 		'height' => 'str_to_int',

@@ -33,6 +33,7 @@ use \Moro\Platform\Provider\Twig\MarkdownExtension;
 use \Moro\Platform\Provider\SentryProvider;
 use \Moro\Platform\Security\User\ApiKeyUserProvider;
 use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
+use \Moro\Platform\Model\Accessory\EventBridgeBehavior;
 use \Moro\Platform\Model\Accessory\ClientRoleBehavior;
 use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\Accessory\Heading\HeadingBehavior;
@@ -41,6 +42,7 @@ use \Moro\Platform\Model\Implementation\Routes\ServiceRoutes;
 use \Moro\Platform\Model\Implementation\Options\ServiceOptions;
 use \Moro\Platform\Model\Implementation\Content\ServiceContent;
 use \Moro\Platform\Model\Implementation\Content\Decorator\HeadingDecorator as HeadingContentDecorator;
+use \Moro\Platform\Model\Implementation\Content\Behavior\ChunksBehavior;
 use \Moro\Platform\Model\Implementation\File\ServiceFile;
 use \Moro\Platform\Model\Implementation\File\Decorator\HeadingDecorator as HeadingFileDecorator;
 use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
@@ -293,6 +295,20 @@ Application::getInstance(function (Application $app)
 		return $behavior;
 	});
 
+	// Model behavior CONTENT_CHUNKS.
+	if ($app->getOption('content.multi_page'))
+	{
+		$app[Application::BEHAVIOR_CONTENT_CHUNKS] = $app->share(function() use ($app, $suffixClass) {
+			$class = $app->offsetGet(Application::BEHAVIOR_CONTENT_CHUNKS.$suffixClass, ChunksBehavior::class);
+
+			/** @var ChunksBehavior $behavior */
+			$behavior = new $class();
+			$behavior->setContentService($app->getServiceContent());
+
+			return $behavior;
+		});
+	}
+
 	// Service ROUTES.
 	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
@@ -359,6 +375,16 @@ Application::getInstance(function (Application $app)
 			$service->appendDecorator(new HeadingContentDecorator($app));
 		}
 
+		if ($app->getOption('content.multi_page'))
+		{
+			$service->attach(new EventBridgeBehavior([
+				ServiceContent::STATE_DELETE_STARTED,
+				EventBridgeBehavior::STATE_LAZY_INIT,
+				Application::SERVICE_CONTENT_CHUNKS,
+				$app,
+			]));
+		}
+
 		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
 		{
 			$service->attach($app->getBehaviorClientRole());
@@ -366,6 +392,22 @@ Application::getInstance(function (Application $app)
 
 		return $service;
 	});
+
+	// Service CONTENT_CHUNKS.
+	if ($app->getOption('content.multi_page'))
+	{
+		$app[Application::SERVICE_CONTENT_CHUNKS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+			$content = $app->getServiceContent();
+			$service = clone $content;
+
+			$service->setTableName($content->getTableName().'_chunks');
+			$service->setServiceCode(Application::SERVICE_CONTENT_CHUNKS);
+			$service->detach($app->getBehaviorTags());
+			$service->attach($app->getBehaviorContentChunks());
+
+			return $service;
+		});
+	}
 
 	// Service FILE.
 	$app[Application::SERVICE_FILE] = $app->share(function() use ($app, $suffixClass, $lockTime) {

@@ -1,0 +1,38 @@
+{% extends "@PlatformCMS/admin/content/article-update.html.twig" %}
+
+
+{%- block form_code_errors -%}
+{%- endblock form_code_errors -%}
+
+
+{%- block article_name_bar -%}
+	{% do form.delete.setRendered %}
+	<div class="col-md-7 col-sm-12">
+		<div class="form-group">
+			<label class="col-sm-2 control-label required" for="admin_update_name">Название</label>
+			<div class="col-sm-10">
+				<div class="input-group">
+					<span class="input-group-btn">
+						<span class="btn btn-default disabled">
+							{{ app.serviceContent.getEntityById(parentId).name }}
+						</span>
+					</span>
+					{{ form_widget(form.name) }}
+				</div>
+			</div>
+		</div>
+	</div>
+{%- endblock article_name_bar -%}
+
+
+{%- block anons_bar -%}
+	<div class="row">
+		<div class="col-md-7 col-sm-12">
+			{{ form_row(form.lead) }}
+		</div>
+	</div>
+{%- endblock anons_bar -%}
+
+
+{%- block attachments_bar -%}
+{%- endblock attachments_bar -%}

@@ -259,11 +259,31 @@ abstract class AbstractDecorator
 	}
 
 	/**
+	 * @param int|string $time
+	 * @return $this
+	 */
+	protected function setCreatedAt($time)
+	{
+		$this->_entity->setProperty(EntityInterface::PROP_CREATED_AT, $time);
+		return $this;
+	}
+
+	/**
 	 * @return int
 	 */
 	public function getUpdatedAt()
 	{
 		return $this->_entity->getUpdatedAt();
+	}
+
+	/**
+	 * @param int|string $time
+	 * @return $this
+	 */
+	protected function setUpdatedAt($time)
+	{
+		$this->_entity->setProperty(EntityInterface::PROP_UPDATED_AT, $time);
+		return $this;
 	}
 
 	/**

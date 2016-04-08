@@ -7,6 +7,7 @@ use \Moro\Platform\Model\AbstractService;
 use \Doctrine\DBAL\Connection;
 use \Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use \Exception;
 
 /**
  * Class LockServiceTrait
@@ -96,17 +97,31 @@ trait LockTrait
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
 	 * @param null|int $lockTime
+	 * @param null|bool $withoutNotify
 	 * @return bool|string
 	 */
-	public function isLocked($entity, $lockTime = null)
+	public function isLocked($entity, $lockTime = null, $withoutNotify = null)
 	{
-		if (isset($this->_connection))
+		/** @var AbstractService $self */
+		$self = $this;
+		$user = $this->_lockGetUser();
+
+		if ($withoutNotify)
+		{
+			$flag = false;
+		}
+		else
+		{
+			$flag = $self->notify(LockInterface::STATE_CHECK_LOCK, $entity, $lockTime, $user) ?: false;
+		}
+
+		if ($flag === false && isset($this->_connection))
 		{
 			/** @var Connection $connection */
 			$connection = $this->_connection;
 
 			$query = $connection->createQueryBuilder();
-			$query->select('code, user, updated_at');
+			$query->select('code, user, updated_at, token');
 			$query->from($this->_lockTable);
 			$query->where('code = ?');
 
@@ -118,98 +133,195 @@ trait LockTrait
 				$format = $connection->getDatabasePlatform()->getDateTimeFormatString();
 				$redLine = gmdate($format, time() - ($lockTime ?: $this->_lockTime));
 
-				return ($redLine < $record['updated_at'] && $record['user'] !== $this->_lockGetUser())
+				$flag = ($redLine < $record['updated_at'] && $record['user'] !== $user)
 					? $record['user']
 					: false;
 			}
 			else
 			{
 				unset($this->_lockRecords[$entity->getId()]);
+				$flag = false;
 			}
 		}
 
-		return false;
+		return $flag;
 	}
 
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
 	 * @param null|int $lockTime
+	 * @param null|string $token
 	 * @return bool|string
+	 *
+	 * @throws Exception
 	 */
-	public function tryLock($entity, $lockTime = null)
+	public function tryLock($entity, $lockTime = null, $token = null)
 	{
-		if (!$this->isLocked($entity, $lockTime) && isset($this->_connection))
+		if (isset($this->_connection))
 		{
 			/** @var Connection $connection */
 			$connection = $this->_connection;
-			$platform = $connection->getDatabasePlatform();
-			$id = $entity->getId();
-			$now = $platform->getNowExpression();
-			$time = gmdate($platform->getDateTimeFormatString());
-
-			if (empty($this->_lockRecords[$id]))
-			{
-				$query = $connection->createQueryBuilder()
-					->insert($this->_lockTable)
-					->values([
-						'user' => '?',
-						'code' => '?',
-						'created_at' => $now,
-						'updated_at' => $platform->quoteStringLiteral($time),
-					])
-					->getSQL();
-			}
-			else
-			{
-				$query = $connection->createQueryBuilder()
-					->update($this->_lockTable)
-					->set('user', '?')
-					->set('updated_at', $platform->quoteStringLiteral($time))
-					->where('code = ?')
-					->getSQL();
-			}
-
-			$connection->prepare($query)->execute([$this->_lockGetUser(), $this->_lockGetCode($entity)]);
-			return (!$this->isLocked($entity, $lockTime) && !empty($this->_lockRecords[$id])) ? $time : false;
+			$connection->beginTransaction();
+			$transaction = true;
 		}
 
-		return false;
-	}
+		$token === null && $token = dechex(mt_rand(0x10000000, 0x7FFFFFFF));
 
-	/**
-	 * @param \Moro\Platform\Model\EntityInterface $entity
-	 * @param null|int $lockTime
-	 * @param null|string $stamp
-	 * @return bool
-	 */
-	public function tryUnlock($entity, $lockTime = null, $stamp = null)
-	{
-		if (!$this->isLocked($entity, $lockTime) && isset($this->_connection))
+		try
 		{
-			/** @var Connection $connection */
-			$connection = $this->_connection;
-			$id = $entity->getId();
+			/** @var AbstractService $self */
+			$self = $this;
+			$user = $this->_lockGetUser();
+			$flag = $self->notify(LockInterface::STATE_TRY_LOCK, $entity, $lockTime, $token, $user);
 
-			if (!empty($this->_lockRecords[$id]))
+			if ($flag !== false)
 			{
-				$parameters = [$this->_lockGetCode($entity)];
-				$builder = $connection->createQueryBuilder()
-					->delete($this->_lockTable)
-					->where('code = ?');
+				$result = true;
 
-				if ($stamp)
+				if (isset($this->_connection) && $result = !$this->isLocked($entity, $lockTime, true))
 				{
-					$parameters[] = $stamp;
-					$builder->andWhere('updated_at = ?');
+					/** @var Connection $connection */
+					$connection = $this->_connection;
+					$platform = $connection->getDatabasePlatform();
+					$id = $entity->getId();
+					$now = $platform->getNowExpression();
+					$time = gmdate($platform->getDateTimeFormatString());
+
+					if (empty($this->_lockRecords[$id]))
+					{
+						$query = $connection->createQueryBuilder()
+							->insert($this->_lockTable)
+							->values([
+								'token' => '?',
+								'updated_at' => '?',
+								'user' => '?',
+								'code' => '?',
+								'created_at' => $now,
+							])
+							->getSQL();
+					}
+					else
+					{
+						$query = $connection->createQueryBuilder()
+							->update($this->_lockTable)
+							->set('token', '?')
+							->set('updated_at', '?')
+							->set('user', '?')
+							->where('code = ?')
+							->getSQL();
+					}
+
+					$connection->prepare($query)->execute([$token, $time, $user, $this->_lockGetCode($entity)]);
+					$result = (!$this->isLocked($entity, $lockTime, true) && !empty($this->_lockRecords[$id]))
+						? $this->_lockRecords[$id]['token']
+						: false;
 				}
 
-				$connection->prepare($builder->getSQL())->execute($parameters);
-				return !$this->isLocked($entity, $lockTime) && empty($this->_lockRecords[$id]);
+				if ($flag && !$result)
+				{
+					$self->notify(LockInterface::STATE_TRY_UNLOCK, $entity, $lockTime, $token, $user);
+				}
+
+				return $result;
 			}
 
-			return true;
+			return false;
+		}
+		catch (Exception $exception)
+		{
+			if (isset($this->_connection))
+			{
+				/** @var Connection $connection */
+				$connection = $this->_connection;
+				$connection->rollBack();
+				unset($transaction);
+			}
+
+			throw $exception;
+		}
+		finally
+		{
+			if (isset($this->_connection) && isset($transaction))
+			{
+				/** @var Connection $connection */
+				$connection = $this->_connection;
+				$connection->isRollbackOnly() ? $connection->rollBack() : $connection->commit();
+			}
+		}
+	}
+
+	/**
+	 * @param \Moro\Platform\Model\EntityInterface $entity
+	 * @param null|int $lockTime
+	 * @param null|string $token
+	 * @return bool
+	 *
+	 * @throws Exception
+	 */
+	public function tryUnlock($entity, $lockTime = null, $token = null)
+	{
+		if (isset($this->_connection))
+		{
+			/** @var Connection $connection */
+			$connection = $this->_connection;
+			$connection->beginTransaction();
+			$transaction = true;
 		}
 
-		return false;
+		try
+		{
+			/** @var AbstractService $self */
+			$self = $this;
+			$user = $this->_lockGetUser();
+			$flag = $self->notify(LockInterface::STATE_TRY_UNLOCK, $entity, $lockTime, $token, $user);
+
+			if (isset($this->_connection) && $flag = !$this->isLocked($entity, $lockTime, true))
+			{
+				/** @var Connection $connection */
+				$connection = $this->_connection;
+				$id = $entity->getId();
+				$flag = true;
+
+				if (!empty($this->_lockRecords[$id]))
+				{
+					$parameters = [$this->_lockGetCode($entity)];
+					$builder = $connection->createQueryBuilder()
+						->delete($this->_lockTable)
+						->where('code = ?');
+
+					if ($token)
+					{
+						$parameters[] = $token;
+						$builder->andWhere('token = ?');
+					}
+
+					$connection->prepare($builder->getSQL())->execute($parameters);
+					$flag = !$this->isLocked($entity, $lockTime, true) && empty($this->_lockRecords[$id]);
+				}
+			}
+
+			return (bool)$flag;
+		}
+		catch (Exception $exception)
+		{
+			if (isset($this->_connection))
+			{
+				/** @var Connection $connection */
+				$connection = $this->_connection;
+				$connection->rollBack();
+				unset($transaction);
+			}
+
+			throw $exception;
+		}
+		finally
+		{
+			if (isset($this->_connection) && isset($transaction))
+			{
+				/** @var Connection $connection */
+				$connection = $this->_connection;
+				$connection->isRollbackOnly() ? $connection->rollBack() : $connection->commit();
+			}
+		}
 	}
 }

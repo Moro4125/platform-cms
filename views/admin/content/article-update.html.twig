@@ -1,18 +1,23 @@
 {% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+{% import "@PlatformCMS/macros.html.twig" as macros %}
 
 {%- block workarea -%}
 	{{ form_start(form) }}
 	<div class="has-error">
-	{{ form_errors(form.code) }}
+		{% block form_code_errors %}
+			{{ form_errors(form.code) }}
+		{% endblock form_code_errors %}
 	</div>
 
 	<div class="row">
-		<div class="col-md-5 col-sm-12 col-xs-12">
-			{{ form_row(form.name) }}
-		</div>
-		<div class="col-md-2 col-md-push-0 col-sm-10 col-sm-push-2">
-			{{ form_widget(form.code) }}
-		</div>
+		{%- block article_name_bar -%}
+			<div class="col-md-5 col-sm-12 col-xs-12">
+				{{ form_row(form.name) }}
+			</div>
+			<div class="col-md-2 col-md-push-0 col-sm-10 col-sm-push-2">
+				{{ form_widget(form.code) }}
+			</div>
+		{%- endblock article_name_bar -%}
 		<div class="col-md-5 col-sm-12 text-right">
 			<div class="btn-group btn-group-sm" role="group">
 				<br class="visible-sm visible-xs"/>
@@ -31,71 +36,110 @@
 			</div>
 		</div>
 	</div>
-	<hr/>
-	<div class="row">
-		<div class="col-md-5">
-			{{ form_row(form.icon) }}
-			{{ form_row(form.external) }}
+
+	{% block anons_bar %}
+		<div class="row">
+			<div class="col-md-5">
+				{{ form_row(form.icon) }}
+				{{ form_row(form.external) }}
+			</div>
+			<div class="col-md-7 col-md-push-0 col-sm-10 col-sm-push-2">
+				{{ form_widget(form.lead) }}
+			</div>
 		</div>
-		<div class="col-md-7 col-md-push-0 col-sm-10 col-sm-push-2">
-			{{ form_widget(form.lead) }}
-		</div>
-	</div>
+	{% endblock anons_bar %}
 
 	<div class="row">
 		<div class="col-md-5 col-sm-12 col-xs-12">
 		</div>
 	</div>
 
-	<div class="row">
-		<div class="col-md-12">
-			<br class="visible-sm visible-xs"/>
-			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+	{% if useTags %}
+		<div class="row">
+			<div class="col-md-12">
+				<br class="visible-sm visible-xs"/>
+				{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+			</div>
 		</div>
+		<br/>
+	{% elseif form.tags|default(false) %}
+		{% do form.tags.setRendered %}
+	{% endif %}
+
+	<div class="panel panel-default">
+		<div class="panel-heading" id="content-panel-heading">
+			{% if app.getOption("content.multi_page") %}
+				<div class="btn-toolbar" role="toolbar" aria-label="pages">
+					<div class="btn-group btn-group-sm" role="group" aria-label="1">
+						{{- form_widget(form.get_chunk, {active: chunkNumber|default(0) == 0 }) -}}
+						{{- macros.pager_buttons(chunkNumber|default(0), chunksCount, "admin_update[get_chunk]") -}}
+						{{- form_widget(form.add_chunk) -}}
+					</div>
+
+					{% if chunkNumber|default(false) and chunksCount == chunkNumber %}
+						<div class="btn-group btn-group-sm" role="group" aria-label="2">
+							{{ form_widget(form.del_chunk) }}
+						</div>
+					{% else %}
+						{% do form.del_chunk.setRendered %}
+					{% endif %}
+				</div>
+			{% else %}
+				{% do form.add_chunk.setRendered %}
+				{% do form.get_chunk.setRendered %}
+				{% do form.del_chunk.setRendered %}
+			{% endif %}
+		</div>
+
+		<div class="panel-body">
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3>Блок фотогалереи</h3>
+				</div>
+				<div class="col-md-12 m-select2-images">
+					{{ form_widget(form.gallery) }}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3>Блок текста статьи</h3>
+				</div>
+				<div class="col-md-12">
+					{{ form_widget(form.gallery_text) }}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3>Связанные статьи</h3>
+				</div>
+				<div class="col-md-12 m-select2-articles">
+					{{ form_widget(form.articles) }}
+				</div>
+			</div>
+
+			{{- form_widget(form) -}}
+
+			{%- block attachments_bar -%}
+				<div class="row">
+					<div class="col-md-12">
+						<h3>Файлы&ndash;вложения</h3>
+					</div>
+					<div class="col-md-12 m-select2-articles">
+						{{ form(upload) }}
+					</div>
+				</div>
+			{%- endblock attachments_bar -%}
+
+			<br/>
+		</div>
+
+		<div class="panel-footer" id="content-panel-footer"></div>
 	</div>
 
-	<hr/>
-
-	<div class="row">
-		<div class="col-md-12">
-			<h3>Блок фотогалереи</h3>
-		</div>
-		<div class="col-md-12 m-select2-images">
-			{{ form_widget(form.gallery) }}
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="col-md-12">
-			<h3>Блок текста статьи</h3>
-		</div>
-		<div class="col-md-12">
-			{{ form_widget(form.gallery_text) }}
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="col-md-12">
-			<h3>Связанные статьи</h3>
-		</div>
-		<div class="col-md-12 m-select2-articles">
-			{{ form_widget(form.articles) }}
-		</div>
-	</div>
-
-	{{ form_end(form) }}
-	<hr/>
-
-	<div class="row">
-		<div class="col-md-12">
-			<h3>Вложения</h3>
-		</div>
-		<div class="col-md-12 m-select2-articles">
-			{{ form(upload) }}
-		</div>
-	</div>
-
-	<br/><hr/>
+	{{- form_end(form) -}}
 {%- endblock workarea -%}
 
 
@@ -286,6 +330,47 @@
 				».</i>
 			{% endif %}
 		</li>
+	{% endif %}
+
+	{% if app.getOption("content.multi_page") %}
+		{% set ignoreChangesInChunk = 0 %}
+
+		{% if diff["parameters.chunks.count"]|default(false) %}
+			{% if diff["parameters.chunks.count"][0]|default(0) < diff["parameters.chunks.count"][1]|default(0) %}
+				{% set ignoreChangesInChunk = diff["parameters.chunks.count"][0]|default(0) + 1 %}
+
+				{% for n in range(ignoreChangesInChunk, diff["parameters.chunks.count"][1]) %}
+					<li>
+						<strong>Часть {{ n }} </strong>
+						{% if chunksCount >= n %}
+							<a target="_blank" href="{{ app.url("admin-content-chunks-update", {id: item.id, n: n, back: app.url("admin-about") ~ "#close=Y" }) }}">добавлена.</a>
+						{% else %}
+							<span>добавлена.</span>
+						{% endif %}
+					</li>
+				{% endfor %}
+			{% else %}
+				{% set ignoreChangesInChunk = diff["parameters.chunks.count"][1]|default(0) + 1 %}
+
+				{% for n in range(diff["parameters.chunks.count"][0]|default(0), ignoreChangesInChunk) %}
+					<li>
+						<strong>Часть {{ n }} </strong>
+						<span>удалена.</span>
+					</li>
+				{% endfor %}
+			{% endif %}
+		{% endif %}
+
+		{% if chunksCount %}
+			{% for n in range(1, chunksCount) %}
+				{% if diff["parameters.chunks.num" ~ n]|default(false) and (ignoreChangesInChunk == 0 or n < ignoreChangesInChunk) %}
+					<li>
+						<strong>Часть {{ n }} </strong>
+						<a target="_blank" href="{{ app.url("admin-content-chunks-update", {id: item.id, n: n, back: app.url("admin-about") ~ "#close=Y" }) }}">была изменена.</a>
+					</li>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
 	{% endif %}
 
 {%- endblock history_changes -%}

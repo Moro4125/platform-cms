@@ -288,21 +288,21 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 	});
 
 	jQuery("*[data-lock]:first").each(function() {
-		var stamp,
+		var token = jQuery("#lock-token").data("value"),
 			check = function() {
-			jQuery.ajax({
-				method: "POST",
-				url: window.location.href.split('?', 1)[0] + "?lock=Y"
-			}).done(function(text) {
-				handler = setTimeout(check, 15000);
-				stamp = text;
-			}).fail(function() {
-				if (handler) {
-					handler = null;
-					alert("Блокировка с материала снята!");
-				}
-			});
-		};
+				jQuery.ajax({
+					method: "POST",
+					url: window.location.href.split('?', 1)[0] + "?lock=Y"
+				}).done(function(text) {
+					handler = setTimeout(check, 15000);
+					token = text;
+				}).fail(function() {
+					if (handler) {
+						handler = null;
+						alert("Блокировка с материала снята!");
+					}
+				});
+			};
 
 		if (!handler) {
 			handler = setTimeout(function() {
@@ -315,7 +315,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				jQuery.ajax({
 					async: false,
 					method: "POST",
-					data: {"stamp": stamp},
+					data: {"lock-token": token},
 					url: window.location.href.split('?', 1)[0] + "?lock=N"
 				})
 			});
@@ -328,7 +328,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			var self = jQuery(this),
 				text = "Пояснение к изменениям или просто комментарий к записи",
 				node = jQuery("<textarea>").attr("class", "form-control form-control").attr("placeholder", text),
-				info = jQuery(".markdown-help-link")[0].outerHTML;
+				info = (jQuery(".markdown-help-link")[0] || {outerHTML: ""}).outerHTML;
 
 			target.append(node).append(info);
 
@@ -341,6 +341,13 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			require(["textarea_autosize"], function(autosize) {
 				autosize(node);
 			});
+		});
+	});
+
+	jQuery("#content-panel-heading").each(function() {
+		var self = jQuery(this);
+		jQuery("#content-panel-footer").each(function() {
+			jQuery(this).html(self.html());
 		});
 	});
 

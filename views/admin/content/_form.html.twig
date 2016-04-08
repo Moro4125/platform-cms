@@ -2,6 +2,10 @@
 
 {% block content %}
 	{% form_theme form '@PlatformCMS/forms/content.html.twig' %}
+	{%- if lockToken|default(false) -%}
+		<div id="lock-token" data-value="{{ lockToken }}"></div>
+	{%- endif -%}
+
 	{% block workarea %}
 	{% endblock %}
 
@@ -15,9 +19,11 @@
 		</div>
 	</div>
 
+	<br/>
+
 	{% if history|default({})|length %}
 		{%- block history -%}
-		<br/><br/>
+		<br/>
 		<div class="row">
 			<div class="col-md-12">
 				<h3>Последнии обновления</h3>

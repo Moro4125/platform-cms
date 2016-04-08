@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Model\Implementation\Content;
 use \Moro\Platform\Application;
+use \Moro\Platform\Form\ChunkForm;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
@@ -274,7 +275,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			return $match[0];
 		}, $data['gallery_text']);
 
-		$form = new ContentForm($entity->getId(), $tags);
+		$form = $request->attributes->get('n') ? new ChunkForm($entity->getId(), $tags) : new ContentForm($entity->getId(), $tags);
 
 		return $application->getServiceFormFactory()->createBuilder($form, $data)->getForm();
 	}
@@ -290,11 +291,10 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		$parameters = $entity->getParameters();
 		$serviceFile = $application->getServiceFile();
 
-		$this->_connection->beginTransaction();
-
 		try
 		{
 			$id = $entity->getId();
+			$original = clone $entity;
 			$data['articles'] = $this->filterIdList($data['articles']);
 
 			$data['gallery_text'] = preg_replace_callback(self::MD_LINK_MASK, function($match) use ($id, $data, $serviceFile) {
@@ -333,21 +333,33 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 				$parameters['attachments'][] = $attachment->getName();
 			}
 
-			$entity->setName($data['name']);
-			$entity->setCode($data['code']);
-			$entity->setIcon($data['icon']);
+			empty($data['name']) || $entity->setName($data['name']);
+			empty($data['code']) || $entity->setCode($data['code']);
+			isset($data['icon']) && $entity->setIcon($data['icon']);
 			$entity->setParameters(array_filter($parameters));
 
-			$this->commit($entity);
-			$this->_connection->commit();
-			$application->getServiceFlash()->success('Изменения в записи материала были успешно сохранены.');
+			if ($this->calculateDiff($original, $entity))
+			{
+				$this->_connection->beginTransaction();
+
+				try
+				{
+					$this->commit($entity);
+					$this->_connection->commit();
+					$application->getServiceFlash()->success('Изменения в записи материала были успешно сохранены.');
+				}
+				catch (Exception $exception)
+				{
+					$this->_connection->rollBack();
+					throw $exception;
+				}
+			}
 		}
 		catch (Exception $exception)
 		{
-			$this->_connection->rollBack();
 			$application->getServiceFlash()->error(get_class($exception).': '.$exception->getMessage());
+			($sentry = $application->getServiceSentry()) && $sentry->captureException($exception);
 		}
-
 
 		unset($application);
 	}

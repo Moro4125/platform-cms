@@ -119,6 +119,15 @@ abstract class AbstractService implements SplSubject
 	/**
 	 * @return void
 	 */
+	public function __clone()
+	{
+		$this->_table = null;
+		$this->_serviceCode = null;
+	}
+
+	/**
+	 * @return void
+	 */
 	protected function _initialization()
 	{
 		$this->_traits[self::class][self::STATE_PREPARE_COMMIT] = '_prepareSpecialsUpdatedAt';
@@ -266,7 +275,25 @@ abstract class AbstractService implements SplSubject
 	public function setServiceCode($code)
 	{
 		assert(is_string($code));
+
+		$observers = $this->_observers;
+
+		if ($this->_serviceCode)
+		{
+			foreach ($observers as $observer)
+			{
+				$this->detach($observer);
+			}
+		}
+
 		$this->_serviceCode = $code;
+		$this->_observers = [];
+
+		foreach ($observers as $observer)
+		{
+			$this->attach($observer);
+		}
+
 		return $this;
 	}
 
@@ -597,6 +624,7 @@ abstract class AbstractService implements SplSubject
 		try
 		{
 			$this->_connection->beginTransaction();
+			$transaction = true;
 
 			if ($entity instanceof AbstractDecorator)
 			{
@@ -609,6 +637,8 @@ abstract class AbstractService implements SplSubject
 
 			if ($id = (int)$entity->getId())
 			{
+				$insert = false;
+
 				$params[':id'] = $id;
 				$query->update($this->_table);
 				$query->where(EntityInterface::PROP_ID.' = :id');
@@ -620,6 +650,8 @@ abstract class AbstractService implements SplSubject
 			}
 			else
 			{
+				$insert = true;
+
 				$query->insert($this->_table);
 				$values = $this->notify(self::STATE_PREPARE_COMMIT, $entity, true, $params);
 				empty($values) || $query->values($values);
@@ -640,13 +672,22 @@ abstract class AbstractService implements SplSubject
 			empty($id) && $entity->setId($id = $this->_connection->lastInsertId());
 
 			$entity->setFlags($entity->getFlags() & ~EntityInterface::FLAG_DATABASE);
-			$this->notify(self::STATE_COMMIT_FINISHED, $entity, $this->_table);
+			$this->notify(self::STATE_COMMIT_FINISHED, $entity, $this->_table, $insert);
+
+			if ($this->_connection->isRollbackOnly())
+			{
+				$message = sprintf(CommitFailedException::M_ROLLBACK_F, basename(get_class($entity)));
+				throw new CommitFailedException($message, CommitFailedException::C_UNKNOWN_ERROR);
+			}
+
+			unset($transaction);
 			$this->_connection->commit();
 		}
 		catch (Exception $exception)
 		{
+			isset($transaction) && $this->_connection->rollBack();
+
 			$entity->setFlags($entity->getFlags() & ~EntityInterface::FLAG_DATABASE);
-			$this->_connection->rollBack();
 			$this->notify(self::STATE_COMMIT_FAILED, $entity, $this->_table, $exception);
 
 			throw $exception;
@@ -671,6 +712,7 @@ abstract class AbstractService implements SplSubject
 			try
 			{
 				$this->_connection->beginTransaction();
+				$transaction = true;
 
 				if (false === $this->notify(self::STATE_DELETE_STARTED, $entity, $this->_table))
 				{
@@ -690,11 +732,19 @@ abstract class AbstractService implements SplSubject
 				}
 
 				$this->notify(self::STATE_DELETE_FINISHED, $entity, $this->_table, 1);
+
+				if ($this->_connection->isRollbackOnly())
+				{
+					$message = sprintf(CommitFailedException::M_ROLLBACK_F, basename(get_class($entity)));
+					throw new CommitFailedException($message, CommitFailedException::C_UNKNOWN_ERROR);
+				}
+
+				unset($transaction);
 				$this->_connection->commit();
 			}
 			catch (Exception $exception)
 			{
-				$this->_connection->rollBack();
+				isset($transaction) && $this->_connection->rollBack();
 				$this->notify(self::STATE_DELETE_FAILED, $entity, $this->_table);
 				break;
 			}
@@ -726,6 +776,7 @@ abstract class AbstractService implements SplSubject
 		try
 		{
 			$this->_connection->beginTransaction();
+			$transaction = true;
 
 			$builder = $this->_connection->createQueryBuilder();
 			$sqlQuery = $builder->delete($this->_table)->where(EntityInterface::PROP_ID.'=?')->getSQL();
@@ -750,11 +801,18 @@ abstract class AbstractService implements SplSubject
 				}
 			}
 
+			if ($this->_connection->isRollbackOnly())
+			{
+				$message = sprintf(CommitFailedException::M_ROLLBACK_F, implode(', ', $idList));
+				throw new CommitFailedException($message, CommitFailedException::C_UNKNOWN_ERROR);
+			}
+
+			unset($transaction);
 			$this->_connection->commit();
 		}
 		catch (Exception $exception)
 		{
-			$this->_connection->rollBack();
+			isset($transaction) && $this->_connection->rollBack();
 
 			foreach ($list as $entity)
 			{
@@ -770,6 +828,17 @@ abstract class AbstractService implements SplSubject
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @param string $name
+	 * @return $this
+	 */
+	public function setTableName($name)
+	{
+		assert($this->_table === null);
+		$this->_table = $name;
+		return $this;
 	}
 
 	/**

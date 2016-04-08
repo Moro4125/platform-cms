@@ -14,36 +14,8 @@ use \Moro\Platform\Application;
  * Class ContentForm
  * @package Form
  */
-class ContentForm extends AbstractContent
+class ContentForm extends ChunkForm
 {
-	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param integer $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
 	/**
 	 * @param FormBuilderInterface $builder
 	 * @param \Moro\Platform\Model\Implementation\Content\EntityContent[] $options
@@ -51,10 +23,6 @@ class ContentForm extends AbstractContent
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->setMethod('POST');
-
-		$builder->add('name', 'text', [
-			'label' => 'Название',
-		]);
 
 		$builder->add('code', 'text', [
 			'label' => 'Код',
@@ -73,18 +41,12 @@ class ContentForm extends AbstractContent
 					'dbal' => Application::getInstance()->getServiceDataBase(),
 				]),
 			],
-			'attr' => ['placeholder' => 'Символьный код', 'title' => 'Уникальный символьный код материала']
+			'attr' => ['placeholder' => 'Символьный код', 'title' => 'Уникальный символьный код материала'],
 		]);
 
 		$builder->add('icon', 'choice_image', [
 			'label'    => 'Анонс',
 			'required' => false,
-		]);
-
-		$builder->add('lead', 'textarea', [
-			'label'    => '',
-			'required' => false,
-			'attr' => ['placeholder' => 'Лид материала']
 		]);
 
 		$builder->add('tags', 'choice_tags', [
@@ -97,25 +59,7 @@ class ContentForm extends AbstractContent
 		$builder->add('external', 'text', [
 			'label' => 'Ссылка',
 			'required' => false,
-			'attr' => ['placeholder' => 'Только для внешней ссылки', 'title' => 'Ссылка, используемая в анонсе материала.']
-		]);
-
-		$builder->add('gallery', 'choice_image', [
-			'label'    => 'Фотографии',
-			'multiple' => true,
-			'required' => false,
-		]);
-
-		$builder->add('gallery_text', 'textarea', [
-			'label'    => 'Описание',
-			'attr'     => ['placeholder' => 'Описание'],
-			'required' => false,
-		]);
-
-		$builder->add('articles', 'choice_article', [
-			'label'    => 'Связанные материалы',
-			'multiple' => true,
-			'required' => false,
+			'attr' => ['placeholder' => 'Только для внешней ссылки', 'title' => 'Ссылка, используемая в анонсе материала.'],
 		]);
 
 		parent::buildForm($builder, $options);

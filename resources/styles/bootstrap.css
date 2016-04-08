@@ -539,10 +539,26 @@ form > table.table {
     content: "";
 }
 
+#admin_ajax_upload {
+    margin-top: -16px;
+}
+
 #platform-footer {
     margin-bottom: 0;
 }
 
 #platform-footer > .container > .navbar-text {
     margin-right: 2px;
+}
+
+.fix-margins-1 {
+    margin: 2px 0 0 0 !important;
+}
+
+.fix-line-height-1 {
+    line-height: 0;
+}
+
+.fix-font-weight-1 {
+    font-weight: normal;
 }

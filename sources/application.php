@@ -40,6 +40,7 @@ class Application extends CApplication
 	const SERVICE_SECURITY_TOKEN      = 'security.token_storage';
 	const SERVICE_ROUTES              = 'srv.routes';
 	const SERVICE_CONTENT             = 'srv.content';
+	const SERVICE_CONTENT_CHUNKS      = 'srv.content_chunks';
 	const SERVICE_FILE                = 'srv.file';
 	const SERVICE_RELINK              = 'srv.relink';
 	const SERVICE_RELINK_TOOL         = 'srv.tool.relink';
@@ -54,6 +55,7 @@ class Application extends CApplication
 	const BEHAVIOR_HEADINGS           = 'behavior.headings';
 	const BEHAVIOR_HISTORY            = 'behavior.history';
 	const BEHAVIOR_CLIENT_ROLE        = 'behavior.client_role';
+	const BEHAVIOR_CONTENT_CHUNKS     = 'behavior.content_chunks';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
 	const HEADER_USE_FULL_URL = 'X-Use-Full-URL';
@@ -705,6 +707,14 @@ class Application extends CApplication
 	}
 
 	/**
+	 * @return Model\Implementation\Content\ServiceContent|Model\Implementation\Content\Behavior\ChunksBehavior
+	 */
+	public function getServiceContentChunks()
+	{
+		return $this->offsetGet(self::SERVICE_CONTENT_CHUNKS);
+	}
+
+	/**
 	 * @return \Moro\Platform\Model\Implementation\File\ServiceFile
 	 */
 	public function getServiceFile()
@@ -806,5 +816,13 @@ class Application extends CApplication
 	public function getBehaviorClientRole()
 	{
 		return $this->offsetGet(self::BEHAVIOR_CLIENT_ROLE);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Implementation\Content\Behavior\ChunksBehavior
+	 */
+	public function getBehaviorContentChunks()
+	{
+		return $this->offsetGet(self::BEHAVIOR_CONTENT_CHUNKS);
 	}
 }

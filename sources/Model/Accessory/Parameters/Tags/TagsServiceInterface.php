@@ -11,6 +11,7 @@ namespace Moro\Platform\Model\Accessory\Parameters\Tags;
 interface TagsServiceInterface
 {
 	const STATE_TAGS_GENERATE = 1001;
+	const STATE_TAGS_DELETING = 1002;
 
 	/**
 	 * @param null|string|array $tags

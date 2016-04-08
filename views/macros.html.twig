@@ -1,9 +1,10 @@
-{# Вывод постраничной навигации. ← → #}
+{# Вывод постраничной навигации для списка. ← → #}
 {% macro pager_widget(page, pages, route, parameters = {}) %}
 	{% set pager = pager(page, pages) %}
+
 	{% if pager.active and pages > 1 %}
-		<nav>
-			<ul class="pagination pagination-sm" style="margin: 0;">
+		<nav class="fix-line-height-1">
+			<ul class="pagination pagination-sm fix-margins-1">
 				{% if pager.useArrows %}
 					<li>
 						{% if pager.findPrev %}
@@ -77,5 +78,48 @@
 				{% endif %}
 			</ul>
 		</nav>
+	{% endif %}
+{% endmacro %}
+
+
+{# Вывод постраничной навигации для частей материала. ← → #}
+{% macro pager_buttons(page, pages, actionName) %}
+	{% set pager = pager(page, pages, "short") %}
+
+	{% if pager.active and pages > 0 %}
+		{% if pager.showFirst %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default" value="1">1</button>
+		{% endif %}
+
+		{% if pager.showPDots %}
+			<button type="button" class="btn btn-default">&#133;</button>
+		{% endif %}
+
+		{% for i in range(1, pager.prevCount) if pager.prevCount %}
+			{% set n = pager.active - pager.prevCount + i - 1 %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default" value="{{ n }}">{{ n }}</button>
+		{% endfor %}
+
+		{% if page %}
+			{% set n = pager.active %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default active" value="{{ n }}">{{ n }}</button>
+		{% else %}
+			{% set n = pager.active %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default" value="{{ n }}">{{ n }}</button>
+		{% endif %}
+
+		{% for i in range(1, pager.nextCount) if pager.nextCount %}
+			{% set n = pager.active + i %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default" value="{{ n }}">{{ n }}</button>
+		{% endfor %}
+
+		{% if pager.showNDots %}
+			<button type="button" class="btn btn-default">&#133;</button>
+		{% endif %}
+
+		{% if pager.showLast %}
+			{% set n = pager.count %}
+			<button type="submit" name="{{ actionName }}" class="btn btn-default" value="{{ n }}">{{ n }}</button>
+		{% endif %}
 	{% endif %}
 {% endmacro %}

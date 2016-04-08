@@ -71,6 +71,11 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 	protected $_diffWhiteKeys = ['parameters.comment'];
 
 	/**
+	 * @var string
+	 */
+	protected $_lockToken;
+
+	/**
 	 * @param Application|SilexApplication $app
 	 * @param Request $request
 	 * @param integer $id
@@ -129,7 +134,7 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 			$headers = ['Content-Type' => 'plain/text'];
 			$result = ($request->query->get('lock') == 'Y')
 				? $service->tryLock($entity)
-				: $service->tryUnlock($entity, null, $request->get('stamp'));
+				: $service->tryUnlock($entity, null, $request->get('lock-token'));
 
 			return new Response((string)$result, $result ? Response::HTTP_ACCEPTED : Response::HTTP_CONFLICT, $headers);
 		}
@@ -177,13 +182,13 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 			{
 				$app->getServiceFlash()->alert(sprintf('Запись заблокирована пользователем "%1$s".', $lockedBy));
 			}
-			elseif (!$service->tryLock($entity))
+			elseif (!$this->_lockToken = $service->tryLock($entity))
 			{
 				$app->getServiceFlash()->error('Не удалось заблокировать запись для монопольного редактирования.');
 			}
 		}
 
-		return $app->render($this->template, array_merge(['locked' => (bool)$lockedBy] ,$this->_getViewParameters()));
+		return $app->render($this->template, array_merge(['locked' => (bool)$lockedBy], $this->_getViewParameters()));
 	}
 
 	/**
@@ -222,6 +227,8 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 		return [
 			'form' => $this->getForm()->createView(),
 			'item' => $entity,
+			'lockToken' => $this->_lockToken,
+			'useTags' => $this->useTags,
 			'history' => $app->getOption('content.history')
 				? $app->getServiceHistory()->findByServiceAndEntity($service, $entity)
 				: [],

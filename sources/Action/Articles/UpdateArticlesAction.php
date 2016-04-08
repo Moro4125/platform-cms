@@ -22,6 +22,8 @@ class UpdateArticlesAction extends AbstractUpdateAction
 	public $route       = 'admin-content-articles-update';
 	public $routeIndex  = 'admin-content-articles';
 	public $routeDelete = 'admin-content-articles-delete';
+	public $routeGetChunk = 'admin-content-chunks-update';
+	public $routeAddChunk = 'admin-content-chunks-create';
 
 	/**
 	 * @var int
@@ -44,14 +46,29 @@ class UpdateArticlesAction extends AbstractUpdateAction
 	protected $_diffBlackKeys = ['parameters.chain'];
 
 	/**
+	 * @var null|int
+	 */
+	protected $_parentId;
+
+	/**
 	 * @return array
 	 */
 	protected function _getViewParameters()
 	{
 		$this->_checkFields();
+
+		$entity = $this->getEntity();
+		$app = $this->getApplication();
+
 		$parameters = parent::_getViewParameters();
-		$parameters['upload'] = $this->getService()->createAdminUploadForm($this->getApplication(), $this->getEntity())->createView();
+		$parameters['upload'] = $this->getService()->createAdminUploadForm($app, $entity)->createView();
 		$parameters['title'] = $this->getEntity()->getName().' - Редактирование статьи';
+		$parameters['parentId'] = $this->_parentId;
+
+		if ($app->getOption('content.multi_page'))
+		{
+			$parameters['chunksCount'] = $app->getServiceContentChunks()->getCount('parent_id', $this->_parentId ?: $entity->getId());
+		}
 
 		return $parameters;
 	}
@@ -146,5 +163,48 @@ class UpdateArticlesAction extends AbstractUpdateAction
 		$prevEntity && $this->_prevEntityId = $prevEntity->getId();
 
 		return parent::_setEntity($entity);
+	}
+
+	/**
+	 * @param int $id
+	 * @return mixed
+	 */
+	protected function _doActions($id)
+	{
+		$result = parent::_doActions($id);
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($this->getForm()->get('add_chunk')->isClicked())
+		{
+			$app = $this->getApplication();
+			$query = $this->getRequest()->query->all();
+			unset($query['id']);
+
+			$back = $this->getRequest()->query->get('back') ?: $app->url($this->routeIndex, $query);
+
+			$result = $app->redirect($app->url($this->routeAddChunk, [
+				'id' => $this->_parentId ?: $this->getEntity()->getId(),
+				'back' => $back,
+			]));
+		}
+
+		/** @noinspection PhpUndefinedMethodInspection */
+		if ($this->getForm()->get('get_chunk')->isClicked())
+		{
+			$app = $this->getApplication();
+			$query = $this->getRequest()->query->all();
+			unset($query['id']);
+
+			$number = (int)$this->getRequest()->request->get($this->getForm()->getName())['get_chunk'];
+			$back = $this->getRequest()->query->get('back') ?: $app->url($this->routeIndex, $query);
+
+			$result = $app->redirect($app->url($this->routeGetChunk, [
+				'n'    => $number,
+				'id'   => $this->_parentId ?: $this->getEntity()->getId(),
+				'back' => $back,
+			]));
+		}
+
+		return $result;
 	}
 }

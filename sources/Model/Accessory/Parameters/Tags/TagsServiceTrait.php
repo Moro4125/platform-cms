@@ -256,13 +256,18 @@ trait TagsServiceTrait
 
 		if (isset($this->_connection) && $id = $entity->getId())
 		{
-			$this->_tagsDeleteFinished($entity, $table);
-
 			if ($this instanceof AbstractService)
 			{
 				$result = $this->notify(TagsServiceInterface::STATE_TAGS_GENERATE, $tags, clone $entity);
 				is_array($result) && $tags = $result;
+
+				if ($this->getIsHandled())
+				{
+					return;
+				}
 			}
+
+			$this->_tagsDeleteFinished($entity, $table);
 
 			foreach ($tags as $tag)
 			{
@@ -293,6 +298,19 @@ trait TagsServiceTrait
 	{
 		if (isset($this->_connection) && $id = $entity->getId())
 		{
+			$parameters = $entity->getProperty('parameters');
+			$tags = array_map('normalizeTag', empty($parameters['tags']) ? ['флаг: без ярлыков'] : $parameters['tags']);
+
+			if ($this instanceof AbstractService)
+			{
+				$this->notify(TagsServiceInterface::STATE_TAGS_DELETING, $tags, clone $entity);
+
+				if ($this->getIsHandled())
+				{
+					return;
+				}
+			}
+
 			/** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
 			$builder = $this->_connection->createQueryBuilder();
 			$sqlQuery = $builder->delete($table.'_tags')->where('target = ?')->getSQL();

@@ -17,22 +17,38 @@ class ApplicationExtension extends Twig_Extension
 	/**
 	 * @var array
 	 */
-	protected $_rules = [ 'default' => [
-		// A - number of active page, C - count of page.
-		// Pages     Active page:      Flags:           Show pages:    Flags:
-		// min, max.    From, to.      First, ....      left, right,   ...,  Last.
-		array(0, 13,           0,      0,      0,   0,     'A-1',  'C-A',    0,     0),
-		array(0,  0,           1,      9,      0,   0,     'A-1', '11-A',    1,     1),
-		array(0,  0,          10,  'C-5',      1,   1,         6,      2,    1,     1),
-		array(0,  0,       'C-4',      0,      1,   1,  '10-C+A',  'C-A',    0,     0),
-	]];
+	protected $_rules = [
+		'default' => [
+			// A - number of active page, C - count of page.
+			// Pages     Active page:      Flags:           Show pages:    Flags:
+			// min, max.    From, to.      First, ....      left,  right,  ...,  Last.
+			array(0, 13,       0,      0,      0,   0,     'A-1',  'C-A',    0,     0),
+			array(0,  0,       1,      9,      0,   0,     'A-1', '11-A',    1,     1),
+			array(0,  0,      10,  'C-5',      1,   1,         6,      2,    1,     1),
+			array(0,  0,   'C-4',      0,      1,   1,  '10-C+A',  'C-A',    0,     0),
+		],
+		'short' => [
+			// A - number of active page, C - count of page.
+			// Pages     Active page:      Flags:           Show pages:    Flags:
+			// min, max.    From, to.      First, ....      left,  right,  ...,  Last.
+			array(0,  9,       0,      0,      0,   0,     'A-1',  'C-A',    0,     0),
+			array(0,  0,       1,      5,      0,   0,     'A-1',  '7-A',    1,     1),
+			array(0,  0,       6,  'C-5',      1,   1,         2,      2,    1,     1),
+			array(0,  0,   'C-4',      0,      1,   1,  ' 6-C+A',  'C-A',    0,     0),
+		],
+	];
 
 	/**
 	 * @var array
 	 */
-	protected $_rulesMeta = ['default' => [
-		'useArrows' => false,
-	]];
+	protected $_rulesMeta = [
+		'default' => [
+			'useArrows' => false,
+		],
+		'short' => [
+			'useArrows' => false,
+		],
+	];
 
 	/**
 	 * @var Application

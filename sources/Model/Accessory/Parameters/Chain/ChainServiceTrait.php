@@ -17,7 +17,7 @@ use \PDO;
  * @property string $_table
  * @property \Doctrine\DBAL\Connection $_connection
  * @method notify($state, $query, $args, $entity, $nextFlag)
- * @method EntityInterface getEntityById($id, $withoutException)
+ * @method EntityInterface getEntityById($id, $withoutException = null, $flags = null)
  * @method commit($entity);
  */
 trait ChainServiceTrait

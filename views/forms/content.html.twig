@@ -35,12 +35,33 @@
 	</button>
 {% endblock %}
 
+{% block _admin_update_add_chunk_widget %}
+	{% set attr = attr|merge({ class: "btn btn-default"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+	</button>
+{% endblock %}
+
+{% block _admin_update_get_chunk_widget %}
+	{% set attr = attr|merge({ class: "btn btn-default" ~ (active|default(false) ? " active" : "")}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+	</button>
+{% endblock %}
+
+{% block _admin_update_del_chunk_widget %}
+	{% set attr = attr|merge({ class: "btn btn-danger"}) %}
+	<button type="{{ type|default('submit') }}" {{ block('button_attributes') }}>
+		<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+	</button>
+{% endblock %}
+
 {% block checkbox_widget %}
 	<label>
 		<input type="checkbox" class="sr-only" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
 		<span class="glyphicon glyphicon-check"></span>
 		<span class="glyphicon glyphicon-unchecked"></span>
-		{% if label %}<span style="font-weight: normal;"> {{ label|trans }}</span>{% endif %}
+		{% if label %}<span class="fix-font-weight-1"> {{ label|trans }}</span>{% endif %}
 	</label>
 {% endblock %}
 
