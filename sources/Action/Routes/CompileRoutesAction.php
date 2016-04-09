@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action\Routes;
 use \Moro\Platform\Application;
+use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -94,7 +95,7 @@ class CompileRoutesAction
 			explode('index.php', $_SERVER['REQUEST_URI'])[0].'index.php' => '',
 		];
 		$list = ($id = (int)$request->query->get('id'))
-			? [$service->getEntityById($id)]
+			? [$service->getEntityById($id, null, EntityInterface::FLAG_GET_FOR_UPDATE)]
 			: $service->selectActiveOnly();
 		$count = 0;
 
