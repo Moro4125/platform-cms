@@ -159,14 +159,18 @@
 						{{- block("list_column_name") -}}
 						<td class="hidden-xs hidden-sm">
 							<div>
-								<span>{{ item.createdAt|date("d.m.Y\\&\\n\\b\\s\\p\\;H.i")|raw }}</span>
+								<time data-timestamp="{{ item.createdAt }}" data-format="d.m.Y\&amp;\n\b\s\p\;H:i">
+									{{- item.createdAt|date("d.m.Y\\&\\n\\b\\s\\p\\;H:i")|raw -}}
+								</time>
 								<br/>
 								<small>{{ item.createdBy }}</small>
 							</div>
 						</td>
 						<td class="hidden-xs">
 							<div>
-								<span>{{ item.updatedAt|date("d.m.Y\\&\\n\\b\\s\\p\\;H.i")|raw }}</span>
+								<time data-timestamp="{{ item.updatedAt }}" data-format="d.m.Y\&amp;\n\b\s\p\;H:i">
+									{{- item.updatedAt|date("d.m.Y\\&\\n\\b\\s\\p\\;H:i")|raw -}}
+								</time>
 								<br/>
 								<small>{{ item.updatedBy }}</small>
 							</div>

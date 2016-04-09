@@ -96,9 +96,10 @@
     "component": {
       "name": "platform",
       "scripts": [
+        "resources/scripts/local_time.js",
         "resources/scripts/bootstrap.js",
         "resources/scripts/diff_match_patch.js",
-        "resources/scripts/flash-message.js"
+        "resources/scripts/flash_message.js"
       ],
       "styles": [
         "resources/styles/bootstrap.css"
