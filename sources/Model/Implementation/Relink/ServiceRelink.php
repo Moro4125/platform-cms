@@ -6,12 +6,14 @@ namespace Moro\Platform\Model\Implementation\Relink;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\Form\Form;
 use \Moro\Platform\Model\AbstractService;
+use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\RelinkForm;
 use \Moro\Platform\Application;
+use \ArrayObject;
 use \Exception;
 use \PDO;
 
@@ -48,6 +50,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	{
 		parent::_initialization();
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
+		$this->_traits[static::class][HistoryInterface::STATE_TRY_MERGE_HISTORY] = '_mergeHistory';
 	}
 
 	/**
@@ -117,6 +120,37 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		}
 
 		return $tags;
+	}
+
+	/**
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 */
+	protected function _mergeHistory(ArrayObject $next, ArrayObject $prev)
+	{
+		$list = [
+			'parameters.tags',
+			'parameters.nominativus',
+			'parameters.genitivus',
+			'parameters.dativus',
+			'parameters.accusativus',
+			'parameters.instrumentalis',
+			'parameters.praepositionalis',
+		];
+
+		foreach ($next->getArrayCopy() as $key => $value)
+		{
+			if (in_array($key, $list))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeList($key, $next, $prev);
+			}
+			elseif (in_array($key, ['name', 'href', 'class', 'parameters.open_tab', 'parameters.nofollow']))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeSimple($key, $next, $prev);
+			}
+		}
 	}
 
 	/**

@@ -14,11 +14,12 @@ use Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
  */
 interface HistoryInterface extends EntityInterface, UpdatedByInterface, ParametersInterface
 {
+	const STATE_TRY_MERGE_HISTORY = 5001;
+
 	const PROP_SERVICE    = 'service';
 	const PROP_ENTITY_ID  = 'entity_id';
 	const PROP_REQUEST_ID = 'request_id';
 
-	const FREE_UPDATED_AT = EntityInterface::PROP_UPDATED_AT;
 	const FREE_UPDATED_BY = UpdatedByInterface::PROP_UPDATED_BY;
 
 	/**

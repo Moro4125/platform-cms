@@ -326,7 +326,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		var target = jQuery(this);
 		jQuery("#admin_update_comment").each(function() {
 			var self = jQuery(this),
-				text = "Пояснение к изменениям или просто комментарий к записи",
+				text = "Пояснение к последним изменениям или просто комментарий к записи",
 				node = jQuery("<textarea>").attr("class", "form-control form-control").attr("placeholder", text),
 				info = (jQuery(".markdown-help-link")[0] || {outerHTML: ""}).outerHTML;
 
@@ -394,12 +394,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					var service = new diff_match_patch(),
 						pattern = /&para;|\r|\n/g,
 						list = [],
-						from,
-						next,
-						text,
-						diff,
-						html,
-						i;
+						from, next, text, diff, html, temp, node, root, i;
 
 					from = self.data("from");
 					text = jQuery("#" + from).data("text");
@@ -413,10 +408,13 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 
 					for (i = 0; i < list.length; i = (list[i] != that) ? i + 1 : list.length) {
 						next = text;
-						text = service.patch_apply(service.patch_fromText(jQuery(list[i]).data("diff")), text)[0];
+						//noinspection JSUnusedAssignment
+						(node !== list[i].parentNode) && (node = list[i].parentNode) && (root = text);
+						temp = jQuery(list[i]).data("diff");
+						temp && (text = service.patch_apply(service.patch_fromText(temp), text)[0]);
 					}
 
-					diff = service.diff_main(text, next);
+					diff = service.diff_main(text, temp ? next : root);
 					html = service.diff_prettyHtml(diff).replace(pattern, "");
 
 					html = ''

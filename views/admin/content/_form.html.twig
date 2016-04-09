@@ -30,8 +30,13 @@
 				{%- for record in history -%}
 					{%- set diff = record.parameters -%}
 					<ol id="history-{{ record.id }}" class="breadcrumb">
-						<li>{{ record.createdAt|date }}</li>
-						<li>{{ record.createdBy }}</li>
+						{% if not record.updatedAt or record.createdAt|date == record.updatedAt|date %}
+							<li>{{ record.createdAt|date }}</li>
+							<li>{{ record.createdBy }}</li>
+						{% else %}
+							<li>{{ record.createdAt|date }} &#247; {{ record.updatedAt|date }}</li>
+							<li>{{ record.createdBy }}</li>
+						{% endif %}
 					</ol>
 
 					<ul class="history-changes">

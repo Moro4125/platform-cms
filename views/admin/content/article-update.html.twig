@@ -210,9 +210,23 @@
 	{% if diff["parameters.lead"]|default(false) %}
 		<li>
 			<strong>Текст лида </strong>
-			<a class="history_diff" data-diff="{{ diff["parameters.lead"] }}" data-from="history_lead" data-title="Текст лида" href="#">
-				<span>был изменён</span>
-			</a>.
+			{%- if diff["parameters.lead"] is iterable -%}
+				<span>был изменён:</span>
+				{%- for temp in diff["parameters.lead"] -%}
+					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
+					<a class="history_diff" data-diff="{{ temp }}" data-from="history_lead" data-title="Текст лида" href="#">
+						<span class="glyphicon glyphicon-file"></span>
+					</a>
+				{%- endfor -%}
+				{{- ".&nbsp;" -}}
+				<a class="history_diff" data-diff="" data-from="history_lead" data-title="Текст лида" href="#">
+					<span class="glyphicon glyphicon-ok-circle"></span>
+				</a>
+			{%- else -%}
+				<a class="history_diff" data-diff="{{ diff["parameters.lead"] }}" data-from="history_lead" data-title="Текст лида" href="#">
+					<span>был изменён</span>
+				</a>.
+			{%- endif -%}
 		</li>
 	{% endif %}
 
@@ -263,10 +277,24 @@
 
 	{% if diff["parameters.gallery_text"]|default(false) %}
 		<li>
-			<strong>Блок текста статьи </strong>
-			<a class="history_diff" data-diff="{{ diff["parameters.gallery_text"] }}" data-from="history_text" data-title="Блок текста статьи" href="#">
-				<span>был изменён</span>
-			</a>.
+			<strong>Блок текста </strong>
+			{%- if diff["parameters.gallery_text"] is iterable -%}
+				<span>был изменён:</span>
+				{%- for temp in diff["parameters.gallery_text"] -%}
+					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
+					<a class="history_diff" data-diff="{{ temp }}" data-from="history_text" data-title="Блок текста" href="#">
+						<span class="glyphicon glyphicon-file"></span>
+					</a>
+				{%- endfor -%}
+				{{- ".&nbsp;" -}}
+				<a class="history_diff" data-diff="" data-from="history_text" data-title="Блок текста" href="#">
+					<span class="glyphicon glyphicon-ok-circle"></span>
+				</a>
+			{%- else -%}
+				<a class="history_diff" data-diff="{{ diff["parameters.gallery_text"] }}" data-from="history_text" data-title="Блок текста" href="#">
+					<span>был изменён</span>
+				</a>.
+			{%- endif -%}
 		</li>
 	{% endif %}
 
@@ -338,26 +366,8 @@
 		{% if diff["parameters.chunks.count"]|default(false) %}
 			{% if diff["parameters.chunks.count"][0]|default(0) < diff["parameters.chunks.count"][1]|default(0) %}
 				{% set ignoreChangesInChunk = diff["parameters.chunks.count"][0]|default(0) + 1 %}
-
-				{% for n in range(ignoreChangesInChunk, diff["parameters.chunks.count"][1]) %}
-					<li>
-						<strong>Часть {{ n }} </strong>
-						{% if chunksCount >= n %}
-							<a target="_blank" href="{{ app.url("admin-content-chunks-update", {id: item.id, n: n, back: app.url("admin-about") ~ "#close=Y" }) }}">добавлена.</a>
-						{% else %}
-							<span>добавлена.</span>
-						{% endif %}
-					</li>
-				{% endfor %}
-			{% else %}
+			{% elseif diff["parameters.chunks.count"][0]|default(0) > diff["parameters.chunks.count"][1]|default(0) %}
 				{% set ignoreChangesInChunk = diff["parameters.chunks.count"][1]|default(0) + 1 %}
-
-				{% for n in range(diff["parameters.chunks.count"][0]|default(0), ignoreChangesInChunk) %}
-					<li>
-						<strong>Часть {{ n }} </strong>
-						<span>удалена.</span>
-					</li>
-				{% endfor %}
 			{% endif %}
 		{% endif %}
 
@@ -370,6 +380,28 @@
 					</li>
 				{% endif %}
 			{% endfor %}
+		{% endif %}
+
+		{% if diff["parameters.chunks.count"]|default(false) %}
+			{% if diff["parameters.chunks.count"][0]|default(0) < diff["parameters.chunks.count"][1]|default(0) %}
+				{% for n in range(ignoreChangesInChunk, diff["parameters.chunks.count"][1]) %}
+					<li>
+						<strong>Часть {{ n }} </strong>
+						{% if chunksCount >= n %}
+							<a target="_blank" href="{{ app.url("admin-content-chunks-update", {id: item.id, n: n, back: app.url("admin-about") ~ "#close=Y" }) }}">добавлена.</a>
+						{% else %}
+							<span>добавлена.</span>
+						{% endif %}
+					</li>
+				{% endfor %}
+			{% elseif diff["parameters.chunks.count"][0]|default(0) > diff["parameters.chunks.count"][1]|default(0) %}
+				{% for n in range(ignoreChangesInChunk, diff["parameters.chunks.count"][0]|default(0)) %}
+					<li>
+						<strong>Часть {{ n }} </strong>
+						<span>удалена.</span>
+					</li>
+				{% endfor %}
+			{% endif %}
 		{% endif %}
 	{% endif %}
 

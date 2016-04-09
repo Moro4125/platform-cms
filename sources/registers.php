@@ -276,6 +276,7 @@ Application::getInstance(function (Application $app)
 		$behavior = new $class();
 		$behavior->setServiceHistory($app->getServiceHistory());
 		$behavior->setServiceDiffMatchPatch($app->getServiceDiffMatchPatch());
+		$behavior->setUserToken($app->getServiceSecurityToken());
 		return $behavior;
 	});
 

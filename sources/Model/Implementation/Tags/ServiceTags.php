@@ -6,6 +6,7 @@ namespace Moro\Platform\Model\Implementation\Tags;
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
+use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Form\Index\AbstractIndexForm;
@@ -13,6 +14,7 @@ use \Moro\Platform\Form\TagsForm;
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
+use \ArrayObject;
 use \Exception;
 use \PDO;
 
@@ -46,6 +48,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	{
 		parent::_initialization();
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
+		$this->_traits[static::class][HistoryInterface::STATE_TRY_MERGE_HISTORY] = '_mergeHistory';
 		$this->_tagsKind = array_map('normalizeTag', $this->_tagsKind);
 	}
 
@@ -66,6 +69,27 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 		}
 
 		return $tags;
+	}
+
+	/**
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 */
+	protected function _mergeHistory(ArrayObject $next, ArrayObject $prev)
+	{
+		foreach ($next->getArrayCopy() as $key => $value)
+		{
+			if ($key == 'parameters.tags')
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeList($key, $next, $prev);
+			}
+			elseif (in_array($key, ['name', 'code', 'parameters.lead', 'kind']))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeSimple($key, $next, $prev);
+			}
+		}
 	}
 
 	/**

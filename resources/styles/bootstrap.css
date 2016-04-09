@@ -531,6 +531,31 @@ form > table.table {
     padding-right: 15px;
 }
 
+.history-changes table {
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    border: solid 1px silver;
+}
+
+.history-changes table tr + tr {
+    border-top: dotted 1px silver;
+}
+
+.history-changes table th {
+    padding: 5px;
+    background-color: #f0f0f0;
+}
+
+.history-changes table td {
+    padding: 5px;
+}
+
+.history-changes table th + th,
+.history-changes table td + td {
+    border-left: dotted 1px silver;
+}
+
 .breadcrumb > li.right {
     float: right;
 }

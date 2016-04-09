@@ -12,11 +12,13 @@ use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Chain\ChainServiceInterface;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
 use \Moro\Platform\Model\Implementation\File\ServiceFile;
+use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Moro\Platform\Form\Index\AbstractIndexForm;
 use \Moro\Platform\Form\ContentForm;
 use \Moro\Platform\Form\AjaxUploadForm;
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
+use \ArrayObject;
 use \PDO;
 use \Exception;
 
@@ -54,6 +56,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		parent::_initialization();
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
 		$this->_traits[static::class][self::STATE_DELETE_FINISHED] = '_afterDelete';
+		$this->_traits[static::class][HistoryInterface::STATE_TRY_MERGE_HISTORY] = '_mergeHistory';
 	}
 
 	/**
@@ -107,6 +110,50 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		foreach ($this->_serviceFile->selectByKind('a'.$entity->getId()) as $file)
 		{
 			$this->_serviceFile->deleteEntityById($file->getId());
+		}
+	}
+
+	/**
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 */
+	protected function _mergeHistory(ArrayObject $next, ArrayObject $prev)
+	{
+		$countValue  = 0;
+		$countVector = 0;
+
+		foreach ($next->getArrayCopy() as $key => $value)
+		{
+			if ($key == 'parameters.chunks.count' && $prev->offsetExists($key))
+			{
+				$countValue  = $value[0];
+				$countVector = ($value[0] > $value[1]) ? -1 : 1;
+				$prev->offsetGet($key)[0] < $value[0] && $countVector == 1 && $countVector = 0;
+				$prev->offsetGet($key)[0] > $value[0] && $countVector ==-1 && $countVector = 0;
+			}
+
+			if (in_array($key, ['name', 'code', 'icon', 'parameters.link', 'parameters.chunks.count'])
+				|| strncmp($key, 'parameters.chunks.num', 21) === 0)
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeSimple($key, $next, $prev, 'parameters.chunks.count');
+			}
+			elseif (in_array($key, ['parameters.lead', 'parameters.gallery_text']))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergePatch($key, $next, $prev);
+			}
+			elseif (in_array($key, ['parameters.gallery', 'parameters.tags', 'parameters.articles', 'parameters.attachments']))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeList($key, $next, $prev);
+			}
+		}
+
+		if ($countVector < 0)
+		{
+			$key = 'parameters.chunks.num'.$countValue;
+			$prev->offsetExists($key) && $prev->offsetUnset($key);
 		}
 	}
 

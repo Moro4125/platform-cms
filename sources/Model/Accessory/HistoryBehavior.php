@@ -6,8 +6,11 @@ namespace Moro\Platform\Model\Accessory;
 use \Moro\Platform\Model\AbstractBehavior;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
+use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Moro\Platform\Model\Implementation\History\ServiceHistory;
 use \Moro\Platform\Tools\DiffMatchPatch;
+use \Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use \ArrayObject;
 
 /**
  * Class HistoryBehavior
@@ -31,6 +34,11 @@ class HistoryBehavior extends AbstractBehavior
 	protected $_diffMatchPatchService;
 
 	/**
+	 * @var TokenInterface
+	 */
+	protected $_userToken;
+
+	/**
 	 * @param $service
 	 */
 	public function setServiceHistory(ServiceHistory $service)
@@ -49,12 +57,23 @@ class HistoryBehavior extends AbstractBehavior
 	}
 
 	/**
+	 * @param TokenInterface $token
+	 * @return $this
+	 */
+	public function setUserToken(TokenInterface $token)
+	{
+		$this->_userToken = $token;
+		return $this;
+	}
+
+	/**
 	 * @param AbstractService $service
 	 */
 	protected function _initContext($service)
 	{
 		assert($this->_service);
 
+		$this->_context[self::KEY_LOCKED] = false;
 		$this->_context[self::KEY_HANDLERS] = [
 			AbstractService::STATE_ENTITY_LOADED   => '_onEntityLoaded',
 			AbstractService::STATE_COMMIT_FINISHED => '_onCommitFinished',
@@ -90,6 +109,114 @@ class HistoryBehavior extends AbstractBehavior
 	{
 		assert(isset($this->_context));
 		$this->_context[self::KEY_WHITE_FIELDS] = $fields;
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
+	 * @param string $key
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 * @param null|string|array $notNull
+	 */
+	protected function historyMergeSimple($key, ArrayObject $next, ArrayObject $prev, $notNull = null)
+	{
+		$value = $next->offsetGet($key);
+
+		if (!$prev->offsetExists($key))
+		{
+			$prev->offsetSet($key, $value);
+			$next->offsetUnset($key);
+		}
+		elseif ($prev->offsetGet($key)[0] == $value[1] && !in_array($key, (array)$notNull))
+		{
+			$prev->offsetUnset($key);
+			$next->offsetUnset($key);
+		}
+		elseif ($prev->offsetGet($key)[1] == $value[0])
+		{
+			$prev->offsetSet($key, [$prev->offsetGet($key)[0], $value[1]]);
+			$next->offsetUnset($key);
+		}
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
+	 * @param string $key
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 */
+	protected function historyMergePatch($key, ArrayObject $next, ArrayObject $prev)
+	{
+		$value = $next->offsetGet($key);
+
+		if (!$prev->offsetExists($key))
+		{
+			$prev->offsetSet($key, $value);
+			$next->offsetUnset($key);
+		}
+		else
+		{
+			$prev->offsetSet($key, array_merge((array)$value, (array)$prev->offsetGet($key)));
+			$next->offsetUnset($key);
+		}
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
+	 * @param string $key
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 * @param null|string|array $notNull
+	 */
+	protected function historyMergeList($key, ArrayObject $next, ArrayObject $prev, $notNull = null)
+	{
+		$value = $next->offsetGet($key);
+
+		if (!$prev->offsetExists($key))
+		{
+			$prev->offsetSet($key, $value);
+			$next->offsetUnset($key);
+		}
+		else
+		{
+			list($del1, $add1) = $prev->offsetGet($key);
+			list($del2, $add2) = $next->offsetGet($key);
+
+			$del0 = array_merge(array_diff((array)$del1, (array)$add2), array_diff((array)$del2, (array)$add1));
+			$add0 = array_merge(array_diff((array)$add1, (array)$del2), array_diff((array)$add2, (array)$del1));
+
+			$prev->offsetSet($key, [array_unique($del0), array_unique($add0)]);
+			$next->offsetUnset($key);
+
+			empty($del0) && empty($add0) && !in_array($key, (array)$notNull) && $prev->offsetUnset($key);
+		}
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
+	 * @return null|string
+	 */
+	protected function historyHasNotMergedItems()
+	{
+		$requestId = $this->_service->getCurrentRequestId();
+		return empty($this->_service->findByRequestId($requestId)) ? null : $requestId;
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
+	 * @param string $requestId
+	 * @param null|string $newRequestId
+	 * @return int
+	 */
+	protected function historyReplaceRequestId($requestId, $newRequestId = null)
+	{
+		$newRequestId = is_null($newRequestId) ? dechex(mt_rand(0x10000000, 0x7FFFFFFF)) : (string)$newRequestId;
+		return $this->_service->replaceRequestId($requestId, $newRequestId);
 	}
 
 	/**
@@ -155,7 +282,39 @@ class HistoryBehavior extends AbstractBehavior
 					}
 				}
 
-				$this->_service->createEntity($subject->getServiceCode(), $id, $diff);
+				$list = $this->_service->selectEntities(0, 1, '!'.EntityInterface::PROP_CREATED_AT, [
+					HistoryInterface::PROP_SERVICE   => $subject->getServiceCode(),
+					HistoryInterface::PROP_ENTITY_ID => $id,
+				], null, EntityInterface::FLAG_GET_FOR_UPDATE);
+
+				/** @var HistoryInterface $last */
+				while (TRUE)
+				{
+					$t = ['parameters.comment' => 1];
+
+					switch (FALSE)
+					{
+						case ($last = reset($list)): break;
+						case ($this->_userToken->getUsername() == $last->getCreatedBy()): break;
+						case ($updatedAt = $last->getUpdatedAt() ?: $last->getCreatedAt()): break;
+						case (time() - $updatedAt < 3600): break;
+						case (time() - $last->getCreatedAt() < 43200): break;
+						case (!isset($last->getParameters()['parameters.comment'])): break;
+						case ($prev = new ArrayObject($last->getParameters() + array_intersect_key($diff, $t))); break;
+						case ($next = new ArrayObject(array_diff_key($diff, $t))); break;
+						case ($last->getRequestId() === (isset($prev['request_id']) ? $prev['request_id'] : 0)): break;
+						case is_null($subject->notify(HistoryInterface::STATE_TRY_MERGE_HISTORY, $next, $prev)): break;
+						case ($next->count() === 0): break;
+
+						default:
+							$last->setParameters($prev->getArrayCopy());
+							$this->_service->commit($last);
+							break 2;
+					}
+
+					$this->_service->createEntity($subject->getServiceCode(), $id, $diff);
+					break;
+				}
 			}
 
 			unset($this->_context[self::KEY_CACHE][$id]);

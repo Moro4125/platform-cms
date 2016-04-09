@@ -42,11 +42,14 @@ class ServiceHistory extends AbstractService
 	 */
 	public function createEntity($service, $entityId, array $diff)
 	{
+		$requestId = $this->getCurrentRequestId();
+		$diff[HistoryInterface::PROP_REQUEST_ID] = $requestId;
+
 		$entity = $this->_newEntityFromArray([
 			HistoryInterface::PROP_SERVICE => (string)$service,
 			HistoryInterface::PROP_ENTITY_ID => (int)$entityId,
-			HistoryInterface::PROP_REQUEST_ID => $this->getCurrentRequestId(),
-			HistoryInterface::PROP_PARAMETERS => (array)$diff,
+			HistoryInterface::PROP_REQUEST_ID => $requestId,
+			HistoryInterface::PROP_PARAMETERS => $diff,
 		], EntityInterface::FLAG_GET_FOR_UPDATE);
 
 		$this->commit($entity);
@@ -56,14 +59,15 @@ class ServiceHistory extends AbstractService
 	/**
 	 * @param string $requestId
 	 * @param null|EntityInterface|string|int $excludeId
+	 * @param null|int $flags
 	 * @return HistoryInterface[]
 	 */
-	public function findByRequestId($requestId, $excludeId = null)
+	public function findByRequestId($requestId, $excludeId = null, $flags = null)
 	{
 		$requestId = (string)$requestId;
 		$excludeId = (int)($excludeId instanceof EntityInterface ? $excludeId->getId() : $excludeId);
 
-		$result = $this->selectEntities(null, 100, 'id', HistoryInterface::PROP_REQUEST_ID, $requestId);
+		$result = $this->selectEntities(null, 100, 'id', HistoryInterface::PROP_REQUEST_ID, $requestId, $flags);
 		$result = array_filter($result, function(HistoryInterface $entity) use ($excludeId) {
 			return $entity->getId() !== $excludeId;
 		});
@@ -86,6 +90,21 @@ class ServiceHistory extends AbstractService
 		$result = $this->selectEntities(null, 100, '!created_at', array_keys($filter), array_values($filter));
 
 		return $result;
+	}
+
+	/**
+	 * @param string $oldRequestId
+	 * @param string $newRequestId
+	 * @return int
+	 */
+	public function replaceRequestId($oldRequestId, $newRequestId)
+	{
+		$builder = $this->_connection->createQueryBuilder()
+			->update($this->_table)
+			->set(HistoryInterface::PROP_REQUEST_ID, '?')
+			->where(HistoryInterface::PROP_REQUEST_ID.'=?');
+		$statement = $this->_connection->prepare($builder->getSQL());
+		return $statement->execute([$newRequestId, $oldRequestId]) ? $statement->rowCount() : 0;
 	}
 
 	/**

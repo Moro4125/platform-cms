@@ -14,9 +14,11 @@ use \Moro\Platform\Form\Index\ImagesIndexForm;
 use \Moro\Platform\Form\ImageUpdateForm;
 use \Imagine\Image\Box;
 use \Imagine\Image\Point;
+use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
 use \Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use \ArrayObject;
 use \DirectoryIterator;
 use \Exception;
 use \Symfony\Component\Intl\Exception\NotImplementedException;
@@ -68,7 +70,10 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	protected function _initialization()
 	{
 		parent::_initialization();
+
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
+		$this->_traits[static::class][HistoryInterface::STATE_TRY_MERGE_HISTORY] = '_mergeHistory';
+
 		$this->_specialTags = array_merge($this->_specialTags, array_keys($this->_kinds));
 		$this->_specialTags = array_map('normalizeTag', $this->_specialTags);
 	}
@@ -112,6 +117,46 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		}
 
 		return $tags;
+	}
+
+	/**
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 */
+	protected function _mergeHistory(ArrayObject $next, ArrayObject $prev)
+	{
+		foreach ($next->getArrayCopy() as $key => $value)
+		{
+			if (in_array($key, ['name', 'parameters.lead', 'parameters.watermark', 'parameters.hide_mask',
+				'parameters.crop','parameters.crop_x','parameters.crop_y','parameters.crop_w','parameters.crop_h',]))
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeSimple($key, $next, $prev);
+			}
+			elseif ($key == 'parameters.tags')
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				$this->historyMergeList($key, $next, $prev);
+			}
+			elseif ($key == 'updated_at')
+			{
+				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+				if ($this->historyHasNotMergedItems())
+				{
+					if ($prevRequestId = $prev->offsetExists('request_id') ? $prev->offsetGet('request_id') : null)
+					{
+						/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
+						$this->historyReplaceRequestId($prevRequestId);
+					}
+				}
+				else
+				{
+					$next->offsetUnset($key);
+				}
+			}
+		}
+
+		$next->offsetUnset('kind');
 	}
 
 	/**
@@ -554,7 +599,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 			{
 				if ($data['crop'.$kind.'_a'] || $kind == '1x1')
 				{
-					$item = $this->getByHashAndKind($hash, $kind, true, true);
+					$item = $this->getByHashAndKind($hash, $kind, true, true, EntityInterface::FLAG_GET_FOR_UPDATE);
 					$item->getId() === $entity->getId() && $item = $entity;
 					$original = $options = array_merge($imgOptions, $item->getParameters());
 
@@ -638,6 +683,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		{
 			$this->_connection->rollBack();
 			$application->getServiceFlash()->error(get_class($exception).': '.$exception->getMessage());
+			($sentry = $application->getServiceSentry()) && $sentry->captureException($exception);
 		}
 
 		$this->recreateImageFiles($application, $hash);

@@ -484,6 +484,12 @@ abstract class AbstractService implements SplSubject
 	{
 		if (null === $this->_cachedItemsList || $this->_cacheDependency !== $key = serialize(func_get_args()))
 		{
+			if (is_array($filter) && $value === null)
+			{
+				$value = array_values($filter);
+				$filter = array_keys($filter);
+			}
+
 			$this->_cacheDependency = isset($key) ? $key : serialize(func_get_args());
 			$builder = $this->_connection->createQueryBuilder()->select('m.*')->from($this->_table, 'm');
 			$values = [];
