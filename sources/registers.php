@@ -318,7 +318,7 @@ Application::getInstance(function (Application $app)
 		$service = new $class($app->getServiceDataBase());
 		$service->setServiceUser($app->getServiceSecurityToken());
 
-		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
 		{
 			$service->setClient($app->getServiceSecurityToken()->getUsername());
 			$service->attach($app->getBehaviorClientRole());
@@ -386,7 +386,7 @@ Application::getInstance(function (Application $app)
 			]));
 		}
 
-		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
 		{
 			$service->attach($app->getBehaviorClientRole());
 		}
@@ -430,7 +430,7 @@ Application::getInstance(function (Application $app)
 			$service->appendDecorator(new HeadingFileDecorator($app));
 		}
 
-		if ($app->getServiceSecurityAcl()->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
 		{
 			$service->attach($app->getBehaviorClientRole());
 		}

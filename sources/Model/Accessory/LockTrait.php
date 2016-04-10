@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Model\Accessory;
 use \Moro\Platform\Model\AbstractService;
+use \Moro\Platform\Model\EntityInterface;
 use \Doctrine\DBAL\Connection;
 use \Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -45,6 +46,11 @@ trait LockTrait
 	 */
 	protected function _lockCommitStarted($entity)
 	{
+		if ($entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES))
+		{
+			return;
+		}
+
 		if (($lockedBy = $this->isLocked($entity)) && $this instanceof AbstractService)
 		{
 			$this->stopNotify();

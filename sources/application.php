@@ -6,6 +6,7 @@ namespace Moro\Platform;
 use \Symfony\Component\Debug\ExceptionHandler;
 use \Symfony\Component\Debug\ErrorHandler;
 use \Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use \Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpFoundation\StreamedResponse;
@@ -224,7 +225,7 @@ class Application extends CApplication
 	 */
 	public function isGranted($role)
 	{
-		return $this->getServiceSecurityAcl()->isGranted($role);
+		return ($service = $this->getServiceSecurityAcl()) ? $service->isGranted($role) : true;
 	}
 
 	/**
@@ -641,10 +642,15 @@ class Application extends CApplication
 	}
 
 	/**
-	 * @return \Symfony\Component\Security\Core\Authorization\AuthorizationChecker
+	 * @return \Symfony\Component\Security\Core\Authorization\AuthorizationChecker|null
 	 */
 	public function getServiceSecurityAcl()
 	{
+		if (php_sapi_name() == 'cli')
+		{
+			return null;
+		}
+
 		return $this->offsetGet(self::SERVICE_SECURITY_ACL);
 	}
 
@@ -653,6 +659,11 @@ class Application extends CApplication
 	 */
 	public function getServiceSecurityToken()
 	{
+		if (php_sapi_name() == 'cli')
+		{
+			return new AnonymousToken(self::PLATFORM_VERSION, 'cli', ['ROLE_ADMIN']);
+		}
+
 		/** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage $service */
 		$service = $this->offsetGet(self::SERVICE_SECURITY_TOKEN);
 		return $service ? $service->getToken() : null;

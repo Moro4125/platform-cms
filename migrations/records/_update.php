@@ -30,6 +30,7 @@ if (isset($arguments['service']) && isset($container[$arguments['service']]))
 			try
 			{
 				$connection->beginTransaction();
+				$transaction = true;
 
 				/** @var \Moro\Platform\Model\EntityInterface $entity */
 				foreach ($list as $entity)
@@ -39,6 +40,12 @@ if (isset($arguments['service']) && isset($container[$arguments['service']]))
 					$manager->commit($entity);
 				}
 
+				if ($connection->isRollbackOnly())
+				{
+					throw new \Exception('Transaction now is in "rollback only" mode.');
+				}
+
+				unset($transaction);
 				$connection->commit();
 				$totalAffectedRecords += count($list);
 
@@ -46,7 +53,7 @@ if (isset($arguments['service']) && isset($container[$arguments['service']]))
 			}
 			catch (\Exception $e)
 			{
-				$connection->rollBack();
+				isset($transaction) && $connection->rollBack();
 				throw new \RuntimeException('Error for record with ID '.$lastId, $e->getCode(), $e);
 			}
 
