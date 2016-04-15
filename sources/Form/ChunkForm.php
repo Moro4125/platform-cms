@@ -64,13 +64,12 @@ class ChunkForm extends AbstractContent
 		]);
 
 		$builder->add('gallery_text', 'textarea', [
-			'label'    => 'Описание',
-			'attr'     => ['placeholder' => 'Описание'],
+			'label'    => 'Текстовый блок',
 			'required' => false,
 		]);
 
 		$builder->add('articles', 'choice_article', [
-			'label'    => 'Связанные материалы',
+			'label'    => 'Связанные тексты',
 			'multiple' => true,
 			'required' => false,
 		]);

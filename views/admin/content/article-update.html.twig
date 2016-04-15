@@ -104,7 +104,7 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<h3>Блок текста статьи</h3>
+					<h3>Текстовый блок</h3>
 				</div>
 				<div class="col-md-12">
 					{{ form_widget(form.gallery_text) }}
@@ -113,7 +113,7 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<h3>Связанные статьи</h3>
+					<h3>Связанные тексты</h3>
 				</div>
 				<div class="col-md-12 m-select2-articles">
 					{{ form_widget(form.articles) }}
@@ -125,7 +125,7 @@
 			{%- block attachments_bar -%}
 				<div class="row">
 					<div class="col-md-12">
-						<h3>Файлы&ndash;вложения</h3>
+						<h3>Отдельные файлы</h3>
 					</div>
 					<div class="col-md-12 m-select2-articles">
 						{{ form(upload) }}
@@ -235,15 +235,15 @@
 			<strong>Ссылка</strong>
 			{% if not diff["parameters.link"][1] %}
 				<span> удалена. Была: </span>
-				<i>«<a href="{{ diff["parameters.link"][0] }}" target="_blank">{{ diff["parameters.link"][0] }}</a>».</i>
+				<i>«{{ diff["parameters.link"][0] }}».</i>
 			{% elseif not diff["parameters.link"][0] %}
 				<span> установлена: </span>
-				<i>«<a href="{{ diff["parameters.link"][1] }}" target="_blank">{{ diff["parameters.link"][1] }}</a>».</i>
+				<i>«{{ diff["parameters.link"][1] }}».</i>
 			{% else %}
 				<span> изменена. Была </span>
-				<i>«<a href="{{ diff["parameters.link"][0] }}" target="_blank">{{ diff["parameters.link"][0] }}</a>»,</i>
+				<i>«{{ diff["parameters.link"][0] }}»,</i>
 				<span> стала </span>
-				<i>«<a href="{{ diff["parameters.link"][1] }}" target="_blank">{{ diff["parameters.link"][1] }}</a>».</i>
+				<i>«{{ diff["parameters.link"][1] }}».</i>
 			{% endif %}
 		</li>
 	{% endif %}
@@ -301,7 +301,7 @@
 	{% if diff["parameters.articles"]|default(false) %}
 		{% set back = app.url("admin-about") ~ "#close=Y" %}
 		<li>
-			<strong>Связи со статьями</strong>
+			<strong>Связи с текстами</strong>
 			<span> были изменены. </span>
 			{% if diff["parameters.articles"][0] %}
 				{% if diff["parameters.articles"][0]|length == 1 %}<span> Удалена связь с </span>{% else %}<span> Удалены: </span>{% endif %}

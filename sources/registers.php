@@ -516,12 +516,12 @@ Application::getInstance(function (Application $app)
 
 		if ($access->isGranted('ROLE_RS_ARTICLES'))
 		{
-			$item->addChild('Статьи', [
+			$item->addChild('Тексты', [
 				'route' => 'admin-content-articles',
 				'display' => true
 			]);
 
-			$item->addChild('Редактирование материала', [
+			$item->addChild('Редактирование текста', [
 				'route' => 'admin-content-articles-update',
 				'routeParameters' => [
 					'id' => (int)$app['request']->attributes->get('id', 0)

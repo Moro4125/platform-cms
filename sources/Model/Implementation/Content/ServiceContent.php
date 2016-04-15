@@ -26,7 +26,7 @@ use \Exception;
  * Class ServiceContent
  * @package Model\Content
  *
- * @method EntityContent[] getEntitiesById(array $idList, $flags)
+ * @method EntityContent[] getEntitiesById(array $idList, $flags = null)
  */
 class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
 {
