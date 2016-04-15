@@ -82,7 +82,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 
 			if (empty($parameters['gallery_text']) || !is_string($parameters['gallery_text']) || !trim($parameters['gallery_text']))
 			{
-				$tags[] = normalizeTag('флаг: без описания');
+				$tags[] = normalizeTag('флаг: без текста');
 			}
 		}
 

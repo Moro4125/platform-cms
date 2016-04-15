@@ -9,12 +9,12 @@
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<span class="badge">{{ app.serviceRoutes.count }}</span>
+						<span class="badge">{{ app.serviceRoutes.count - app.serviceRoutes.count("route", "inner") }}</span>
 						<span>Страницы</span>
 					</li>
 					<li class="list-group-item">
 						<span class="badge">{{ app.serviceContent.count }}</span>
-						<span>Материалы</span>
+						<span>Тексты</span>
 					</li>
 					<li class="list-group-item">
 						<span class="badge">{{ app.serviceFile.getCount("kind", "1x1") }}</span>
@@ -50,7 +50,7 @@
 						<span>Для работы с контентом сайта предназначен раздел «</span>
 						<a href="{{ url('admin-content-articles') }}">Материалы</a>
 						<span>». Он состоит из списков </span>
-						<a href="{{ url('admin-content-articles') }}">статей</a>{{- ", " -}}
+						<a href="{{ url('admin-content-articles') }}">текстов</a>{{- ", " -}}
 						<a href="{{ url('admin-content-images') }}">изображений</a>{{- ", " -}}
 						<a href="{{ url('admin-content-tags') }}">ярлыков</a>
 						<span> и страниц редактирования конкретных записей этих сущностей.</span>

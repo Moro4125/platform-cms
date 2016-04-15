@@ -6,6 +6,8 @@ use \Moro\Platform\Application;
 use \Moro\Platform\Command\UploadedCommand;
 use \Moro\Platform\Command\ImagesCommand;
 
+date_default_timezone_set('UTC');
+
 if (file_exists(__DIR__.'/vendor/autoload.php'))
 {
 	error_reporting(E_ALL);

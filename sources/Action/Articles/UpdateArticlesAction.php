@@ -62,7 +62,7 @@ class UpdateArticlesAction extends AbstractUpdateAction
 
 		$parameters = parent::_getViewParameters();
 		$parameters['upload'] = $this->getService()->createAdminUploadForm($app, $entity)->createView();
-		$parameters['title'] = $this->getEntity()->getName().' - Редактирование статьи';
+		$parameters['title'] = $this->getEntity()->getName().' - Редактирование текста';
 		$parameters['parentId'] = $this->_parentId;
 
 		if ($app->getOption('content.multi_page'))
