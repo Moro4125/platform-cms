@@ -5,7 +5,7 @@
 namespace Moro\Platform\Model\Accessory\UpdatedBy;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
-
+use \Moro\Platform\Security\User\PlatformUser;
 use \Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 /**
@@ -41,7 +41,6 @@ trait UpdatedByServiceTrait
 	 */
 	public function setServiceUser(TokenInterface $token = null)
 	{
-		assert(empty($this->_userToken));
 		$this->_userToken = $token;
 		return $this;
 	}
@@ -58,7 +57,15 @@ trait UpdatedByServiceTrait
 
 		if ($this->_userToken && ($insert || !$entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES)))
 		{
-			$user = $this->_userToken->getUsername();
+			/** @var \Moro\Platform\Security\User\PlatformUser $helper */
+			if (($helper = $this->_userToken->getUser()) instanceof PlatformUser && $profile = $helper->getProfile())
+			{
+				$user = explode('@', $profile->getEmail())[0];
+			}
+			else
+			{
+				$user = $this->_userToken->getUsername();
+			}
 
 			if ($insert && $entity->hasProperty(UpdatedByInterface::PROP_CREATED_BY))
 			{

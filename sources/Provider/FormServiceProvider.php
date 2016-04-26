@@ -9,6 +9,7 @@ use \Moro\Platform\Form\Type\Extension\FieldsetExtension;
 use \Moro\Platform\Form\Type\ArticleChoiceType;
 use \Moro\Platform\Form\Type\ImageChoiceType;
 use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Moro\Platform\Form\Type\RolesChoiceType;
 
 /**
  * Class FormServiceProvider
@@ -32,6 +33,7 @@ class FormServiceProvider extends CFormServiceProvider
 			$list[] = new ArticleChoiceType($app);
 			$list[] = new ImageChoiceType($app);
 			$list[] = new TagsChoiceType($app);
+			$list[] = new RolesChoiceType($app);
 			return $list;
 		});
 	}

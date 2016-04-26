@@ -134,6 +134,16 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	}
 
 	/**
+	 * @param string $tag
+	 * @return null|TagsInterface
+	 */
+	public function getEntityByTag($tag)
+	{
+		$list = $this->selectEntities(0, 1, null, 'tag', $tag);
+		return reset($list) ?: null;
+	}
+
+	/**
 	 * @param null|integer $offset
 	 * @param null|integer $count
 	 * @param null|integer $order

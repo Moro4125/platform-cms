@@ -36,6 +36,14 @@ class TagsServiceBehavior extends AbstractBehavior
 	}
 
 	/**
+	 * @return ServiceTags
+	 */
+	public function getTagsService()
+	{
+		return $this->_service;
+	}
+
+	/**
 	 * @param Connection $connection
 	 * @return $this
 	 */

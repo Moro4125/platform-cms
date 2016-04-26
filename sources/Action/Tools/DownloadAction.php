@@ -87,6 +87,7 @@ class DownloadAction extends AbstractContentAction
 			'url'      => $uri,
 			'usedList' => array_filter($list),
 		], new Response('', 200, [
+			Application::HEADER_WITHOUT_BAR => 1,
 			Application::HEADER_DO_NOT_SAVE => 1,
 			Application::HEADER_CACHE_TAGS  => 'file-'.$entity->getSmallHash(),
 			Application::HEADER_CACHE_FILE  => $uri,

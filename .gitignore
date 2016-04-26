@@ -1,4 +1,9 @@
 /.*
+/http/*
+!/http/action
+!/http/admin
+!/http/favicon.ico
+!/http/robots.txt
 /library
 /logs
 /vendor

@@ -48,7 +48,11 @@
     "mustache/mustache-js": "~2.0",
     "jackmoore/autosize": "~3.0",
     "symfony/doctrine-bridge": "^2.7",
-    "raven/raven": "~0.13.0"
+    "raven/raven": "~0.13.0",
+    "swiftmailer/swiftmailer": "~v5.4.1"
+  },
+  "require-dev": {
+    "hybridauth/hybridauth": "~2.6"
   },
   "config": {
     "component-dir": "http/assets",
@@ -64,7 +68,8 @@
         "resources/scripts/local_time.js",
         "resources/scripts/bootstrap.js",
         "resources/scripts/diff_match_patch.js",
-        "resources/scripts/flash_message.js"
+        "resources/scripts/flash_message.js",
+        "resources/scripts/auth.js"
       ],
       "styles": [
         "resources/styles/bootstrap.css"

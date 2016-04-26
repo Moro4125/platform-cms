@@ -1,0 +1,55 @@
+{% extends "@PlatformCMS/pages/_layout.html.twig" %}
+
+{%- block head_title -%}
+	Восстановление пароля для {{ app.request.host }}
+{%- endblock -%}
+
+
+{%- block head_meta -%}
+	{{- parent() -}}
+	<style>
+		body { background-color: #f0f0f0; }
+		.btn-label {position: relative;left: -12px;display: inline-block;padding: 6px 12px;background: rgba(0,0,0,0.15);border-radius: 3px 0 0 3px;}
+		.btn-labeled {padding-top: 0;padding-bottom: 0;}
+		.input-group { margin-bottom:10px; }
+		.login-box { padding-top: 1em; }
+		.login-box + .login-box { border-left: solid 1px silver; }
+	</style>
+{%- endblock -%}
+
+
+{%- block workspace -%}
+	<form id="login-form" action="/action/auth/restore.php" role="form" method="post">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Восстановление пароля
+				</h3>
+			</div>
+
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 login-box">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+							<input name="email" type="text" class="form-control" placeholder="Ваш e-mail" required autofocus />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel-footer">
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 text-right" style="line-height: 40px;">
+						<button type="submit" name="enter" class="btn btn-labeled btn-success">
+							<span class="btn-label"><i class="glyphicon glyphicon-ok"></i></span>Запросить
+						</button>
+						<a href="/action/navigate.php?back=Y" class="btn btn-labeled btn-danger" style="margin-left: 8px;">
+							<span class="btn-label"><i class="glyphicon glyphicon-remove"></i></span>Отмена
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{%- endblock workspace -%}

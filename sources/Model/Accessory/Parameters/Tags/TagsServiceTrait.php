@@ -37,9 +37,23 @@ trait TagsServiceTrait
 		$search = rtrim(implode(', ', array_map('trim', $tags)), '.').($tags ? ', ' : '');
 		$recordsCount = 0;
 		$hideTop = null;
+		$tagTarget = '';
 
-		if (isset($this->_connection))
+		if (isset($this->_connection) && $this instanceof AbstractService)
 		{
+			$builder0 = $this->_connection->createQueryBuilder();
+			$builder0->select('a.name')->from('content_tags', 'a');
+			$builder0->leftJoin('a', 'content_tags_tags', 'tt', 'a.id = tt.target');
+			$builder0->where('tt.tag = ?');
+
+			$statement0 = $this->_connection->prepare($builder0->getSQL());
+			$serviceTag = normalizeTag('Service:'.$this->getServiceCode());
+
+			if ($statement0->execute([$serviceTag]) && $record = $statement0->fetch(PDO::FETCH_ASSOC))
+			{
+				$tagTarget = $record['name'];
+			}
+
 			$builder1 = $this->_connection->createQueryBuilder();
 			$builder1->select('a.tag, COUNT(a.tag) as cnt')->from($table.'_tags', 'a')->groupBy('tag');
 			$builder1->orderBy('cnt', 'desc')->setMaxResults(64);
@@ -88,6 +102,8 @@ trait TagsServiceTrait
 						'code' => $record['tag'],
 						'lead' => empty($temp['lead']) ? '' : $temp['lead'],
 						'href' => '?search='.$search.$name.'.',
+						'good' => !empty($record['name']),
+						'bad' => !empty($temp['tags']) && !in_array($tagTarget, $temp['tags']),
 					];
 				}
 			}
@@ -108,15 +124,13 @@ trait TagsServiceTrait
 
 		foreach ($result as $index => &$meta)
 		{
-			if ($lastCount == $meta['cnt'])
+			if ($lastCount != $meta['cnt'])
 			{
-				$meta['weight'] = $lastWeight;
-			}
-			else
-			{
-				$meta['weight'] = $lastWeight = max($lastWeight - 1, (int)ceil(10 - $index / $chunk));
 				$lastCount = $meta['cnt'];
+				$lastWeight = max($lastWeight - 1, (int)ceil(10 - $index / $chunk));
 			}
+
+			$meta['weight'] = $lastWeight;
 		}
 
 		usort($result, function($a, $b) {
@@ -247,8 +261,9 @@ trait TagsServiceTrait
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface|string|int $entity
 	 * @param string $table
+	 * @param bool $insert
 	 */
-	protected function _tagsCommitFinished($entity, $table)
+	protected function _tagsCommitFinished($entity, $table, $insert)
 	{
 		$parameters = $entity->getProperty('parameters');
 		$tags = array_map('normalizeTag', empty($parameters['tags']) ? ['флаг: без ярлыков'] : $parameters['tags']);
@@ -256,6 +271,11 @@ trait TagsServiceTrait
 
 		if (isset($this->_connection) && $id = $entity->getId())
 		{
+			if ($insert)
+			{
+				$tags[] = normalizeTag('Флаг: непросмотренные');
+			}
+
 			if ($this instanceof AbstractService)
 			{
 				$result = $this->notify(TagsServiceInterface::STATE_TAGS_GENERATE, $tags, clone $entity);

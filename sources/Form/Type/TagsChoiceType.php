@@ -66,6 +66,7 @@ class TagsChoiceType extends AbstractType
 			'validation_groups' => false,
 			'multiple'          => true,
 			'choices'           => $choices,
+			'filter'            => '',
 		));
 	}
 
@@ -75,7 +76,22 @@ class TagsChoiceType extends AbstractType
 	public function buildView(FormView $view, FormInterface $form, array $options)
 	{
 		$service = $this->_application->getServiceTags();
-		$list = $service->selectEntities(0, 100, 'code', TagsInterface::PROP_KIND, TagsInterface::KIND_STANDARD);
+
+		$filter = [
+			TagsInterface::PROP_KIND => TagsInterface::KIND_STANDARD,
+		];
+
+		if (!empty($options['filter']))
+		{
+			if ($list = $service->selectEntities(0, 1, null, 'tag', $options['filter']))
+			{
+				/** @var TagsInterface $record */
+				$record = reset($list);
+				$filter['tag'] = $record->getName();
+			}
+		}
+
+		$list = $service->selectEntities(0, 100, 'code', array_keys($filter), array_values($filter));
 
 		/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $entity */
 		foreach ($list as $entity)

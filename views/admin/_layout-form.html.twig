@@ -1,0 +1,87 @@
+{% extends "@PlatformCMS/admin/_layout.html.twig" %}
+
+{% block content %}
+	{% form_theme form '@PlatformCMS/forms/content.html.twig' %}
+	{%- if lockToken|default(false) -%}
+		<div id="lock-token" data-value="{{ lockToken }}"></div>
+	{%- endif -%}
+
+	{% block workarea %}
+	{% endblock %}
+
+	<div class="row">
+		<div class="col-md-8 col-sm-12"{% if app.getOption("content.history") %} id="comment-area"{% endif %}>
+		</div>
+		<div class="col-md-4 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group" id="buttons-area">
+				<br class="visible-sm visible-xs"/>
+			</div>
+		</div>
+	</div>
+
+	<br/>
+
+	{% if history|default({})|length %}
+		{%- block history -%}
+			<br/>
+			<div class="row">
+				<div class="col-md-12">
+					<h3>Последнии обновления</h3>
+					{%- for record in history -%}
+						{%- set diff = record.parameters -%}
+						<ol id="history-{{ record.id }}" class="breadcrumb">
+							<li>
+								<time data-timestamp="{{ record.createdAt }}" data-format="j M Y,\&amp;\n\b\s\p\;H:i">
+									{{- record.createdAt|date("j M Y,\\&\\n\\b\\s\\p\\;H:i")|raw -}}
+								</time>
+								{%- if record.updatedAt and record.createdAt|date != record.updatedAt|date -%}
+									{{- " &#247; " -}}
+									<time data-timestamp="{{ record.updatedAt }}" data-format="H:i">
+										{{- record.updatedAt|date("H:i")|raw -}}
+									</time>
+								{%- endif -%}
+							</li>
+							<li>{{ record.createdBy }}</li>
+						</ol>
+
+						<div class="history-changes">
+							<ul>
+								{%- block history_changes -%}
+									{% if diff["parameters.tags"]|default(false) %}
+										<li>
+											<strong>Ярлыки</strong>
+											<span> были обновлены. </span>
+											{%- if diff["parameters.tags"][0] -%}
+												{%- if diff["parameters.tags"][0]|length > 1 -%}
+													<span> Удалены: </span>
+												{%- else -%}
+													<span> Удалён ярлык </span>
+												{%- endif -%}
+												<i>{{ '«' ~ diff["parameters.tags"][0]|join('», «') ~ '»' }}</i>.
+											{%- endif -%}
+											{%- if diff["parameters.tags"][1] -%}
+												{%- if diff["parameters.tags"][1]|length > 1 -%}
+													<span> Добавлены: </span>
+												{%- else -%}
+													<span> Добавлен ярлык </span>
+												{%- endif -%}
+												<i>{{ '«' ~ diff["parameters.tags"][1]|join('», «') ~ '»' }}</i>.
+											{%- endif -%}
+										</li>
+									{% endif %}
+								{%- endblock history_changes -%}
+							</ul>
+
+							{%- if diff["parameters.comment"]|default(false) -%}
+								{{ diff["parameters.comment"]|markdown }}
+							{%- endif -%}
+						</div>
+						<br/>
+					{%- endfor -%}
+				</div>
+			</div>
+		{%- endblock history -%}
+	{% endif %}
+
+	{{- parent() -}}
+{% endblock %}

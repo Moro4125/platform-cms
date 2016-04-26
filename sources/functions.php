@@ -1,5 +1,15 @@
 <?php
 /**
+ * @param string $name
+ * @param mixed $default
+ * @return mixed
+ */
+function v($name, $default = null)
+{
+	return array_key_exists($name, $GLOBALS) ? $GLOBALS[$name] : $default;
+}
+
+/**
  * @param string $string
  * @return int
  */

@@ -4,13 +4,14 @@
  */
 namespace Moro\Platform;
 use \Silex\Provider\DoctrineServiceProvider;
-use \Silex\Provider\SecurityServiceProvider;
 use \Silex\Provider\UrlGeneratorServiceProvider;
 use \Silex\Provider\TwigServiceProvider;
 use \Silex\Provider\ValidatorServiceProvider;
 use \Silex\Provider\TranslationServiceProvider;
 use \Silex\Provider\HttpFragmentServiceProvider;
 use \Silex\Provider\SessionServiceProvider;
+use \Silex\Provider\RememberMeServiceProvider;
+use \Silex\Provider\SwiftmailerServiceProvider;
 use \Symfony\Component\HttpKernel\Fragment\SsiFragmentRenderer;
 use \Saxulum\SaxulumBootstrapProvider\Silex\Provider\SaxulumBootstrapProvider;
 use \Monolog\Logger;
@@ -31,6 +32,7 @@ use \Moro\Platform\Provider\HttpCacheServiceProvider;
 use \Moro\Platform\Provider\Twig\ApplicationExtension;
 use \Moro\Platform\Provider\Twig\MarkdownExtension;
 use \Moro\Platform\Provider\SentryProvider;
+use \Moro\Platform\Provider\SecurityServiceProvider;
 use \Moro\Platform\Security\User\ApiKeyUserProvider;
 use \Moro\Platform\Security\Encoder\SaltLessPasswordEncoder;
 use \Moro\Platform\Model\Accessory\EventBridgeBehavior;
@@ -49,6 +51,8 @@ use \Moro\Platform\Model\Implementation\Relink\ServiceRelink;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
 use \Moro\Platform\Model\Implementation\ApiKey\ServiceApiKey;
 use \Moro\Platform\Model\Implementation\History\ServiceHistory;
+use \Moro\Platform\Model\Implementation\Users\ServiceUsers;
+use \Moro\Platform\Model\Implementation\Users\Auth\ServiceUsersAuth;
 use \Moro\Platform\Tools\Relink;
 use \Moro\Platform\Tools\DiffMatchPatch;
 
@@ -58,21 +62,6 @@ Application::getInstance(function (Application $app)
 	$adminPrefix = (!defined('INDEX_PAGE') || INDEX_PAGE !== 'admin')
 		? '^/admin'
 		: '^.*';
-
-	// Read users from INI file (section "access").
-	$users = $app->getOptions('access');
-
-	if (count($users) > 1)
-	{
-		unset($users['singleton']);
-	}
-
-	foreach ($users as &$user)
-	{
-		$rights = array_map('trim', explode(',', $user));
-		$secret = array_pop($rights);
-		$user = [$rights, $secret];
-	}
 
 	// Read groups hierarchy from INI file (section "groups").
 	$groups = $app->getOptions('groups');
@@ -89,15 +78,26 @@ Application::getInstance(function (Application $app)
 				'pattern' => $adminPrefix.'/platform',
 				'api_key' => true,
 				'stateless' => true,
+				'form' => ['login_path' => '/login.html', 'check_path' => '/action/auth/login.php'],
+			],
+			'login' => [
+				'pattern' => $adminPrefix.'/(register|login|restore).html',
+				'anonymous' => true,
 			],
 			'admin' => [
 				'pattern' => $adminPrefix,
-				'http' => true,
-				'users' => $users,
+				'form' => ['login_path' => '/login.html', 'check_path' => '/action/auth/login.php'],
+				'logout' => ['logout_path' => '/action/auth/logout.php', 'invalidate_session' => true],
+				'remember_me' => [
+					'key' => $app->getOption('validation.key'),
+				],
 			],
 			'public' => [
 				'pattern'   => '^.*$',
 				'anonymous' => true,
+				'remember_me' => [
+					'key' => $app->getOption('validation.key'),
+				],
 			]
 		],
 		'security.role_hierarchy' => $groups,
@@ -107,13 +107,59 @@ Application::getInstance(function (Application $app)
 			[$adminPrefix.'/panel/content/images?',   'ROLE_RS_IMAGES'],
 			[$adminPrefix.'/panel/content/relink',    'ROLE_RS_RELINK'],
 			[$adminPrefix.'/panel/content/tags?',     'ROLE_RS_TAGS'],
-			[$adminPrefix.'/panel/pages',             'ROLE_USER'],
-			[$adminPrefix.'/panel/help',              'ROLE_USER'],
-			[$adminPrefix.'/panel$',                  'ROLE_USER'],
+			[$adminPrefix.'/panel/users/profiles?',   'ROLE_RS_USERS'],
+			[$adminPrefix.'/panel/pages',             'ROLE_RS_PANEL'],
+			[$adminPrefix.'/panel/help',              'ROLE_RS_PANEL'],
+			[$adminPrefix.'/panel$',                  'ROLE_RS_PANEL'],
 			[$adminPrefix.'/panel',                   'ROLE_ADMIN'],
-			[$adminPrefix.'/platform',                'ROLE_USER'],
+			[$adminPrefix.'/platform/users/reset-password', 'ROLE_WANT_RESET_PASSWORD'],
+			[$adminPrefix.'/platform/users/apply-rights',   'ROLE_WANT_CONFIRM_SOCIAL'],
+			[$adminPrefix.'/platform/users/disable-social', 'ROLE_WANT_DISABLE_SOCIAL'],
+			[$adminPrefix.'/platform',                      'ROLE_USER'],
 		],
 	]);
+
+	$app['hybridauth.providers'] = $app->share(function() use ($app) {
+		$socialOptions = $app->getOptions('social');
+		$projectPath = $app->getOption('path.project');
+		$vkPath = '/vendor/hybridauth/hybridauth/additional-providers/hybridauth-vkontakte/Providers/Vkontakte.php';
+
+		return [
+			'Google' => [
+				'enabled'    => $socialOptions['google.active'],
+				'keys' => [
+					'id'     => $socialOptions['google.clientId'],
+					'secret' => $socialOptions['google.appSecret'],
+				],
+				'scope'      => 'https://www.googleapis.com/auth/userinfo.profile '.
+								'https://www.googleapis.com/auth/userinfo.email',
+				'access_type'=> 'online',
+			],
+			'Vkontakte' => [
+				'enabled'    => $socialOptions['vkontakte.active'],
+				'keys' => [
+					'id'     => $socialOptions['vkontakte.clientId'],
+					'secret' => $socialOptions['vkontakte.appSecret'],
+				],
+				'scope'      => 'email',
+				'wrapper' => [
+					'path'   => $projectPath.$vkPath,
+					'class'  => 'Hybrid_Providers_Vkontakte',
+				],
+			],
+			'Facebook' => [
+				'enabled'    => $socialOptions['facebook.active'],
+				'keys' => [
+					'id'     => $socialOptions['facebook.clientId'],
+					'secret' => $socialOptions['facebook.appSecret'],
+				],
+				'scope'      => 'email',
+			],
+		];
+	});
+
+	// Remember_me provider for security service.
+	$app->register(new RememberMeServiceProvider());
 
 	// API key Provider.
 	$app->register(new ApiKeyServiceProvider(), [
@@ -234,6 +280,12 @@ Application::getInstance(function (Application $app)
 	// Imagine Service Provider.
 	$app->register(new ImagineServiceProvider());
 
+	// SwiftMailer Service Provider.
+	$app->register(new SwiftmailerServiceProvider(), [
+		'swiftmailer.use_spool' => false,
+		'swiftmailer.options' => $app->getOptions('mailer'),
+	]);
+
 	// Sentry Provider (Raven).
 	if ($app->getOption('sentry.active'))
 	{
@@ -318,7 +370,7 @@ Application::getInstance(function (Application $app)
 		$service = new $class($app->getServiceDataBase());
 		$service->setServiceUser($app->getServiceSecurityToken());
 
-		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && !$app->isGranted('ROLE_RS_ALIEN_RECORDS'))
 		{
 			$service->setClient($app->getServiceSecurityToken()->getUsername());
 			$service->attach($app->getBehaviorClientRole());
@@ -386,7 +438,7 @@ Application::getInstance(function (Application $app)
 			]));
 		}
 
-		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && !$app->isGranted('ROLE_RS_ALIEN_RECORDS'))
 		{
 			$service->attach($app->getBehaviorClientRole());
 		}
@@ -430,7 +482,7 @@ Application::getInstance(function (Application $app)
 			$service->appendDecorator(new HeadingFileDecorator($app));
 		}
 
-		if ($app->getServiceSecurityAcl() && $app->isGranted('ROLE_CLIENT'))
+		if ($app->getServiceSecurityAcl() && !$app->isGranted('ROLE_RS_ALIEN_RECORDS'))
 		{
 			$service->attach($app->getBehaviorClientRole());
 		}
@@ -486,6 +538,35 @@ Application::getInstance(function (Application $app)
 		/** @var ServiceTags $service */
 		$service = new $class($app->getServiceDataBase());
 		$service->setServiceCode(Application::SERVICE_API_KEY);
+
+		return $service;
+	});
+
+	// Service USERS.
+	$app[Application::SERVICE_USERS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$class = $app->offsetGet(Application::SERVICE_USERS.$suffixClass, ServiceUsers::class);
+
+		/** @var ServiceUsers $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_USERS);
+		$service->setServiceUser($app->getServiceSecurityToken());
+		$service->setServiceUsersAuth($app->getServiceUsersAuth());
+		$service->setLogger($app->getServiceLogger());
+		$service->attach($app->getBehaviorTags());
+
+		$service->setLockTime($lockTime);
+
+		return $service;
+	});
+
+	// Service USERS_AUTH.
+	$app[Application::SERVICE_USERS_AUTH] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$class = $app->offsetGet(Application::SERVICE_USERS_AUTH.$suffixClass, ServiceUsersAuth::class);
+
+		/** @var ServiceUsersAuth $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_USERS_AUTH);
+		$service->setLogger($app->getServiceLogger());
 
 		return $service;
 	});
@@ -578,12 +659,40 @@ Application::getInstance(function (Application $app)
 			]);
 		}
 
+		$flag = $access->isGranted('ROLE_RS_USERS');
+
+		$item = $menu->addChild('Пользователи', [
+			'route' => 'admin-users-profiles',
+			'display' => $flag,
+		]);
+
+		if ($access->isGranted('ROLE_RS_USERS'))
+		{
+			$item->addChild('Карточки', [
+				'route' => 'admin-users-profiles',
+				'display' => true
+			]);
+
+			$item->addChild('Редактирование карточки', [
+				'route' => 'admin-users-profiles-update',
+				'routeParameters' => [
+					'id' => (int)$app['request']->attributes->get('id', 0)
+				],
+				'display' => false
+			]);
+		}
+
 		if (strncmp($url = $app->url('index'), '#error', 6))
 		{
 			$menu->addChild('Предпросмотр', ['uri' => $url]);
 		}
 
-		$menu->addChild('Публикация', ['route' => 'admin-compile-list']);
+		if ($access->isGranted('ROLE_CLIENT') || $access->isGranted('ROLE_EDITOR'))
+		{
+			$menu->addChild('Публикация', ['route' => 'admin-compile-list']);
+		}
+
+		$menu->addChild('Выход', ['route' => 'action_auth_logout.php']);
 
 		return $menu;
 	};
@@ -594,8 +703,15 @@ Application::getInstance(function (Application $app)
 		return $menu->getChild('Материалы');
 	};
 
+	$app['admin_users_menu'] = function() use ($app) {
+		/** @var \Knp\Menu\MenuItem $menu */
+		$menu = $app['admin_main_menu'];
+		return $menu->getChild('Пользователи');
+	};
+
 	$app['knp_menu.menus'] = array_merge(isset($app['knp_menu.menus']) ? $app['knp_menu.menus'] : [], [
 		'admin_main'    => 'admin_main_menu',
 		'admin_content' => 'admin_content_menu',
+		'admin_users'   => 'admin_users_menu',
 	]);
 });

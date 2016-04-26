@@ -436,6 +436,35 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		});
 	});
 
+	jQuery(".ban_user_auth").each(function() {
+		var self = jQuery(this),
+			link = self.data('url');
+
+		self.html('<a href="#"><span class="glyphicon glyphicon-lock"></span></a>');
+		jQuery("a", self).on({
+			click: function() {
+				jQuery.ajax({
+					method:   "POST",
+					url:      link,
+					dataType: "text"
+				})
+				.done(function(result) {
+					var row = jQuery(self.context.nextElementSibling);
+
+					if (result == "1") {
+						row.addClass("g-banned");
+					}
+					else {
+						row.removeClass("g-banned");
+					}
+				});
+
+				return false;
+			}
+		});
+
+	});
+
 	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])selected=(\d+(?:,\d+)*)/))) {
 		match = match[1].split(",");
 

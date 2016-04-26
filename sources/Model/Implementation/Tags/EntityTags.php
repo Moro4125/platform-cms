@@ -3,7 +3,6 @@
  * Class EntityTags
  */
 namespace Moro\Platform\Model\Implementation\Tags;
-
 use \Moro\Platform\Model\Exception\ReadOnlyPropertyException;
 
 /**

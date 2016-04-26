@@ -17,6 +17,13 @@ class PrefixAction
 	 */
 	public function __invoke(Application $application)
 	{
-		return $application->redirect($application->url('admin-about'));
+		if ($application->isGranted('ROLE_RS_PANEL'))
+		{
+			return $application->redirect($application->url('admin-about'));
+		}
+		else
+		{
+			return $application->redirect($application->url('users-login'));
+		}
 	}
 }

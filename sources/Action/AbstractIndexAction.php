@@ -59,6 +59,11 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	public $useCode = true;
 
 	/**
+	 * @var bool  Флаг использования поиска по адресу эл.почты.
+	 */
+	public $useEmail = false;
+
+	/**
 	 * @var bool  Флаг использования поиска по числовому идентификатору.
 	 */
 	public $useId = true;
@@ -188,9 +193,9 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			}
 		}
 
-		$createdBy = $this->getApplication()->getServiceSecurityAcl()->isGranted('ROLE_CLIENT')
-			? $this->getApplication()->getServiceSecurityToken()->getUsername()
-			: null;
+		$createdBy = $this->getApplication()->getServiceSecurityAcl()->isGranted('ROLE_RS_ALIEN_RECORDS')
+			? null
+			: $this->getApplication()->getServiceSecurityToken()->getUsername();
 
 		$title = $search ?( $search.' / ' ):( $searchTags ? implode(', ', array_keys($searchTags)).' / ' : '' );
 
@@ -265,6 +270,14 @@ abstract class AbstractIndexAction extends AbstractContentAction
 				$_where = array_merge($where, ['~code']);
 				$_value = array_merge($value, [ltrim(strtr($search, ['.html' => '']), '/')]);
 				$_order = 'code';
+				continue;
+			}
+
+			if ($this->useEmail && empty($useEmail) && $useEmail = true)
+			{
+				$_where = array_merge($where, ['~email']);
+				$_value = array_merge($value, [explode('@', $search)[0]]);
+				$_order = 'email';
 				continue;
 			}
 

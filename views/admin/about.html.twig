@@ -8,18 +8,24 @@
 					<span>Статистика</span>
 				</div>
 				<ul class="list-group">
+					{% if app.isGranted("ROLE_CLIENT") or app.isGranted("ROLE_EDITOR") %}
 					<li class="list-group-item">
 						<span class="badge">{{ app.serviceRoutes.count - app.serviceRoutes.count("route", "inner") }}</span>
 						<span>Страницы</span>
 					</li>
-					<li class="list-group-item">
-						<span class="badge">{{ app.serviceContent.count }}</span>
-						<span>Тексты</span>
-					</li>
-					<li class="list-group-item">
-						<span class="badge">{{ app.serviceFile.getCount("kind", "1x1") }}</span>
-						<span>Изображения</span>
-					</li>
+					{% endif %}
+					{% if app.isGranted("ROLE_RS_ARTICLES") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceContent.count }}</span>
+							<span>Тексты</span>
+						</li>
+					{% endif %}
+					{% if app.isGranted("ROLE_RS_IMAGES") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceFile.getCount("kind", "1x1") }}</span>
+							<span>Изображения</span>
+						</li>
+					{% endif %}
 					{% if app.isGranted("ROLE_RS_RELINK") %}
 						<li class="list-group-item">
 							<span class="badge">{{ app.serviceRelink.count }}</span>
@@ -30,6 +36,12 @@
 						<li class="list-group-item">
 							<span class="badge">{{ app.serviceTags.count }}</span>
 							<span>Ярлыков</span>
+						</li>
+					{% endif %}
+					{% if app.isGranted("ROLE_RS_USERS") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceUsers.count }}</span>
+							<span>Пользователи</span>
 						</li>
 					{% endif %}
 				</ul>
@@ -75,8 +87,8 @@
 				<h3>Утилиты</h3>
 				<ul>
 					<li>
-						<a href="{{ app.url('admin-password', {login: 'login', password: 'password'}) }}">
-							Генерация хэша пароля пользователя
+						<a href="{{ app.url('/action/navigate.php', {next: app.url('users-login')}) }}">
+							Форма авторизации
 						</a>
 					</li>
 				</ul>

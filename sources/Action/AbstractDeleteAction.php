@@ -155,7 +155,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 		if (count($list) == 1)
 		{
-			if ($service->deleteEntityById($list[0]->getId()))
+			if ($service->deleteEntityById($list[0]->getId(), null, $application))
 			{
 				$application->getServiceFlash()->success('Запись была успешно удалена.');
 				return $application->redirect(
@@ -176,7 +176,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 			foreach ($list as $entity)
 			{
-				$count += (int)$service->deleteEntityById($entity->getId());
+				$count += (int)$service->deleteEntityById($entity->getId(), null, $application);
 			}
 
 			$application->getServiceFlash()->success('Количество удаленных записей: '.$count);

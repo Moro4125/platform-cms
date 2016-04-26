@@ -160,11 +160,11 @@ class ServiceApiKey extends AbstractService
 		for ($i = 2; $i; $i--)
 		{
 			$record = [
-					ApiKeyInterface::PROP_KEY     => sprintf('%08x%08x%08x%08x', mt_rand(), mt_rand(), mt_rand(), mt_rand()),
-					ApiKeyInterface::PROP_USER    => $user,
-					ApiKeyInterface::PROP_ROLES   => $groups ? implode(',', $groups) : '',
-					ApiKeyInterface::PROP_TARGET  => $target,
-					ApiKeyInterface::PROP_COUNTER => intval($counter) ?: -1,
+				ApiKeyInterface::PROP_KEY     => sprintf('%08x%08x%08x%08x', mt_rand(), mt_rand(), mt_rand(), mt_rand()),
+				ApiKeyInterface::PROP_USER    => $user,
+				ApiKeyInterface::PROP_ROLES   => $groups ? implode(',', $groups) : '',
+				ApiKeyInterface::PROP_TARGET  => $target,
+				ApiKeyInterface::PROP_COUNTER => intval($counter) ?: -1,
 			];
 
 			try

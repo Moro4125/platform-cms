@@ -72,8 +72,12 @@ trait TagsEntityTrait
 		if ($this instanceof ParametersInterface)
 		{
 			$parameters = $this->getParameters();
-			$tags = array_diff(empty($parameters['tags']) ? [] : $parameters['tags'], $tags);
-			$parameters['tags'] = array_values($tags);
+
+			$oldTags = array_unique(empty($parameters['tags']) ? [] : $parameters['tags']);
+			$oldTags = array_combine($oldTags, array_map('normalizeTag', $oldTags));
+			$delTags = array_map('normalizeTag', $tags);
+
+			$parameters['tags'] = array_keys(array_diff($oldTags, $delTags));
 			$this->setParameters($parameters);
 
 			return $this;
@@ -90,8 +94,9 @@ trait TagsEntityTrait
 	{
 		if ($this instanceof ParametersInterface)
 		{
+			$tag = normalizeTag($tag);
 			$parameters = $this->getParameters();
-			return !empty($parameters['tags']) && in_array($tag, $parameters['tags'], true);
+			return !empty($parameters['tags']) && in_array($tag, array_map('normalizeTag', $parameters['tags']), true);
 		}
 
 		throw new BadMethodCallException(__METHOD__);

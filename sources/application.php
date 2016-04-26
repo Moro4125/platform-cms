@@ -11,6 +11,8 @@ use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpFoundation\StreamedResponse;
 use \Silex\Application as CApplication;
+use \ArrayObject;
+use \DateTime;
 use \RuntimeException;
 use \Exception;
 
@@ -28,7 +30,7 @@ class Application extends CApplication
 	use \Silex\Application\MonologTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "1.13";
+	const PLATFORM_VERSION = "2.0";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -46,11 +48,14 @@ class Application extends CApplication
 	const SERVICE_RELINK              = 'srv.relink';
 	const SERVICE_RELINK_TOOL         = 'srv.tool.relink';
 	const SERVICE_TAGS                = 'srv.tags';
+	const SERVICE_USERS               = 'srv.users';
+	const SERVICE_USERS_AUTH          = 'srv.users_auth';
 	const SERVICE_API_KEY             = 'srv.api_key';
 	const SERVICE_HISTORY             = 'srv.history';
 	const SERVICE_DIFF_MATCH_PATCH    = 'srv.tool.diff';
 	const SERVICE_IMAGINE             = 'imagine';
 	const SERVICE_SENTRY              = 'sentry';
+	const SERVICE_MAILER              = 'mailer';
 
 	const BEHAVIOR_TAGS               = 'behavior.tags';
 	const BEHAVIOR_HEADINGS           = 'behavior.headings';
@@ -63,6 +68,7 @@ class Application extends CApplication
 	const HEADER_DO_NOT_SAVE  = 'X-Do-Not-Save';
 	const HEADER_CACHE_TAGS   = 'X-Cache-Tags';
 	const HEADER_CACHE_FILE   = 'X-Cache-File';
+	const HEADER_WITHOUT_BAR  = 'X-Without-Bar';
 	const HEADER_SURROGATE    = 'Surrogate-Capability';
 	const HEADER_ACCEPT       = 'Accept';
 
@@ -90,6 +96,11 @@ class Application extends CApplication
 	 * @var bool
 	 */
 	private static $_disableCallback;
+
+	/**
+	 * @var bool
+	 */
+	protected static $_actionFired;
 
 	/**
 	 * @var array  Параметры приложения для текущего окружения.
@@ -331,6 +342,71 @@ class Application extends CApplication
 		return $application;
 	}
 
+
+	/**
+	 * @param null|callable $callback
+	 * @param null|callable $middleware
+	 */
+	public static function action(callable $callback = null, callable $middleware = null)
+	{
+		if (!self::$_actionFired)
+		{
+			self::$_actionFired = true;
+			$app = static::getInstance();
+			$context = new ArrayObject();
+
+			header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0', true);
+			header('Pragma: no-cache');
+			header('Date: '.strtr(date(DateTime::RFC822), ['+0000' => 'GMT']));
+			header('Expires: '.strtr(date(DateTime::RFC1123, time() - 24*3660), ['+0000' => 'GMT']));
+
+			/** @var \Silex\ControllerCollection $controllers */
+			$controllers = $app['controllers'];
+			$collection = $controllers->flush();
+
+			$middleware || $middleware = function($next) {
+				return $next();
+			};
+
+			$app->match('/', function(Request $request) use ($app, $callback, $middleware, $context, $collection) {
+				$app['routes']->addCollection($collection);
+
+				return $middleware(function() use ($app, $request, $callback, $context) {
+					$result = $callback ? $callback($app, $request, $context) : null;
+
+					if ($result instanceof Response)
+					{
+						return $result;
+					}
+
+					if (is_string($result))
+					{
+						return new Response($result);
+					}
+
+					if (is_array($result))
+					{
+						foreach ($result as $key => $value)
+						{
+							$$key = $value;
+						}
+					}
+
+					ob_start();
+					unset($result, $request, $context);
+
+					/** @noinspection PhpIncludeInspection */
+					@include $_SERVER['SCRIPT_FILENAME'];
+
+					return new Response(ob_get_clean());
+				}, $context);
+			});
+
+			$app->run();
+			exit();
+		}
+	}
+
 	/**
 	 * Convert some data into a JSON response.
 	 *
@@ -400,14 +476,21 @@ class Application extends CApplication
 
 			if (!empty($parameters['roles']))
 			{
-				$user = $this->getServiceSecurityToken()->getUsername();
+				$user = empty($parameters['user']) ? $this->getServiceSecurityToken()->getUsername() : $parameters['user'];
 				$roles = explode(',', $parameters['roles']);
-				$apiKeyEntity = $this->getServiceApiKey()->createEntityForUserAndTarget($user, $route, $roles);
+				$counter = empty($parameters['counter']) ? null : (int)$parameters['counter'];
+				$apiKeyEntity = $this->getServiceApiKey()->createEntityForUserAndTarget($user, $route, $roles, $counter);
 				$parameters['apikey'] = $apiKeyEntity->getKey();
-				unset($parameters['roles']);
+				unset($parameters['roles'], $parameters['user'], $parameters['counter']);
 			}
 
 			$url = $this['url_generator']->generate($route, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
+
+			if (self::$_actionFired)
+			{
+				$url = preg_replace('{^(https?://[^/]+)?(/.*?\\.php)}', '$1', $url, 1);
+				$url = preg_replace('{/admin/(index\\.php/)?}', '/admin/index.php/', $url, 1);
+			}
 		}
 		catch (Exception $exception)
 		{
@@ -795,6 +878,30 @@ class Application extends CApplication
 	public function getServiceDiffMatchPatch()
 	{
 		return $this->offsetGet(self::SERVICE_DIFF_MATCH_PATCH);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Implementation\Users\ServiceUsers
+	 */
+	public function getServiceUsers()
+	{
+		return $this->offsetGet(self::SERVICE_USERS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Implementation\Users\Auth\ServiceUsersAuth
+	 */
+	public function getServiceUsersAuth()
+	{
+		return $this->offsetGet(self::SERVICE_USERS_AUTH);
+	}
+
+	/**
+	 * @return \Swift_Mailer
+	 */
+	public function getServiceMailer()
+	{
+		return $this->offsetGet(self::SERVICE_MAILER);
 	}
 
 	/**

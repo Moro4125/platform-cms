@@ -352,6 +352,7 @@ table.admin-list {
 }
 
 table.admin-list .nowrap-row {
+    position: relative;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -384,18 +385,23 @@ form > table.table {
     text-align: center;
     padding-bottom: 1em;
     background-color: #fff;
+    font-size: 100%;
 }
 .tags-cloud a {
     white-space: pre;
-    font-size: 118%;
+}
+
+.tags-cloud a.tag-weight-10 {
+    opacity: 1;
+    font-size: 124%;
 }
 .tags-cloud a.tag-weight-9 {
     opacity: 0.91;
-    font-size: 116%;
+    font-size: 121%;
 }
 .tags-cloud a.tag-weight-8 {
     opacity: 0.82;
-    font-size: 114%;
+    font-size: 117%;
 }
 .tags-cloud a.tag-weight-7 {
     opacity: 0.73;
@@ -403,30 +409,39 @@ form > table.table {
 }
 .tags-cloud a.tag-weight-6 {
     opacity: 0.64;
-    font-size: 110%;
+    font-size: 107%;
 }
 .tags-cloud a.tag-weight-5 {
     opacity: 0.55;
-    font-size: 108%;
+    font-size: 102%;
 }
 .tags-cloud a.tag-weight-4 {
     opacity: 0.46;
-    font-size: 106%;
+    font-size: 97%;
 }
 .tags-cloud a.tag-weight-3 {
     opacity: 0.37;
-    font-size: 104%;
+    font-size: 92%;
 }
 .tags-cloud a.tag-weight-2 {
     opacity: 0.28;
-    font-size: 102%;
+    font-size: 87%;
 }
 .tags-cloud a.tag-weight-1 {
     opacity: 0.19;
-    font-size: 100%;
+    font-size: 82%;
 }
+
 .tags-cloud a:hover {
     opacity: 1;
+}
+
+.tags-cloud a.tag-good {
+    color: #696;
+}
+
+.tags-cloud a.tag-bad {
+    color: #966;
 }
 
 .group_action_bar {
@@ -515,15 +530,19 @@ form > table.table {
     position: relative !important;
 }
 
+.b-diff-text {
+    font-family: monospace, Courier;
+    white-space: pre-wrap;
+}
+
 .history-changes img {
     vertical-align: bottom;
     padding: 1px;
     border: solid 1px silver;
 }
 
-.b-diff-text {
-    font-family: monospace, Courier;
-    white-space: pre-wrap;
+.history-changes > ul + ul {
+    margin-top: -10px;
 }
 
 .history-changes p {
@@ -574,6 +593,16 @@ form > table.table {
 
 #platform-footer > .container > .navbar-text {
     margin-right: 2px;
+}
+
+.auth-info-link {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.g-banned {
+    text-decoration: line-through;
 }
 
 .fix-margins-1 {

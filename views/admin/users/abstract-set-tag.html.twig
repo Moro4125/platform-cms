@@ -1,0 +1,24 @@
+{% extends "@PlatformCMS/admin/users/_form.html.twig" %}
+
+
+{% block workarea %}
+	<h1 class="text-center">Назначение ярлыков</h1>
+	{{ form_start(form) }}
+	<hr/>
+	<div class="row">
+		<div class="col col-xs-12">
+			{{ form_row(form.tags_add) }}
+			{{ form_row(form.tags_del) }}
+		</div>
+	</div>
+	<hr/>
+	<div class="row">
+		<div class="col col-xs-4 col-xs-push-4 text-center">
+			<div class="btn-group">
+				{{ form_widget(form.commit) }}
+				{{ form_widget(form.cancel) }}
+			</div>
+		</div>
+	</div>
+	{{ form_end(form) }}
+{% endblock %}

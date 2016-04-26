@@ -64,10 +64,11 @@ interface ContentActionsInterface extends LockInterface
 	function getEntityById($id, $withoutException = null, $flags = null);
 
 	/**
-	 * @param array $idList
+	 * @param int $id
+	 * @param null|bool $withoutException
 	 * @return integer
 	 */
-	function deleteEntitiesById(array $idList);
+	function deleteEntityById($id, $withoutException = null);
 
 	/**
 	 * @param null|string $filter

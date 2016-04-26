@@ -1,0 +1,87 @@
+{% extends "@PlatformCMS/pages/_layout.html.twig" %}
+
+{%- block head_title -%}
+	Регистрация на сайте {{ app.request.host }}
+{%- endblock -%}
+
+
+{%- block head_meta -%}
+	{{- parent() -}}
+	<style>
+		body { background-color: #f0f0f0; }
+		.btn-label {position: relative;left: -12px;display: inline-block;padding: 6px 12px;background: rgba(0,0,0,0.15);border-radius: 3px 0 0 3px;}
+		.btn-labeled {padding-top: 0;padding-bottom: 0;}
+		.input-group { margin-bottom:10px; }
+		.login-box { padding-top: 1em; }
+		.login-box + .login-box { border-left: solid 1px silver; }
+		.help {font-size: 80%;}
+	</style>
+{%- endblock -%}
+
+
+{%- block workspace -%}
+	<form id="login-form" action="/action/auth/register.php" role="form" method="post">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Регистрация на сайте {{ app.request.host }}
+				</h3>
+			</div>
+
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-6 col-sm-6 col-md-6 login-box">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+							<input name="name" type="text" class="form-control" placeholder="Ваш псевдоним"/>
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+							<input name="email" type="text" class="form-control" placeholder="Ваш e-mail" required autofocus />
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+							<input name="password" type="password" class="form-control" placeholder="Ваш пароль" required />
+						</div>
+					</div>
+					<div class="col-xs-6 col-sm-6 col-md-6 login-box">
+						<div class="input-group">
+							<input name="second_name" type="text" class="form-control" placeholder="Ваша фамилия"/>
+							<span class="input-group-addon"><sup><span class="glyphicon glyphicon-asterisk"></span></sup></span>
+						</div>
+
+						<div class="input-group">
+							<input name="first_name" type="text" class="form-control" placeholder="Ваше имя"/>
+							<span class="input-group-addon"><sup><span class="glyphicon glyphicon-asterisk"></span></sup></span>
+						</div>
+
+						<div class="input-group">
+							<input name="patronymic" type="text" class="form-control" placeholder="Ваше отчество"/>
+							<span class="input-group-addon"><sup><span class="glyphicon glyphicon-asterisk"></span></sup></span>
+						</div>
+
+						<div class="help">
+							<span class="glyphicon glyphicon-asterisk"></span>
+							{{- " &ndash; необязательные поля"|raw -}}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel-footer">
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 text-right" style="line-height: 40px;">
+						<button type="submit" name="enter" class="btn btn-labeled btn-success">
+							<span class="btn-label"><i class="glyphicon glyphicon-ok"></i></span>Зарегистрироваться
+						</button>
+						<a href="/action/navigate.php?back=Y" class="btn btn-labeled btn-danger" style="margin-left: 8px;">
+							<span class="btn-label"><i class="glyphicon glyphicon-remove"></i></span>Отмена
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{%- endblock workspace -%}

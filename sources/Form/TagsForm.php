@@ -94,6 +94,7 @@ class TagsForm extends AbstractContent
 
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
+			'filter'   => 'service:srv.tags',
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($this->_tags, $this->_tags),

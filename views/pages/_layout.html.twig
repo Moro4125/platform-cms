@@ -1,0 +1,18 @@
+{% extends "@PlatformCMS/admin.html5.twig" %}
+
+
+{%- block layout -%}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3 hidden-sm"></div>
+			<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+				{% set close = true %}
+				{% include '@SaxulumBootstrapProvider/flash.html.twig' %}
+
+				<div id="flash-messages"></div>
+				{%- block workspace -%}
+				{%- endblock workspace -%}
+			</div>
+		</div>
+	</div>
+{%- endblock -%}

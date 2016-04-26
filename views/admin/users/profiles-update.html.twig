@@ -1,0 +1,192 @@
+{% extends "@PlatformCMS/admin/users/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+
+	<div class="row">
+		<div class="col-md-6 col-sm-12 col-xs-12">
+			{{ form_row(form.name) }}
+		</div>
+		<div class="col-md-1 col-md-push-0 col-sm-10 col-sm-push-2">
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-sm visible-xs"/>
+				{% if is_granted("ROLE_MODER") and (not locked) and editRights %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
+				<span class="visible-sm"><br/>&nbsp;</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<br class="visible-sm visible-xs"/>
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+	<hr/>
+
+	<div class="row">
+		<div class="col-md-6 col-sm-12 col-xs-12">
+			{{ form_row(form.second_name) }}
+			{{ form_row(form.first_name) }}
+			{{ form_row(form.patronymic) }}
+		</div>
+		<div class="col-md-6 col-sm-12 col-xs-12">
+			{{ form_row(form.email) }}
+			{{ form_row(form.password) }}
+		</div>
+	</div>
+
+	<hr/>
+
+	<div class="row">
+		<div class="col-xs-12">
+			{{ form_widget(form.roles) }}
+		</div>
+	</div>
+
+	{{ form_widget(form) }}
+
+	{% if auth_list|default(false) %}
+		<hr/>
+
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						{{- usedListTitle|default("Записи аутентификации") -}}
+					</div>
+					{% set icon_col_width = 80 %}
+					<table class="table admin-list with-highlight">
+						<colgroup>
+							<col width="24"/>
+							<col width="100%"/>
+						</colgroup>
+						{% for item in auth_list %}
+							{% set failed = item.updated_at > item.order_at %}
+							<tr{% if failed %} class="bg-danger text-danger"{% endif %}>
+								{% if editRights %}
+									<td class="ban_user_auth" data-url="{{ app.url('admin-users-profiles-auth-ban', {id: item.id}) }}"></td>
+								{% else %}
+									<td></td>
+								{% endif %}
+								<td class="name_in_list{% if item.banned %} g-banned{% endif %}">
+									<div class="nowrap-row">
+										{{- item.provider -}}
+										<small class="text-muted{% if failed %} text-danger{% endif %}">
+											{{- "  ●  " -}}
+											<span>
+												{{- item.identifier -}}
+											</span>
+											{{- "  ●  " -}}
+											<time data-timestamp="{{ item.createdAt }}" data-format="j M Y,\&amp;\n\b\s\p\;H:i">
+												{{- item.createdAt|date("j M Y,\\&\\n\\b\\s\\p\\;H:i")|raw -}}
+											</time>
+											{{- " ÷ " -}}
+											<time data-timestamp="{{ item.updatedAt }}" data-format="j M Y,\&amp;\n\b\s\p\;H:i">
+												{{- item.updatedAt|date("j M Y,\\&\\n\\b\\s\\p\\;H:i")|raw -}}
+											</time>
+											{{- "  ●  " -}}
+											<span>
+												{{- item.updated_ip -}}
+											</span>
+											<a class="auth-info-link" href="{{ app.url('admin-users-profiles-auth-info', {id: item.id}) }}" target="_blank">
+												<span class="glyphicon glyphicon-info-sign"></span>
+											</a>
+										</small>
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
+					<div class="panel-footer"></div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+
+	{{ form_end(form) }}
+
+	<hr/>
+{% endblock %}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% set verbs = {
+		"email":                  ["добавлен",  "удалён",  "изменён",  "Был",  "стал"],
+		"parameters.first_name":  ["добавлено", "удалено", "изменено", "Было", "стало"],
+		"parameters.second_name": ["добавлена", "удалена", "изменена", "Была", "стала"],
+		"parameters.patronymic":  ["добавлено", "удалено", "изменено", "Было", "стало"],
+	} %}
+	{% for key, name in {"email": "E-Mail", "parameters.first_name": "Имя", "parameters.second_name": "Фамилия", "parameters.patronymic": "Отчество"} %}
+		{% if diff[key]|default(false) %}
+			<li>
+				<strong>{{ name }}</strong>
+				{% if not diff[key][0] %}
+					<span> {{ verbs[key][0] }}: </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% elseif not diff[key][1] %}
+					<span> {{ verbs[key][1] }}. {{ verbs[key][3] }} </span>
+					<i>«{{ diff[key][0] }}».</i>
+				{% else %}
+					<span> {{ verbs[key][2] }}. {{ verbs[key][3] }} </span>
+					<i>«{{ diff[key][0] }}»,</i>
+					<span> {{ verbs[key][4] }} </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% endif %}
+			</li>
+		{% endif %}
+	{% endfor %}
+
+	{% if diff["parameters.roles"]|default(false) %}
+		<li>
+			<strong>Группы доступа</strong>
+			<span> были обновлены. </span>
+			{%- if diff["parameters.roles"][0] -%}
+				{%- if diff["parameters.roles"][0]|length > 1 -%}
+					<span> Удалены: </span>
+				{%- else -%}
+					<span> Удалена группа </span>
+				{%- endif -%}
+				<i>{{ '«' ~ diff["parameters.roles"][0]|join('», «') ~ '»' }}</i>.
+			{%- endif -%}
+			{%- if diff["parameters.roles"][1] -%}
+				{%- if diff["parameters.roles"][1]|length > 1 -%}
+					<span> Добавлены: </span>
+				{%- else -%}
+					<span> Добавлена группа </span>
+				{%- endif -%}
+				<i>{{ '«' ~ diff["parameters.roles"][1]|join('», «') ~ '»' }}</i>.
+			{%- endif -%}
+		</li>
+	{% endif %}
+
+{%- endblock history_changes -%}

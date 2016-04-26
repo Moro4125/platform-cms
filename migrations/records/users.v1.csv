@@ -1,0 +1,3 @@
+; Used in task.0008.ini
+name     , email               , created_at          , updated_at          , created_by , updated_by , parameters
+Одиночка , singleton@localhost , 2016-04-18 16:20:00 , 2016-04-18 16:20:00 , migration  , migration  , "{""roles"":[""ROLE_ADMIN""]}"

@@ -6,6 +6,7 @@ use \Moro\Platform\Application;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 // ============================================== //
 //    Преобразование объектов запроса и ответа    //
@@ -27,6 +28,11 @@ Application::getInstance(function(Application $app) {
 	// === Формирование страницы для кода 401 ответа сервера.
 	$app->after(function(Request $request, Response $response) use ($app) {
 		$contentType = $response->headers->get('Content-Type');
+
+		if ($contentType == 'application/json')
+		{
+			$response->headers->set('Content-Type', $contentType.'; charset=utf-8', true);
+		}
 
 		if (false === strpos($request->getUri(), '/admin/'))
 		{
@@ -163,9 +169,9 @@ Application::getInstance(function(Application $app) {
 		$ignore = ((bool)$request->query->get('compiled') || $response->headers->get(Application::HEADER_EXPERIMENTAL));
 		$type = $response->headers->get('Content-Type');
 
-		if (!preg_match('{^(GET_|admin-|_)}', $route) && strncmp($type, 'image/', 6))
+		if ($request->isMethod('GET') && !preg_match('{^(GET_|admin-|_)}', $route) && strncmp($type, 'image/', 6))
 		{
-			if ($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT'))
+			if ($app->isGranted('ROLE_EDITOR') || $app->isGranted('ROLE_CLIENT') || !strncmp($route, 'users-', 6))
 			{
 				$title = preg_match('{<title>(.*?)</title>}', $response->getContent(), $match) ? $match[1] : null;
 				$parameters = array_filter($request->attributes->all(), 'is_scalar');
@@ -199,8 +205,9 @@ Application::getInstance(function(Application $app) {
 		$route = $request->get('_route');
 		$contentType = $response->headers->get('Content-Type');
 		$back = rtrim(preg_replace('{\\?(compiled=Y)?|$}', '?compiled=Y&', $request->getRequestUri(), 1), '&');
+		$flag = $request->isMethod('GET') && !$response->headers->has(Application::HEADER_WITHOUT_BAR);
 
-		if (strncmp($route, 'admin-', 6) !== 0 && $route != 'download' && strncmp($contentType, 'text/html', 9) === 0)
+		if (strncmp($route, 'admin-', 6) !== 0 && $flag && strncmp($contentType, 'text/html', 9) === 0)
 		{
 			$url1 = $app->url('admin-compile-list');
 			$url2 = $lastRouteId ? $app->url('admin-compile', ['back' => $back, 'id' => $lastRouteId]) : 0;
@@ -236,5 +243,15 @@ Application::getInstance(function(Application $app) {
 
 			$app->getServiceRoutes()->deleteByFileName($uri);
 		}
+	});
+
+	// === Обработка запрета доступа.
+	$app->error(function(AccessDeniedHttpException $exception) use ($app) {
+		($sentry = $app->getServiceSentry()) && $sentry->captureException($exception);
+		$request = Request::createFromGlobals();
+		$uri = preg_replace('{/[^/]+/?$}', '', explode('?', explode('#', $request->getRequestUri())[0])[0], 1);
+
+		$app->getServiceFlash()->error('Доступ был запрещён');
+		return $app->redirect($uri);
 	});
 });

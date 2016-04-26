@@ -1,0 +1,28 @@
+{% extends "@PlatformCMS/admin/users/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-users-profiles-update", {id: 777}) %}
+	{% set deleteUrl = url("admin-users-profiles-delete", {ids: 777}) %}
+	{{ parent() }}
+{% endblock %}
+
+
+{% block list_column_name__info %}
+	<span class="glyphicon glyphicon-user"></span>
+	{{- "&nbsp;"|raw -}}
+	{{- item.name -}}
+	<small class="text-muted">  ●  {{ item.email }} ● {{ item.parameters.second_name|default("") ~ " " ~ item.parameters.first_name|default("") ~ " " ~ item.parameters.patronymic|default("") }}</small>
+{% endblock %}
+
+
+{% block list_column_name__tags %}
+	{#
+	{% if item.kind == 1 %}
+		<span class="label label-info">синоним</span>
+	{% elseif item.kind == 2 %}
+		<span class="label label-warning">системный</span>
+	{% endif %}
+	#}
+	{{- parent() -}}
+{% endblock %}

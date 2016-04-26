@@ -1,0 +1,106 @@
+{% extends "@PlatformCMS/pages/_layout.html.twig" %}
+
+{%- block head_title -%}
+	Авторизация на сайте {{ app.request.host }}
+{%- endblock -%}
+
+
+{%- block head_meta -%}
+	{{- parent() -}}
+	<style>
+		body { background-color: #f0f0f0; }
+		.btn-label {position: relative;left: -12px;display: inline-block;padding: 6px 12px;background: rgba(0,0,0,0.15);border-radius: 3px 0 0 3px;}
+		.btn-labeled {padding-top: 0;padding-bottom: 0;}
+		.input-group { margin-bottom:10px; }
+		.separator { border-right: 1px solid silver; }
+		.btn.btn-block { min-width:170px; }
+		.Facebook { background-color:#354E84;color:#fff; }
+		.Twitter { background-color:#00A5E3;color:#fff; }
+		.Google { background-color:#1779B3;color:#fff; }
+		.Vkontakte { background-color:#537599;color:#fff; }
+		.login-box { padding-top: 20px;}
+	</style>
+{%- endblock -%}
+
+
+{%- block workspace -%}
+	<form id="login-form" action="{{ path('action_auth_login.php') }}" role="form" method="post">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Авторизация на сайте {{ app.request.host }}
+				</h3>
+			</div>
+
+			<div class="panel-body">
+				<div class="row">
+					{%- if app.getOption("social.active") -%}
+						{%- set colCount = 6 -%}
+						<div class="col-xs-6 col-sm-6 col-md-6 separator social-login-box"> <br />
+							{%- for provider, meta in providers -%}
+								{%- if meta.enabled -%}
+									{%- set href = '/action/auth/social.php?provider=' ~ provider -%}
+									<a href="{{ href }}" class="btn btn-block {{ provider }}" role="button">Войти с помощью {{ provider }}</a>
+									<br/>
+								{%- endif -%}
+							{%- endfor -%}
+						</div>
+					{%- else -%}
+						<div class="col-xs-3 col-sm-3 col-md-3" style="text-align: center; font-size: 72px;">
+							<span class="glyphicon glyphicon-user"></span>
+						</div>
+						{%- set colCount = 9 -%}
+					{%- endif -%}
+
+					<div class="col-xs-{{ colCount }} col-sm-{{ colCount }} col-md-{{ colCount }} login-box">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+							<input name="_username" type="text" class="form-control" placeholder="Ваш e-mail или логин" required autofocus />
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+							<input name="_password" type="password" class="form-control" placeholder="Ваш пароль" required />
+						</div>
+
+						<p>
+							{{- " Забыли свой пароль? " -}}
+							<a href="/action/navigate.php?next={{ app.url('users-restore')|url_encode }}">Сбросить</a>
+							{{- "." -}}
+						</p>
+
+						<p>
+							{{- " Нет аккаунта? " -}}
+							<a href="/action/navigate.php?next={{ app.url('users-register')|url_encode }}">Зарегистрироваться</a>
+							{{- "." -}}
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel-footer">
+				<div class="row">
+					<div class="col-xs-5 col-sm-5 col-md-5">
+						<div class="checkbox">
+							<label>
+								<input name="_remember_me" type="checkbox">
+								{{- " Запомнить меня " -}}
+							</label>
+						</div>
+					</div>
+
+					<div class="col-xs-7 col-sm-7 col-md-7 text-right" style="line-height: 40px;">
+						<button type="submit" name="enter" class="btn btn-labeled btn-success">
+							<span class="btn-label"><i class="glyphicon glyphicon-ok"></i></span>
+							{{- " Войти " -}}
+						</button>
+						<a href="/action/navigate.php?back=Y" class="btn btn-labeled btn-danger" style="margin-left: 8px;">
+							<span class="btn-label"><i class="glyphicon glyphicon-remove"></i></span>
+							{{- " Отмена " -}}
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{%- endblock workspace -%}

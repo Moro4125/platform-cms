@@ -1,0 +1,6 @@
+{% extends "@PlatformCMS/admin/_layout-list.html.twig" %}
+
+{%- block content -%}
+	{{- knp_menu_render('admin_users', {style: 'tabs'}, 'twig') -}}
+	{{- parent() -}}
+{%- endblock -%}
