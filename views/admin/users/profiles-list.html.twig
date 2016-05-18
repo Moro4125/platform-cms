@@ -17,12 +17,13 @@
 
 
 {% block list_column_name__tags %}
-	{#
-	{% if item.kind == 1 %}
-		<span class="label label-info">синоним</span>
-	{% elseif item.kind == 2 %}
-		<span class="label label-warning">системный</span>
-	{% endif %}
-	#}
+	{%- if item.parameters.roles|default(false) -%}
+		{%- for role in item.parameters.roles -%}
+			<span class="label label-info">{{ roles[role]|default(role) }}</span>
+		{%- endfor -%}
+	{%- else -%}
+		<span class="label label-danger">●</span>
+	{%- endif -%}
+
 	{{- parent() -}}
 {% endblock %}

@@ -46,6 +46,20 @@ class UpdateProfilesAction extends AbstractUpdateAction
 			}
 		}
 
+		$choices = array_merge($application['security.role_hierarchy'], ['ROLE_USER' => 0]);
+		$service = $this->_application->getServiceTags();
+
+		foreach ($choices as $role => &$name)
+		{
+			$name = ($list = $service->selectEntities(0, 1, null, 'tag', strtr($role, ['ROLE_' => 'Role: '])))
+					? reset($list)->getName()
+					: $role;
+			$name = explode(':', $name, 2);
+			$name = trim(end($name));
+		}
+
+		$parameters['roles'] = $choices;
+
 		return $parameters;
 	}
 }

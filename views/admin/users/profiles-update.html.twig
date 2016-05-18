@@ -176,7 +176,13 @@
 				{%- else -%}
 					<span> Удалена группа </span>
 				{%- endif -%}
-				<i>{{ '«' ~ diff["parameters.roles"][0]|join('», «') ~ '»' }}</i>.
+				<i>{# {{ '«' ~ diff["parameters.roles"][0]|join('», «') ~ '»' }} #}
+					{% for role in diff["parameters.roles"][0] %}
+						{{- loop.first ? '«' : ', «' -}}
+						{{- roles[role]|default(role) -}}
+						{{- '»' -}}
+					{% endfor %}
+				</i>.
 			{%- endif -%}
 			{%- if diff["parameters.roles"][1] -%}
 				{%- if diff["parameters.roles"][1]|length > 1 -%}
@@ -184,7 +190,14 @@
 				{%- else -%}
 					<span> Добавлена группа </span>
 				{%- endif -%}
-				<i>{{ '«' ~ diff["parameters.roles"][1]|join('», «') ~ '»' }}</i>.
+				<i>
+					{# {{ '«' ~ diff["parameters.roles"][1]|join('», «') ~ '»' }} #}
+					{% for role in diff["parameters.roles"][1] %}
+						{{- loop.first ? '«' : ', «' -}}
+						{{- roles[role]|default(role) -}}
+						{{- '»' -}}
+					{% endfor %}
+				</i>.
 			{%- endif -%}
 		</li>
 	{% endif %}

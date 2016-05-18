@@ -32,4 +32,28 @@ class IndexProfilesAction extends AbstractIndexAction
 	 * @var bool  Флаг использования поиска по адресу эл.почты.
 	 */
 	public $useEmail = true;
+
+	/**
+	 * @return array
+	 */
+	protected function _getViewParameters()
+	{
+		$view = parent::_getViewParameters();
+
+		$choices = array_merge($this->_application['security.role_hierarchy'], ['ROLE_USER' => 0]);
+		$service = $this->_application->getServiceTags();
+
+		foreach ($choices as $role => &$name)
+		{
+			$name = ($list = $service->selectEntities(0, 1, null, 'tag', strtr($role, ['ROLE_' => 'Role: '])))
+				? reset($list)->getName()
+				: $role;
+			$name = explode(':', $name, 2);
+			$name = trim(end($name));
+		}
+
+		$view['roles'] = $choices;
+
+		return $view;
+	}
 }
