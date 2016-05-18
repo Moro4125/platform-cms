@@ -235,11 +235,20 @@ class HistoryBehavior extends AbstractBehavior
 
 	/**
 	 * @param EntityInterface $entity
+	 * @param string $table
+	 * @param bool $insert
 	 */
-	protected function _onCommitFinished(EntityInterface $entity)
+	protected function _onCommitFinished(EntityInterface $entity, $table, $insert)
 	{
 		$id = $entity->getId();
 		$flag = $entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES);
+
+		if ($insert)
+		{
+			/** @var AbstractService $subject */
+			$subject = $this->_context[self::KEY_SUBJECT];
+			$this->_service->deleteByServiceAndEntity($subject->getServiceCode(), $entity->getId());
+		}
 
 		if (isset($this->_context[self::KEY_CACHE][$id]) && !$flag)
 		{
@@ -319,6 +328,8 @@ class HistoryBehavior extends AbstractBehavior
 
 			unset($this->_context[self::KEY_CACHE][$id]);
 		}
+
+		unset($table);
 	}
 
 	/**

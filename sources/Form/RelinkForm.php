@@ -5,7 +5,7 @@
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
-
+use \Moro\Platform\Application;
 
 /**
  * Class RelinkForm
@@ -55,11 +55,14 @@ class RelinkForm extends AbstractContent
 				new NotBlank(['message' => 'Необходимо заполнить поле "Название".']),
 			],
 			'required' => false,
+			'attr' => [
+				'autofocus' => 'autofocus',
+			],
 		]);
 
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
-			'filter'   => 'service:srv.relink',
+			'filter'   => 'service:'.Application::SERVICE_RELINK,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($this->_tags, $this->_tags),

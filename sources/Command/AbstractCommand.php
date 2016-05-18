@@ -77,4 +77,13 @@ abstract class AbstractCommand extends Command
 
 		return is_array($argv) && in_array('--'.$name, $argv, true);
 	}
+
+	/**
+	 * @return \Moro\Platform\Application
+	 */
+	protected function getPlatformApplication()
+	{
+		/** @noinspection PhpUndefinedMethodInspection */
+		return $this->getApplication()->getSilexApplication();
+	}
 }

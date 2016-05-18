@@ -31,7 +31,6 @@ class UsersForm extends AbstractContent
 	/**
 	 * @param int $id
 	 * @param array $tags
-	 * @param array $roles
 	 */
 	public function __construct($id, array $tags)
 	{
@@ -65,6 +64,9 @@ class UsersForm extends AbstractContent
 				]),
 			],
 			'required' => false,
+			'attr' => [
+				'autofocus' => 'autofocus',
+			],
 		]);
 
 		$builder->add('email', 'text', [
@@ -107,7 +109,7 @@ class UsersForm extends AbstractContent
 
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
-			'filter'   => 'service:srv.users',
+			'filter'   => 'service:'.Application::SERVICE_USERS,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($this->_tags, $this->_tags),

@@ -54,7 +54,9 @@
 										</a>
 										{% for tag, url in searchTags %}
 											<span class="btn btn-tag-rm" title="{{ (searchTagsMeta[tag]|default({parameters:{lead:""}})).parameters.lead|default("") }}">
-												{{ tag }}
+												<input type="hidden" name="search[]" value="{{ tag }}">
+												<small class="glyphicon glyphicon-tag"></small>
+												<span class="b-used-tag">{{- tag -}}</span>
 												<a href="{{ url }}" title="Убрать ярлык из условия фильтрации">
 													<span class="glyphicon glyphicon-remove"></span>
 												</a>
@@ -63,7 +65,7 @@
 									</span>
 								{% endif %}
 								{% set placeholder = searchTags|length ? "" : "Фильтр по названию записей или по их ярлыкам" %}
-								<input name="search" type="text" class="form-control" placeholder="{{ placeholder }}" value="{{ search }}">
+								<input name="search[]" type="text" class="form-control" placeholder="{{ placeholder }}" value="{{ search }}">
 								<span class="input-group-btn">
 									<button class="btn btn-default" type="submit">Искать</button>
 								</span>

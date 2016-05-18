@@ -67,7 +67,7 @@ class DownloadAction extends AbstractContentAction
 		$entity = $queue->extract();
 
 		$uri = preg_replace('{^https?://[^/]+|.*index\\.php}', '', $application->url('download', ['file' => $entity]));
-		$target = strtr($application->getOption('path.root').$uri, '/', DIRECTORY_SEPARATOR);
+		$target = explode('?', strtr($application->getOption('path.root').$uri, '/', DIRECTORY_SEPARATOR))[0];
 		$source = $service->getPathForHash($entity->getHash());
 
 		if (!file_exists($target))

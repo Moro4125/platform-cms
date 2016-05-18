@@ -529,8 +529,16 @@ abstract class AbstractService implements SplSubject
 
 				if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 				{
-					$builder->andWhere(ltrim($field, '~!').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
-					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+					if ($field[0] == '|' || $field[1] == '|')
+					{
+						$builder->orWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+						$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+					}
+					else
+					{
+						$builder->andWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+						$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+					}
 				}
 				elseif (is_array($result))
 				{
@@ -887,8 +895,16 @@ abstract class AbstractService implements SplSubject
 
 			if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 			{
-				$builder->andWhere(ltrim($field, '~!').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
-				$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+				if ($field[0] == '|' || $field[1] == '|')
+				{
+					$builder->orWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+				}
+				else
+				{
+					$builder->andWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
+				}
 			}
 			elseif (is_array($result))
 			{

@@ -31,13 +31,20 @@
 
 {% block list_column_name__tags %}
 	<span class="label label-info">{{ item.code }}</span>
-	{% if headingFlag %}
-		{% set heading = item.getHeadingName() %}
-		{% if heading %}
+	{%- if headingFlag -%}
+		{%- set heading = item.getHeadingName() -%}
+		{%- if heading -%}
 			<span class="label label-success">{{ heading }}</span>
-		{% elseif item.getIsDraft() %}
+		{%- elseif item.getIsDraft() -%}
 			<span class="label label-danger">черновик</span>
-		{% endif %}
-	{% endif %}
+		{%- endif -%}
+	{%- endif -%}
+
 	{{- parent() -}}
+
+	{%- if item.parameters.attachments|default(false) -%}
+		{%- for file in item.parameters.attachments -%}
+			<span class="label label-attachment">{{ file }}</span>
+		{%- endfor -%}
+	{%- endif -%}
 {% endblock %}

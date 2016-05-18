@@ -1,12 +1,14 @@
 <?php
 /**
  * Social auth.
+ *
+ * How to use this file in the application:
+ *    require_once __DIR__.'/../../../bootstrap.php'; // Connect this file only once.
+ *    require __DIR__.'/../../../vendor/moro/platform-cms/http/action/auth/social.php';
  */
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\Implementation\Users\Auth\UsersAuthInterface;
 use \Moro\Platform\Security\User\PlatformUserProvider;
-use \Moro\Platform\Provider\Twig\MarkdownExtension;
-use \Aptoma\Twig\Extension\MarkdownEngine\MichelfMarkdownEngine;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Symfony\Component\HttpFoundation\Session\Session;
@@ -180,8 +182,8 @@ Application::action(
 		}
 
 		$content = $response->getContent();
-		$text = strtr($content, ['*' => '', '[' => ' ', ']' => ' ']);
-		$html = (new MarkdownExtension(new MichelfMarkdownEngine()))->parseMarkdown($content);
+		$text = $app->getTwigExtensionMarkdown()->cleanMarkdown($content);
+		$html = $app->getTwigExtensionMarkdown()->parseMarkdown($content);
 
 		/** @var \Swift_Message $message */
 		$message = $app->getServiceMailer()->createMessage();

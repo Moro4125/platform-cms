@@ -605,6 +605,14 @@ form > table.table {
     text-decoration: line-through;
 }
 
+.b-used-tag {
+    padding: 0 8px;
+}
+
+.label-attachment {
+    background-color: #d3c2c2;
+}
+
 .fix-margins-1 {
     margin: 2px 0 0 0 !important;
 }

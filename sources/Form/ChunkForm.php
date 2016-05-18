@@ -49,6 +49,9 @@ class ChunkForm extends AbstractContent
 
 		$builder->add('name', 'text', [
 			'label' => 'Название',
+			'attr' => [
+				'autofocus' => 'autofocus',
+			],
 		]);
 
 		$builder->add('lead', 'textarea', [

@@ -9,7 +9,6 @@ use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
 
-
 /**
  * Class AbstractCreateAction
  * @package Action
@@ -30,6 +29,11 @@ abstract class AbstractCreateAction extends AbstractContentAction
 	 * @var EntityInterface
 	 */
 	protected $_entity;
+
+	/**
+	 * @var array Список ярлыков, присваемых новой записи по-умолчанию.
+	 */
+	protected $_tags;
 
 	/**
 	 * @param \Moro\Platform\Application|SilexApplication $app
@@ -63,13 +67,18 @@ abstract class AbstractCreateAction extends AbstractContentAction
 			return $app->redirect($request->query->get('back') ?: $app->url($this->routeIndex));
 		}
 
+		$this->getService()->attach($app->getBehaviorHistory());
 		$this->_entity = $this->_createNewEntity();
 
-		if ($tags = array_filter(array_map('trim', explode(',', (string)rtrim($request->query->get('tags'), '.')))))
+		$tags = array_filter(array_map('trim', explode(',', (string)rtrim($request->query->get('tags'), '.'))));
+
+		if ($tags || $this->_tags)
 		{
 			if ($this->_entity instanceof TagsEntityInterface && $this->_entity instanceof EntityInterface)
 			{
+				$tags = array_unique(array_merge($tags, (array)$this->_tags));
 				$this->_entity->addTags($tags);
+
 				$this->getService()->commit($this->_entity);
 			}
 		}

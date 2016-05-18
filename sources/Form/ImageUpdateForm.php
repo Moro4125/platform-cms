@@ -6,6 +6,7 @@ namespace Moro\Platform\Form;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Symfony\Component\Validator\Constraints\Regex;
+use \Moro\Platform\Application;
 
 /**
  * Class ImageUpdateForm
@@ -76,6 +77,9 @@ class ImageUpdateForm extends AbstractContent
 					'pattern' => '{^[^ ]*([ ][^ ]+)*$}',
 				]),
 			],
+			'attr' => [
+				'autofocus' => 'autofocus',
+			],
 		]);
 
 		$builder->add('lead', 'text', [
@@ -86,7 +90,7 @@ class ImageUpdateForm extends AbstractContent
 
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
-			'filter'   => 'service:srv.file',
+			'filter'   => 'service:'.Application::SERVICE_FILE,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($this->_tags, $this->_tags),

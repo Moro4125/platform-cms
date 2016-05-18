@@ -44,7 +44,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	public $pageSize = 50;
 
 	/**
-	 * @var bool  Флаг использовани поиска по началу названия.
+	 * @var bool  Флаг использования поиска по началу названия.
 	 */
 	public $useName = true;
 
@@ -115,6 +115,13 @@ abstract class AbstractIndexAction extends AbstractContentAction
 		assert(!empty($this->route));
 		assert(!empty($this->routeUpdate));
 		assert($this->getService() instanceof ContentActionsInterface);
+
+		if ($request->query->has('search') && is_array($search = $request->query->get('search')))
+		{
+			return $app->redirect(Request::create($request->getUri(), 'GET', [
+				'search' => implode(', ', $search),
+			])->getUri());
+		}
 
 		$form = $this->getForm();
 
@@ -296,6 +303,58 @@ abstract class AbstractIndexAction extends AbstractContentAction
 				$_where = array_merge($where, ['id']);
 				$_value = array_merge($value, [(int)$search]);
 				$_order = 'id';
+				continue;
+			}
+
+			if ($this->useName && empty($useNames) && ($useNames = true))
+			{
+				$_where = $where;
+				$_value = $value;
+
+				foreach (array_map('trim', explode(',', trim($search, '.'))) as $chunk)
+				{
+					$chunk = mb_strtolower(mb_substr($chunk, 0, 1, 'UTF-8')).mb_substr($chunk, 1, null, 'UTF-8');
+					$_where = array_merge($_where, ['~|name']);
+					$_value = array_merge($_value, [$chunk]);
+
+					$chunk = mb_strtoupper(mb_substr($chunk, 0, 1, 'UTF-8')).mb_substr($chunk, 1, null, 'UTF-8');
+					$_where = array_merge($_where, ['~|name']);
+					$_value = array_merge($_value, [$chunk]);
+				}
+
+				$_order = 'name';
+				continue;
+			}
+
+			if ($this->useCode && empty($useCodes) && $useCodes = true)
+			{
+				$_where = $where;
+				$_value = $value;
+
+				foreach (array_map('trim', explode(',', trim($search, '.'))) as $chunk)
+				{
+					$chunk = ltrim(strtr($chunk, ['.html' => '']), '/');
+					$_where = array_merge($_where, ['~|code']);
+					$_value = array_merge($_value, [$chunk]);
+				}
+
+				$_order = 'code';
+				continue;
+			}
+
+			if ($this->useEmail && empty($useEmails) && $useEmails = true)
+			{
+				$_where = $where;
+				$_value = $value;
+
+				foreach (array_map('trim', explode(',', trim($search, '.'))) as $chunk)
+				{
+					$chunk = explode('@', $chunk)[0];
+					$_where = array_merge($_where, ['~|email']);
+					$_value = array_merge($_value, [$chunk]);
+				}
+
+				$_order = 'email';
 				continue;
 			}
 

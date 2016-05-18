@@ -62,6 +62,9 @@ class TagsForm extends AbstractContent
 				]),
 			],
 			'required' => false,
+			'attr' => [
+				'autofocus' => 'autofocus',
+			],
 		]);
 
 		$builder->add('code', 'hidden', [
@@ -94,7 +97,7 @@ class TagsForm extends AbstractContent
 
 		$builder->add('tags', 'choice_tags', [
 			'label'    => 'Ярлыки',
-			'filter'   => 'service:srv.tags',
+			'filter'   => 'service:'.Application::SERVICE_TAGS,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($this->_tags, $this->_tags),

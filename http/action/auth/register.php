@@ -1,6 +1,10 @@
 <?php
 /**
  * Register new user.
+ *
+ * How to use this file in the application:
+ *    require_once __DIR__.'/../../../bootstrap.php'; // Connect this file only once.
+ *    require __DIR__.'/../../../vendor/moro/platform-cms/http/action/auth/register.php';
  */
 use \Moro\Platform\Application;
 use \Moro\Platform\Form\Constraints\UniqueField;

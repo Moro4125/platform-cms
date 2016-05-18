@@ -1,0 +1,33 @@
+{% extends "@PlatformCMS/admin/users/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-users-subscribers-update", {id: 777}) %}
+	{% set deleteUrl = url("admin-users-subscribers-delete", {ids: 777}) %}
+	{{ parent() }}
+{% endblock %}
+
+
+{% block list_column_name__info %}
+	<span class="glyphicon glyphicon-envelope"></span>
+	{{- "&nbsp;"|raw -}}
+	{{ item.email }}
+	{% if item.name|default(false) %}
+		<small class="text-muted">  ●  {{- item.name -}}</small>
+	{% endif %}
+{% endblock %}
+
+
+{% block list_column_name__tags %}
+	{%- if item.active -%}
+		{%- if item.orderAt < finishLine -%}
+			<span class="label label-warning">●</span>
+		{%- else -%}
+			<span class="label label-success">●</span>
+		{%- endif -%}
+	{%- else -%}
+		<span class="label label-danger">●</span>
+	{%- endif -%}
+
+	{{- parent() -}}
+{% endblock %}

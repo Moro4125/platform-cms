@@ -51,6 +51,16 @@ class MarkdownExtension extends CMarkdownExtension
 	}
 
 	/**
+	 * {@inheritdoc}
+	 */
+	public function getFilters()
+	{
+		return array_merge(parent::getFilters(), [
+			'markdownClean' => new \Twig_Filter_Method($this, 'cleanMarkdown', ['is_safe' => ['html']])
+		]);
+	}
+
+	/**
 	 * Transform Markdown content to HTML
 	 *
 	 * @param string $content The Markdown content to be transformed
@@ -66,5 +76,16 @@ class MarkdownExtension extends CMarkdownExtension
 		$html = preg_replace('{<a\\s+href="([^#/])}', '<a rel="nofollow" target="_blank" href="$1', $html);
 
 		return $html;
+	}
+
+	/**
+	 * Transform Markdown content to simple text.
+	 *
+	 * @param string $content The Markdown content to be transformed
+	 * @return string
+	 */
+	public function cleanMarkdown($content)
+	{
+		return strtr($content, ['*' => '', '[' => '', ']' => ' ']);
 	}
 }

@@ -1,0 +1,28 @@
+{% extends "@PlatformCMS/admin/users/_form.html.twig" %}
+
+
+{% block workarea %}
+	<h1 class="text-center">
+		<span class="glyphicon glyphicon-envelope"></span>
+		{{- "&nbsp;&nbsp;Удаление"|raw -}}
+	</h1>
+	<h3 class="text-center">
+		{%- for item in list -%}
+			<span class="label label-info" style="margin-left: 8px;">
+				<span class="glyphicon glyphicon-envelope"></span>
+				{{- " " ~ item.email -}}
+			</span>
+		{%- endfor -%}
+	</h3>
+	{{ form_start(form) }}
+	<hr/>
+	<div class="row">
+		<div class="col col-xs-4 col-xs-push-4 text-center">
+			<div class="btn-group">
+				{{ form_widget(form.delete) }}
+				{{ form_widget(form.cancel) }}
+			</div>
+		</div>
+	</div>
+	{{ form_end(form) }}
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "@PlatformCMS/admin/content/_list.html.twig" %}
+
+
+{% block workarea %}
+	{% set updateUrl = url("admin-content-messages-update", {id: 777}) %}
+	{% set deleteUrl = url("admin-content-messages-delete", {ids: 777}) %}
+	{% set sendMsUrl = url("admin-content-messages-send", {ids: 777}) %}
+	{{ parent() }}
+{% endblock %}
+
+
+{%- block group_actions -%}
+	{{- parent() -}}
+
+	<li>
+		<button class="btn btn-default btn-xs" type="submit" name="admin_list[send]" value="1">
+			<span class="glyphicon glyphicon-envelope" aria-hidden="true">&nbsp;</span>
+			<span>Отправить оповещения</span>
+			{% do form.send.setRendered %}
+		</button>
+	</li>
+{%- endblock group_actions -%}
+
+
+{%- block list_column_todo__actions -%}
+	{% if item.status == 0 %}
+		<li><a href="{{ sendMsUrl|replace({ "777": item.id }) }}">Послать</a></li>
+	{% endif %}
+	{{- parent() -}}
+{%- endblock -%}
+
+
+{% block list_column_name__info %}
+	<span class="glyphicon glyphicon-bell"></span>
+	{{- " " -}}
+	{{- item.name -}}
+	{%- if item.parameters.text|default("") -%}
+		<small class="text-muted">  ●  {{ item.parameters.text|striptags }}</small>
+	{%- endif -%}
+
+	{#
+	{%- if item.href -%}
+		<small class="text-muted">  ●  {{ item.href }}</small>
+	{%- endif -%}
+	#}
+{% endblock %}
+
+
+{% block list_column_name__tags %}
+	{%- if item.status == 0 -%}
+		<span class="label label-danger">черновик</span>
+	{%- elseif item.status == 1 and startingLine < item.orderAt -%}
+		<span class="label label-warning">отправка</span>
+	{%- else -%}
+		<span class="label label-info">завершенно</span>
+	{%- endif -%}
+
+	{{- parent() -}}
+
+	{%- if item.parameters.attachments|default(false) -%}
+		{%- for file in item.parameters.attachments -%}
+			<span class="label label-attachment">{{ file }}</span>
+		{%- endfor -%}
+	{%- endif -%}
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "@PlatformCMS/admin/users/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+
+	<div class="row">
+		<div class="col-md-6 col-sm-12 col-xs-12">
+			{{ form_row(form.name) }}
+		</div>
+		<div class="col-md-1 col-md-push-0 col-sm-10 col-sm-push-2">
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-sm visible-xs"/>
+				{% if is_granted("ROLE_MODER") and (not locked) %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
+				<span class="visible-sm"><br/>&nbsp;</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 col-sm-12 col-xs-12">
+			{{ form_row(form.email) }}
+		</div>
+		<div class="col-md-2 col-sm-12 col-xs-12">
+			{{ form_widget(form.active) }}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<br class="visible-sm visible-xs"/>
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+
+	{{ form_widget(form) }}
+	{{ form_end(form) }}
+
+	<hr/>
+{% endblock %}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{% if diff["active"]|default(false) %}
+		<li>
+			<strong>Активность</strong>
+			<span> была </span>
+			{% if diff["active"][1] %}
+				<i> включена. </i>
+			{% else %}
+				<i> отключена. </i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% set verbs = {
+	"email": ["добавлен",  "удалён",  "изменён",  "Был",  "стал"],
+	} %}
+	{% for key, name in {"email": "E-Mail"} %}
+		{% if diff[key]|default(false) %}
+			<li>
+				<strong>{{ name }}</strong>
+				{% if not diff[key][0] %}
+					<span> {{ verbs[key][0] }}: </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% elseif not diff[key][1] %}
+					<span> {{ verbs[key][1] }}. {{ verbs[key][3] }} </span>
+					<i>«{{ diff[key][0] }}».</i>
+				{% else %}
+					<span> {{ verbs[key][2] }}. {{ verbs[key][3] }} </span>
+					<i>«{{ diff[key][0] }}»,</i>
+					<span> {{ verbs[key][4] }} </span>
+					<i>«{{ diff[key][1] }}».</i>
+				{% endif %}
+			</li>
+		{% endif %}
+	{% endfor %}
+
+{%- endblock history_changes -%}

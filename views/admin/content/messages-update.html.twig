@@ -1,0 +1,140 @@
+{% extends "@PlatformCMS/admin/content/_form.html.twig" %}
+
+{% block workarea %}
+	{{ form_start(form) }}
+
+	<div class="row">
+		<div class="col-md-5 col-sm-12 col-xs-12">
+			{{ form_row(form.name) }}
+		</div>
+		<div class="col-md-2 col-md-push-0 col-sm-10 col-sm-push-2">
+		</div>
+		<div class="col-md-5 col-sm-12 text-right">
+			<div class="btn-group btn-group-sm" role="group">
+				<br class="visible-sm visible-xs"/>
+				{% if is_granted("ROLE_EDITOR") and not locked %}
+					{{ form_widget(form.commit) }}
+					{{ form_widget(form.apply) }}
+					{{ form_widget(form.cancel) }}
+					{{ form_widget(form.delete) }}
+				{% else %}
+					{{ form_widget(form.cancel) }}
+					{% do form.commit.setRendered %}
+					{% do form.apply.setRendered %}
+					{% do form.delete.setRendered %}
+				{% endif %}
+				<span class="visible-sm"><br/>&nbsp;</span>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<br class="visible-sm visible-xs"/>
+			{{ form_widget(form.tags, {attr: {class: "m-select2", "data-placeholder": "Ярлыки", "data-tags": true, style: "width:100%;"}}) }}
+		</div>
+	</div>
+	<hr/>
+
+	<div class="row">
+		<div class="col-md-12">
+			<h3>Сообщение</h3>
+		</div>
+		<div class="col-md-12">
+			{{ form_widget(form.text) }}
+		</div>
+	</div>
+
+	{{ form_widget(form) }}
+
+
+	{%- block attachments_bar -%}
+		<div class="row">
+			<div class="col-md-12">
+				<h3>Вложения</h3>
+			</div>
+			<div class="col-md-12 m-select2-articles">
+				{{ form(upload) }}
+			</div>
+		</div>
+	{%- endblock attachments_bar -%}
+
+	{{ form_end(form) }}
+
+	<br/><hr/>
+{% endblock %}
+
+
+{%- block history -%}
+	<div id="history_text" data-text="{{ (item.getParameters()|default([]))["text"]|default(false) }}"></div>
+	{{- parent() -}}
+{%- endblock history -%}
+
+
+{%- block history_changes -%}
+	{% if diff["name"]|default(false) %}
+		<li>
+			<strong>Название</strong>
+			{% if not diff["name"][0] %}
+				<span> добавлено: </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% else %}
+				<span> изменено. Было </span>
+				<i>«{{ diff["name"][0] }}»,</i>
+				<span> стало </span>
+				<i>«{{ diff["name"][1] }}».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+	{{- parent() -}}
+
+	{% if diff["parameters.text"]|default(false) %}
+		<li>
+			<strong>Текста оповещения </strong>
+			{%- if diff["parameters.text"] is iterable -%}
+				<span>был изменён:</span>
+				{%- for temp in diff["parameters.text"] -%}
+					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
+					<a class="history_diff" data-diff="{{ temp }}" data-from="history_text" data-title="Текст оповещения" href="#">
+						<span class="glyphicon glyphicon-file"></span>
+					</a>
+				{%- endfor -%}
+				{{- ".&nbsp;"|raw -}}
+				<a class="history_diff" data-diff="" data-from="history_text" data-title="Текст оповещения" href="#">
+					<span class="glyphicon glyphicon-ok-circle"></span>
+				</a>
+			{%- else -%}
+				<a class="history_diff" data-diff="{{ diff["parameters.text"] }}" data-from="history_text" data-title="Текст оповещения" href="#">
+					<span>был изменён</span>
+				</a>.
+			{%- endif -%}
+		</li>
+	{% endif %}
+
+	{% if diff["parameters.attachments"]|default(false) %}
+		{% set back = app.url("admin-about") ~ "#close=Y" %}
+		<li>
+			<strong>Вложения</strong>
+			<span> были обновлены. </span>
+			{% if diff["parameters.attachments"][0] %}
+				{% if diff["parameters.attachments"][0]|length == 1 %}<span> Удалён файл </span>{% else %}<span> Удалены: </span>{% endif %}
+				<i>«
+					{%- for name in diff["parameters.attachments"][0] -%}
+						{%- if not loop.first -%}{{ "», «" }}{%- endif -%}
+						{{ name }}
+					{%- endfor -%}
+					».</i>
+			{% endif %}
+			{% if diff["parameters.attachments"][1] %}
+				{% if diff["parameters.attachments"][1]|length == 1 %}<span> Добавлен файл </span>{% else %}<span> Добавлены: </span>{% endif %}
+				<i>«
+					{%- for name in diff["parameters.attachments"][1] -%}
+						{%- if not loop.first -%}{{ "», «" }}{%- endif -%}
+						{{ name }}
+					{%- endfor -%}
+					».</i>
+			{% endif %}
+		</li>
+	{% endif %}
+
+{%- endblock history_changes -%}

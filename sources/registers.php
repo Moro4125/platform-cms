@@ -53,6 +53,8 @@ use \Moro\Platform\Model\Implementation\ApiKey\ServiceApiKey;
 use \Moro\Platform\Model\Implementation\History\ServiceHistory;
 use \Moro\Platform\Model\Implementation\Users\ServiceUsers;
 use \Moro\Platform\Model\Implementation\Users\Auth\ServiceUsersAuth;
+use \Moro\Platform\Model\Implementation\Subscribers\ServiceSubscribers;
+use \Moro\Platform\Model\Implementation\Messages\ServiceMessages;
 use \Moro\Platform\Tools\Relink;
 use \Moro\Platform\Tools\DiffMatchPatch;
 
@@ -115,6 +117,8 @@ Application::getInstance(function (Application $app)
 			[$adminPrefix.'/platform/users/reset-password', 'ROLE_WANT_RESET_PASSWORD'],
 			[$adminPrefix.'/platform/users/apply-rights',   'ROLE_WANT_CONFIRM_SOCIAL'],
 			[$adminPrefix.'/platform/users/disable-social', 'ROLE_WANT_DISABLE_SOCIAL'],
+			[$adminPrefix.'/platform/subscribers/update',   'ROLE_WANT_UPDATE_SUBSCRIBER'],
+			[$adminPrefix.'/platform/subscribers/delete',   'ROLE_WANT_DELETE_SUBSCRIBER'],
 			[$adminPrefix.'/platform',                      'ROLE_USER'],
 		],
 	]);
@@ -218,11 +222,15 @@ Application::getInstance(function (Application $app)
 	$app->register(new ValidatorServiceProvider());
 
 	// Twig Service Provider.
-	$app->register(new TwigServiceProvider());
+	$app->register(new TwigServiceProvider(), [
+		'twig.extension.markdown' => $app->share(function() use ($app) {
+			return new MarkdownExtension(new MichelfMarkdownEngine());
+		}),
+	]);
 
 	$app->update('twig', function(\Twig_Environment $twig, Application $application) {
 		$twig->setCache($application->getOption('path.temp').DIRECTORY_SEPARATOR.'twig');
-		$twig->addExtension(new MarkdownExtension(new MichelfMarkdownEngine()));
+		$twig->addExtension($application['twig.extension.markdown']);
 		$twig->addExtension($extension = new ApplicationExtension($application));
 
 		$extension->setTexFilePath($application->getOption('content.hyphenate'));
@@ -570,6 +578,33 @@ Application::getInstance(function (Application $app)
 
 		return $service;
 	});
+
+	// Service SUBSCRIBERS.
+	$app[Application::SERVICE_SUBSCRIBERS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$class = $app->offsetGet(Application::SERVICE_SUBSCRIBERS.$suffixClass, ServiceSubscribers::class);
+
+		/** @var ServiceSubscribers $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_SUBSCRIBERS);
+		$service->setServiceUser($app->getServiceSecurityToken());
+		$service->setLogger($app->getServiceLogger());
+
+		return $service;
+	});
+
+	// Service NOTIFICATIONS.
+	$app[Application::SERVICE_MESSAGES] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$class = $app->offsetGet(Application::SERVICE_MESSAGES.$suffixClass, ServiceMessages::class);
+
+		/** @var ServiceMessages $service */
+		$service = new $class($app->getServiceDataBase());
+		$service->setServiceCode(Application::SERVICE_MESSAGES);
+		$service->setServiceUser($app->getServiceSecurityToken());
+		$service->setServiceFile($app->getServiceFile());
+		$service->setLogger($app->getServiceLogger());
+
+		return $service;
+	});
 });
 
 Application::getInstance(function (Application $app)
@@ -627,6 +662,22 @@ Application::getInstance(function (Application $app)
 			]);
 		}
 
+		if ($access->isGranted('ROLE_RS_MESSAGES'))
+		{
+			$item->addChild('Оповещения', [
+					'route' => 'admin-content-messages',
+					'display' => true
+			]);
+
+			$item->addChild('Редактирование записи оповещения', [
+					'route' => 'admin-content-messages-update',
+					'routeParameters' => [
+							'id' => (int)$app['request']->attributes->get('id', 0)
+					],
+					'display' => false
+			]);
+		}
+
 		if ($access->isGranted('ROLE_RS_RELINK'))
 		{
 			$item->addChild('Перелинковка', [
@@ -660,6 +711,7 @@ Application::getInstance(function (Application $app)
 		}
 
 		$flag = $access->isGranted('ROLE_RS_USERS');
+		$flag|= $access->isGranted('ROLE_RS_SUBSCRIBERS');
 
 		$item = $menu->addChild('Пользователи', [
 			'route' => 'admin-users-profiles',
@@ -675,6 +727,22 @@ Application::getInstance(function (Application $app)
 
 			$item->addChild('Редактирование карточки', [
 				'route' => 'admin-users-profiles-update',
+				'routeParameters' => [
+					'id' => (int)$app['request']->attributes->get('id', 0)
+				],
+				'display' => false
+			]);
+		}
+
+		if ($access->isGranted('ROLE_RS_SUBSCRIBERS'))
+		{
+			$item->addChild('Подписчики', [
+				'route' => 'admin-users-subscribers',
+				'display' => true
+			]);
+
+			$item->addChild('Редактирование подписчика', [
+				'route' => 'admin-users-subscribers-update',
 				'routeParameters' => [
 					'id' => (int)$app['request']->attributes->get('id', 0)
 				],

@@ -35,13 +35,25 @@
 					{% if app.isGranted("ROLE_RS_TAGS") %}
 						<li class="list-group-item">
 							<span class="badge">{{ app.serviceTags.count }}</span>
-							<span>Ярлыков</span>
+							<span>Ярлыки</span>
 						</li>
 					{% endif %}
 					{% if app.isGranted("ROLE_RS_USERS") %}
 						<li class="list-group-item">
 							<span class="badge">{{ app.serviceUsers.count }}</span>
 							<span>Пользователи</span>
+						</li>
+					{% endif %}
+					{% if app.isGranted("ROLE_RS_SUBSCRIBERS") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceSubscribers.count }}</span>
+							<span>Подписчики</span>
+						</li>
+					{% endif %}
+					{% if app.isGranted("ROLE_RS_MESSAGES") %}
+						<li class="list-group-item">
+							<span class="badge">{{ app.serviceMessages.count }}</span>
+							<span>Оповещения</span>
 						</li>
 					{% endif %}
 				</ul>
@@ -82,6 +94,7 @@
 				</div>
 			</div>
 		</div>
+		{#
 		{% if app.granted("ROLE_ADMIN") %}
 			<div class="col-xs-12">
 				<h3>Утилиты</h3>
@@ -94,5 +107,6 @@
 				</ul>
 			</div>
 		{% endif %}
+		#}
 	</div>
 {% endblock %}

@@ -8,6 +8,7 @@ use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
 use \Moro\Platform\Application;
+use \Exception;
 
 /**
  * Class AbstractSilentAction
@@ -59,13 +60,21 @@ abstract class AbstractSilentAction extends AbstractContentAction
 				: false;
 		}
 
-		if (!$app->isGranted('ROLE_EDITOR'))
+		try
 		{
-			$app->getServiceFlash()->error('У вас недостаточно прав для данного действия.');
+			if (!$app->isGranted('ROLE_EDITOR'))
+			{
+				$app->getServiceFlash()->error('У вас недостаточно прав для данного действия.');
+			}
+			elseif ($response = $this->_execute())
+			{
+				return $response;
+			}
 		}
-		elseif ($response = $this->_execute())
+		catch (Exception $exception)
 		{
-			return $response;
+			$app->getServiceFlash()->error(basename(get_class($exception)).': '.$exception->getMessage());
+			($sentry = $app->getServiceSentry()) && $sentry->captureException($exception);
 		}
 
 		$fragment = '#selected='.implode(',', $list);

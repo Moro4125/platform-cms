@@ -53,6 +53,8 @@ class Application extends CApplication
 	const SERVICE_API_KEY             = 'srv.api_key';
 	const SERVICE_HISTORY             = 'srv.history';
 	const SERVICE_DIFF_MATCH_PATCH    = 'srv.tool.diff';
+	const SERVICE_SUBSCRIBERS         = 'srv.subscribers';
+	const SERVICE_MESSAGES            = 'srv.messages';
 	const SERVICE_IMAGINE             = 'imagine';
 	const SERVICE_SENTRY              = 'sentry';
 	const SERVICE_MAILER              = 'mailer';
@@ -62,6 +64,8 @@ class Application extends CApplication
 	const BEHAVIOR_HISTORY            = 'behavior.history';
 	const BEHAVIOR_CLIENT_ROLE        = 'behavior.client_role';
 	const BEHAVIOR_CONTENT_CHUNKS     = 'behavior.content_chunks';
+
+	const TWIG_EXTENSION_MARKDOWN     = 'twig.extension.markdown';
 
 	const HEADER_EXPERIMENTAL = 'X-Experimental-Feature';
 	const HEADER_USE_FULL_URL = 'X-Use-Full-URL';
@@ -499,7 +503,7 @@ class Application extends CApplication
 			return sprintf('#error: unknown route "'. $route.'" or bad arguments for it.');
 		}
 
-		if ($route == 'admin-image' )
+		if ($route == 'admin-image')
 		{
 			$uri = substr(substr($url, 0, strpos($url, '?') ?: strlen($url)), (strpos($url, 'index.php') ?: -9) + 9);
 			$uri = preg_match('{^https?://[^/]+}', $uri, $match) ? substr($uri, strlen($match[0])) : $uri;
@@ -905,6 +909,22 @@ class Application extends CApplication
 	}
 
 	/**
+	 * @return \Moro\Platform\Model\Implementation\Subscribers\ServiceSubscribers
+	 */
+	public function getServiceSubscribers()
+	{
+		return $this->offsetGet(self::SERVICE_SUBSCRIBERS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Model\Implementation\Messages\ServiceMessages
+	 */
+	public function getServiceMessages()
+	{
+		return $this->offsetGet(self::SERVICE_MESSAGES);
+	}
+
+	/**
 	 * @return \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceBehavior
 	 */
 	public function getBehaviorTags()
@@ -942,5 +962,13 @@ class Application extends CApplication
 	public function getBehaviorContentChunks()
 	{
 		return $this->offsetGet(self::BEHAVIOR_CONTENT_CHUNKS);
+	}
+
+	/**
+	 * @return \Moro\Platform\Provider\Twig\MarkdownExtension
+	 */
+	public function getTwigExtensionMarkdown()
+	{
+		return $this->offsetGet(self::TWIG_EXTENSION_MARKDOWN);
 	}
 }

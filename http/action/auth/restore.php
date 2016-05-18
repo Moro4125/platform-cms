@@ -1,11 +1,13 @@
 <?php
 /**
  * Reset user password.
+ *
+ * How to use this file in the application:
+ *    require_once __DIR__.'/../../../bootstrap.php'; // Connect this file only once.
+ *    require __DIR__.'/../../../vendor/moro/platform-cms/http/action/auth/restore.php';
  */
 use \Moro\Platform\Application;
 use \Moro\Platform\Model\Implementation\Users\Auth\UsersAuthInterface;
-use \Moro\Platform\Provider\Twig\MarkdownExtension;
-use \Aptoma\Twig\Extension\MarkdownEngine\MichelfMarkdownEngine;
 use \Symfony\Component\Security\Core\Encoder\Pbkdf2PasswordEncoder;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
@@ -67,6 +69,8 @@ Application::action(
 			'back' => $request->getSchemeAndHttpHost().$back->getRequestUri(),
 		]);
 
+		$app->getServiceFlash()->success('Если Вы указали правильный e-mail, то скоро на него должно прийти письмо.');
+
 		return [
 			'host'     => $request->getHost(),
 			'password' => $password,
@@ -88,8 +92,8 @@ Application::action(
 		}
 
 		$content = $response->getContent();
-		$text = strtr($content, ['*' => '', '[' => ' ', ']' => ' ']);
-		$html = (new MarkdownExtension(new MichelfMarkdownEngine()))->parseMarkdown($content);
+		$text = $app->getTwigExtensionMarkdown()->cleanMarkdown($content);
+		$html = $app->getTwigExtensionMarkdown()->parseMarkdown($content);
 
 		/** @var \Swift_Message $message */
 		$message = $app->getServiceMailer()->createMessage();

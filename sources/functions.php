@@ -2,11 +2,14 @@
 /**
  * @param string $name
  * @param mixed $default
+ * @param null|array $context
  * @return mixed
  */
-function v($name, $default = null)
+function v($name, $default = null, $context = null)
 {
-	return array_key_exists($name, $GLOBALS) ? $GLOBALS[$name] : $default;
+	return $context
+		?( array_key_exists($name, $context) ? $context[$name] : $default )
+		:( array_key_exists($name, $GLOBALS) ? $GLOBALS[$name] : $default );
 }
 
 /**

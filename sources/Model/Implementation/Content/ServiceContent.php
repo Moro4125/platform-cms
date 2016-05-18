@@ -35,6 +35,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	use \Moro\Platform\Model\Accessory\Parameters\Chain\ChainServiceTrait;
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
+	use \Moro\Platform\Model\Accessory\FileAttachTrait;
 
 	const MD_LINK_MASK = '{\\[([^\\]^]+)\\]}';
 
@@ -44,9 +45,14 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	protected $_table = 'content_article';
 
 	/**
-	 * @var \Moro\Platform\Model\Implementation\File\ServiceFile
+	 * @var string
 	 */
-	protected $_serviceFile;
+	protected $_attachRoute = 'admin-content-articles-attach';
+
+	/**
+	 * @var string
+	 */
+	protected $_idPrefix = 'a';
 
 	/**
 	 * @return void
@@ -55,7 +61,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	{
 		parent::_initialization();
 		$this->_traits[static::class][self::STATE_TAGS_GENERATE] = '_tagsGeneration';
-		$this->_traits[static::class][self::STATE_DELETE_FINISHED] = '_afterDelete';
 		$this->_traits[static::class][HistoryInterface::STATE_TRY_MERGE_HISTORY] = '_mergeHistory';
 	}
 
@@ -103,17 +108,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	}
 
 	/**
-	 * @param ContentInterface $entity
-	 */
-	protected function _afterDelete(ContentInterface $entity)
-	{
-		foreach ($this->_serviceFile->selectByKind('a'.$entity->getId()) as $file)
-		{
-			$this->_serviceFile->deleteEntityById($file->getId());
-		}
-	}
-
-	/**
 	 * @param ArrayObject $next
 	 * @param ArrayObject $prev
 	 */
@@ -155,16 +149,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$key = 'parameters.chunks.num'.$countValue;
 			$prev->offsetExists($key) && $prev->offsetUnset($key);
 		}
-	}
-
-	/**
-	 * @param ServiceFile $service
-	 * @return $this
-	 */
-	public function setServiceFile(ServiceFile $service)
-	{
-		$this->_serviceFile = $service;
-		return $this;
 	}
 
 	/**
@@ -412,83 +396,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	}
 
 	/**
-	 * @param Application $app
-	 * @param null|EntityInterface $entity
-	 * @return Form
-	 */
-	public function createAdminUploadForm(Application $app, EntityInterface $entity = null)
-	{
-		$action = $app->url('admin-content-articles-attach', ['id' => $entity ? $entity->getId() : 0]);
-		return $app->getServiceFormFactory()->createBuilder(new AjaxUploadForm($action), [])->getForm();
-	}
-
-	/**
-	 * @param Application $app
-	 * @param Form $form
-	 * @param int $id
-	 * @return array
-	 */
-	public function applyAdminUploadForm(Application $app, Form $form, $id)
-	{
-		$idList = [];
-		$this->_connection->beginTransaction();
-		$service = $app->getServiceFile();
-
-		try
-		{
-			foreach ($form->getData() as $key => $value)
-			{
-				if ($key == 'uploads')
-				{
-					/** @var \Symfony\Component\HttpFoundation\File\UploadedFile $object */
-					foreach ((array)$value as $object)
-					{
-						if (!$path = $object->getPathname())
-						{
-							$originalName = $object->getClientOriginalName();
-							$message = sprintf('Не удалось загрузить на сервер файл "%1$s".', $originalName);
-							throw new \RuntimeException($message);
-						}
-
-						$hash = $service->getHashForFile($path);
-						$file = $service->getPathForHash($hash);
-						$file = file_exists($file) ? $object : $object->move(dirname($file), basename($file));
-
-						$name = $object->getClientOriginalName();
-						$name = strtr($name, ['[' => ' ', ']' => ' ']);
-						$name = trim(preg_replace('{\\s+}', ' ', $name));
-
-						if ($entity = $service->getByHashAndKind($hash, "a$id", true, false))
-						{
-							$entity->setName($name);
-						}
-						else
-						{
-							$entity = $service->createEntity($hash, "a$id");
-							$entity->setName($name);
-							$entity->setParameters([
-								'size' => $file->getSize(),
-							]);
-						}
-
-						$service->commit($entity);
-						$idList[] = $entity->getId();
-					}
-				}
-			}
-
-			$this->_connection->commit();
-		}
-		catch (Exception $exception)
-		{
-			$this->_connection->rollBack();
-			return get_class($exception).': '.$exception->getMessage();
-		}
-
-		return $idList;
-	}
-
-	/**
 	 * @param array $list
 	 * @return array
 	 */
@@ -507,15 +414,6 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 		}
 
 		return $result;
-	}
-
-	/**
-	 * @param ContentInterface $entity
-	 * @return \Moro\Platform\Model\Implementation\File\EntityFile[]
-	 */
-	public function selectAttachmentByEntity(ContentInterface $entity)
-	{
-		return $this->_serviceFile->selectByKind('a'.$entity->getId());
 	}
 
 	/**
