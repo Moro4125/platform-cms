@@ -29,6 +29,12 @@ Application::action(function(Application $app, Request $request) {
 		return $app->redirect($request->getSchemeAndHttpHost().$back->getRequestUri());
 	}
 
+	if (!$app->getOption("registration"))
+	{
+		$app->getServiceFlash()->error('Регистрация отключена.');
+		return $app->redirect($request->getSchemeAndHttpHost().$back->getRequestUri());
+	}
+
 	// Form validation.
 	/** @var RecursiveValidator $validator */
 	$validator = $app['validator'];

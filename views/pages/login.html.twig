@@ -69,11 +69,13 @@
 							{{- "." -}}
 						</p>
 
+						{%- if app.getOption("registration") -%}
 						<p>
 							{{- " Нет аккаунта? " -}}
 							<a href="/action/navigate.php?next={{ app.url('users-register')|url_encode }}">Зарегистрироваться</a>
 							{{- "." -}}
 						</p>
+						{%- endif -%}
 					</div>
 				</div>
 			</div>
