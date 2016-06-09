@@ -7,13 +7,14 @@ use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\OrderAt\OrderAtInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarInterface;
 use \Moro\Platform\Model\EntityInterface;
 
 /**
  * Interface ContentInterface
  * @package Model\Content
  */
-interface ContentInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, OrderAtInterface, TagsEntityInterface
+interface ContentInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, OrderAtInterface, TagsEntityInterface, StarInterface
 {
 	const PROP_CODE = 'code';
 	const PROP_NAME = 'name';

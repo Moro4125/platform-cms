@@ -313,8 +313,7 @@ Application::getInstance(function (Application $app)
 
 		/** @var TagsServiceBehavior $behavior */
 		$behavior = new $class();
-		$behavior->setTagsService($app->getServiceTags());
-		$behavior->setDbConnection($app->getServiceDataBase());
+		$behavior->setApplication($app);
 		return $behavior;
 	});
 

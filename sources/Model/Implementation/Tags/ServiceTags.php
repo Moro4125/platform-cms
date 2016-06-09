@@ -28,6 +28,7 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarServiceTrait;
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
@@ -153,7 +154,16 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 	 */
 	public function selectEntitiesForAdminListForm($offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
-		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
+		$list  = $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
+
+		if ($this->_userToken)
+		{
+			$user  = '+star:'.$this->_userToken->getUsername();
+			$stars = $this->selectEntities(0, ceil($count / 3), '!updated_at', 'tag', $user, EntityInterface::FLAG_GET_FOR_UPDATE);
+			$list  = array_merge($stars, $list);
+		}
+
+		return $list;
 	}
 
 	/**

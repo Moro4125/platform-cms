@@ -4,6 +4,7 @@
 {% block workarea %}
 	{% set updateUrl = url("admin-content-tags-update", {id: 777}) %}
 	{% set deleteUrl = url("admin-content-tags-delete", {ids: 777}) %}
+	{% set tgStarUrl = url("admin-content-tags-star", {id: 777}) %}
 	{{ parent() }}
 {% endblock %}
 

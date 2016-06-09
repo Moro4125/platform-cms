@@ -8,12 +8,13 @@ use \Moro\Platform\Model\Accessory\OrderAt\OrderAtInterface;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarInterface;
 
 /**
  * Interface MessagesInterface
  * @package Moro\Platform\Model\Implementation\Messages
  */
-interface MessagesInterface extends EntityInterface, OrderAtInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface
+interface MessagesInterface extends EntityInterface, OrderAtInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface, StarInterface
 {
 	const PROP_NAME   = 'name';
 	const PROP_STATUS = 'status';

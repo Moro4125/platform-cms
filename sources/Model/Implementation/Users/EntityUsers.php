@@ -5,6 +5,7 @@
 namespace Moro\Platform\Model\Implementation\Users;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByEntityTrait;
 use \Moro\Platform\Model\EntityTrait;
 
@@ -18,6 +19,7 @@ class EntityUsers implements UsersInterface
 	use UpdatedByEntityTrait;
 	use ParametersEntityTrait;
 	use TagsEntityTrait;
+	use StarEntityTrait;
 
 	/**
 	 * @return string

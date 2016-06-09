@@ -16,6 +16,7 @@ class EntityFile implements FileInterface
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 
 	/**
 	 * @return string

@@ -4,7 +4,6 @@
  */
 namespace Moro\Platform\Model\Implementation\Content;
 
-
 /**
  * Class EntityContent
  * @package Model\Content
@@ -16,6 +15,7 @@ class EntityContent implements ContentInterface
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 
 	/**
 	 * @return string

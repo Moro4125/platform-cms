@@ -5,6 +5,7 @@
 	{% set updateUrl = url("admin-content-messages-update", {id: 777}) %}
 	{% set deleteUrl = url("admin-content-messages-delete", {ids: 777}) %}
 	{% set sendMsUrl = url("admin-content-messages-send", {ids: 777}) %}
+	{% set tgStarUrl = url("admin-content-messages-star", {id: 777}) %}
 	{{ parent() }}
 {% endblock %}
 

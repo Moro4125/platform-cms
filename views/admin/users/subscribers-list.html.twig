@@ -4,6 +4,7 @@
 {% block workarea %}
 	{% set updateUrl = url("admin-users-subscribers-update", {id: 777}) %}
 	{% set deleteUrl = url("admin-users-subscribers-delete", {ids: 777}) %}
+	{% set tgStarUrl = url("admin-users-subscribers-star", {id: 777}) %}
 	{{ parent() }}
 {% endblock %}
 

@@ -16,6 +16,7 @@ abstract class AbstractDecorator extends CAbstractDecorator implements FileInter
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsDecoratorTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 
 	/**
 	 * @var FileInterface

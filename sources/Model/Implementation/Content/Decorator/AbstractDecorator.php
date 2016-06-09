@@ -16,6 +16,7 @@ class AbstractDecorator extends CDecorator implements ContentInterface
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersDecoratorTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsDecoratorTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarDecoratorTrait;
 
 	/**
 	 * @var ContentInterface

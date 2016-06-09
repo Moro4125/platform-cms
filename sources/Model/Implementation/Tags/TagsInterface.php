@@ -6,13 +6,14 @@ namespace Moro\Platform\Model\Implementation\Tags;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarInterface;
 use \Moro\Platform\Model\EntityInterface;
 
 /**
  * Interface TagsInterface
  * @package Model\Content
  */
-interface TagsInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface
+interface TagsInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface, StarInterface
 {
 	const PROP_CODE = 'code';
 	const PROP_NAME = 'name';

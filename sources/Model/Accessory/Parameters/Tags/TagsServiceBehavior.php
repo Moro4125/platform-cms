@@ -7,7 +7,6 @@ use \Moro\Platform\Model\AbstractBehavior;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\Implementation\Tags\ServiceTags;
 use \Moro\Platform\Model\Implementation\Tags\TagsInterface;
-use \Doctrine\DBAL\Connection;
 
 /**
  * Class TagsServiceBehavior
@@ -16,22 +15,17 @@ use \Doctrine\DBAL\Connection;
 class TagsServiceBehavior extends AbstractBehavior
 {
 	/**
-	 * @var ServiceTags
+	 * @var \Moro\Platform\Application
 	 */
-	protected $_service;
+	protected $_application;
 
 	/**
-	 * @var Connection
-	 */
-	protected $_connection;
-
-	/**
-	 * @param ServiceTags $service
+	 * @param \Moro\Platform\Application $application
 	 * @return $this
 	 */
-	public function setTagsService(ServiceTags $service)
+	public function setApplication($application)
 	{
-		$this->_service = $service;
+		$this->_application = $application;
 		return $this;
 	}
 
@@ -40,17 +34,7 @@ class TagsServiceBehavior extends AbstractBehavior
 	 */
 	public function getTagsService()
 	{
-		return $this->_service;
-	}
-
-	/**
-	 * @param Connection $connection
-	 * @return $this
-	 */
-	public function setDbConnection(Connection $connection)
-	{
-		$this->_connection = $connection;
-		return $this;
+		return $this->_application->getServiceTags();
 	}
 
 	/**
@@ -80,7 +64,7 @@ class TagsServiceBehavior extends AbstractBehavior
 		{
 			foreach ($userTags as $tagCode)
 			{
-				foreach ($this->_service->selectEntities(0, 10, null, ['tag', 'kind'], [$tagCode, TagsInterface::KIND_SYNONYM]) as $tag)
+				foreach ($this->getTagsService()->selectEntities(0, 10, null, ['tag', 'kind'], [$tagCode, TagsInterface::KIND_SYNONYM]) as $tag)
 				{
 					if (!in_array($tag->getCode(), $userTags))
 					{
@@ -89,9 +73,9 @@ class TagsServiceBehavior extends AbstractBehavior
 				}
 			}
 
-			$builder = $this->_connection->createQueryBuilder();
+			$builder = $this->_application->getServiceDataBase()->createQueryBuilder();
 			$sqlQuery = $builder->insert($table.'_tags')->values(['target' => '?', 'tag' => '?'])->getSQL();
-			$statement = $this->_connection->prepare($sqlQuery);
+			$statement = $this->_application->getServiceDataBase()->prepare($sqlQuery);
 
 			foreach (array_unique($tags) as $tag)
 			{

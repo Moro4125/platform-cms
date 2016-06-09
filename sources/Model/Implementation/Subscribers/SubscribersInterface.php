@@ -8,12 +8,13 @@ use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\OrderAt\OrderAtInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarInterface;
 
 /**
  * Interface SubscribersInterface
  * @package Moro\Platform\Model\Implementation\Subscribers
  */
-interface SubscribersInterface extends EntityInterface, UpdatedByInterface, OrderAtInterface, ParametersInterface, TagsEntityInterface
+interface SubscribersInterface extends EntityInterface, UpdatedByInterface, OrderAtInterface, ParametersInterface, TagsEntityInterface, StarInterface
 {
 	const PROP_NAME   = 'name';
 	const PROP_EMAIL  = 'email';

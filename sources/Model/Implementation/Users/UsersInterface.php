@@ -7,12 +7,13 @@ use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByInterface;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarInterface;
 
 /**
  * Interface UsersInterface
  * @package Moro\Platform\Model\Implementation\Users
  */
-interface UsersInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface
+interface UsersInterface extends EntityInterface, UpdatedByInterface, ParametersInterface, TagsEntityInterface, StarInterface
 {
 	const PROP_NAME  = 'name';
 	const PROP_EMAIL = 'email';

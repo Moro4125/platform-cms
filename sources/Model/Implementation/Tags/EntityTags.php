@@ -15,6 +15,7 @@ class EntityTags implements TagsInterface
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 
 	/**
 	 * @return string

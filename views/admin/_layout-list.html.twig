@@ -153,8 +153,10 @@
 					<col width="128" class="hidden-xs"/>
 				</colgroup>
 				<tbody>
+				{% set tgStarFlag = tgStarUrl|default(false) ? true : false %}
 				{% for code, item in list %}
-					<tr>
+					{% set tgStarFlag = tgStarFlag and item.hasStar(user) %}
+					<tr class="{% if tgStarFlag %}b-star-row{% else %}b-list-row{% endif %}">
 						{{- block("list_column_todo") -}}
 						{{- block("list_column_icon") -}}
 						{{- block("list_column_name") -}}
@@ -279,6 +281,12 @@
 				</ul>
 			{% endif %}
 		</div>
+		<div style="position: relative;">
+			{%- if tgStarUrl|default(false) -%}
+				<a href="#" data-href="{{ tgStarUrl|replace({ "777": item.id }) }}" data-star="{{ item.hasStar(user) ? 1 : 0 }}" class="h-star"></a>
+			{%- endif -%}
+		</div>
+		<!--<span class="glyphicon glyphicon-pushpin"></span>-->
 		{{- block("list_column_todo__extended") -}}
 	</td>
 {% endblock %}

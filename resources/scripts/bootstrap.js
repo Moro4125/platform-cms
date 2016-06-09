@@ -4,6 +4,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 		templates = [],
 		listCheckboxCount = 0,
 		checkedListCheckboxCount = 0,
+		starsCount = 0,
 		match, i,
 		updateListCheckbox = function(target) {
 			if (target.checked) {
@@ -462,7 +463,39 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 				return false;
 			}
 		});
+	});
 
+	jQuery(".h-star").each(function() {
+		var self = jQuery(this),
+			flag = self.data('star'),
+			link = self.data('href'),
+			check = function() {
+				starsCount == 9 && self.closest('table').removeClass('h-star-disabled');
+				starsCount == 10 && self.closest('table').addClass('h-star-disabled');
+			};
+
+		flag && starsCount++;
+		self.addClass('glyphicon');
+		self.addClass(flag ? 'glyphicon-star' : 'glyphicon-star-empty');
+		check();
+
+		self.on({
+			click: function() {
+				self.removeClass('glyphicon-star').removeClass('glyphicon-star-empty');
+				jQuery.ajax({
+					method:   "POST",
+					url:      link,
+					dataType: "json"
+				})
+				.done(function(result) {
+					self.addClass(result.status ? 'glyphicon-star' : 'glyphicon-star-empty');
+					starsCount += result.status ? 1 : -1;
+					check();
+				});
+
+				return false;
+			}
+		});
 	});
 
 	if (window.location.hash && (match = window.location.hash.match(/(?:[#&])selected=(\d+(?:,\d+)*)/))) {

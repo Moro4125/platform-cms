@@ -3,9 +3,10 @@
  * Class EntityMessages
  */
 namespace Moro\Platform\Model\Implementation\Messages;
-use Moro\Platform\Model\Accessory\OrderAt\OrderAtEntityTrait;
+use \Moro\Platform\Model\Accessory\OrderAt\OrderAtEntityTrait;
 use \Moro\Platform\Model\Accessory\Parameters\ParametersEntityTrait;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityTrait;
+use \Moro\Platform\Model\Accessory\Parameters\Star\StarEntityTrait;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByEntityTrait;
 use \Moro\Platform\Model\EntityTrait;
 
@@ -20,6 +21,7 @@ class EntityMessages implements MessagesInterface
 	use UpdatedByEntityTrait;
 	use ParametersEntityTrait;
 	use TagsEntityTrait;
+	use StarEntityTrait;
 
 	/**
 	 * @return string

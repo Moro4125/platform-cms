@@ -41,7 +41,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	/**
 	 * @var int  Количество записей на странице.
 	 */
-	public $pageSize = 50;
+	public $pageSize = 30;
 
 	/**
 	 * @var bool  Флаг использования поиска по началу названия.
@@ -205,11 +205,14 @@ abstract class AbstractIndexAction extends AbstractContentAction
 			: $this->getApplication()->getServiceSecurityToken()->getUsername();
 
 		$title = $search ?( $search.' / ' ):( $searchTags ? implode(', ', array_keys($searchTags)).' / ' : '' );
+		$user = $this->getApplication()->getServiceSecurityToken()->getUsername();
+		$list = $this->getService()->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
 		return [
 			'route' => $this->route,
+			'user' => $user,
 			'form' => $this->getForm()->createView(),
-			'list' => $this->getService()->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value),
+			'list' => $list,
 			'page' => $page,
 			'pages' => ceil(($total ?: 1) / $count),
 			'offset' => $offset,

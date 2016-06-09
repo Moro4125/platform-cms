@@ -34,6 +34,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
+	use \Moro\Platform\Model\Accessory\Parameters\Star\StarServiceTrait;
 	use \Moro\Platform\Model\Accessory\LockTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
@@ -345,7 +346,11 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 		is_array($where) && (false !== $index = array_search('~code', $where, true)) && ($where[$index] = '~hash');
 
-		return $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
+		$list  = $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
+		$user  = '+star:'.$this->_userToken->getUsername();
+		$stars = $this->selectEntities(0, ceil($count / 3), '!updated_at', 'tag', $user, EntityInterface::FLAG_GET_FOR_UPDATE);
+
+		return array_merge($stars, $list);
 	}
 
 	/**

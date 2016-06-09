@@ -22,10 +22,13 @@ input[type="checkbox"].sr-only:checked ~ .btn-group .glyphicon-check {
     display: inline-block;
 }
 
-input[type="checkbox"].sr-only ~ span.label {
+input[type="checkbox"].sr-only ~ div span.label {
     font-family: Courier, monospace;
-    padding-left: 4px;
-    padding-right: 0;
+    display: block;
+    padding: 0;
+    margin: 9px 4px -9px 0;
+    font-size: 65%;
+    text-align: right;
 }
 
 tr {
@@ -607,6 +610,29 @@ form > table.table {
 
 .b-used-tag {
     padding: 0 8px;
+}
+
+.h-star.glyphicon {
+    position: absolute;
+    top: 6px;
+    left: 2px;
+    color: silver;
+}
+
+.h-star.glyphicon-star {
+    color: orange;
+}
+
+.h-star:hover, .h-star:focus {
+    text-decoration: none;
+}
+
+.h-star-disabled .h-star.glyphicon-star-empty {
+    display: none;
+}
+
+.b-star-row + .b-list-row {
+    border-top: double 4px silver;
 }
 
 .label-attachment {
