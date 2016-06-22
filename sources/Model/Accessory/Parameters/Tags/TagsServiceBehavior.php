@@ -60,7 +60,7 @@ class TagsServiceBehavior extends AbstractBehavior
 		$userTags = isset($parameters['tags']) ? $parameters['tags'] : [];
 		$userTags = array_filter(array_map('normalizeTag', $userTags));
 
-		if ($userTags)
+		if ($userTags && !in_array(normalizeTag('флаг: удалено'), $userTags))
 		{
 			foreach ($userTags as $tagCode)
 			{

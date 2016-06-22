@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Action;
 use \Moro\Platform\Model\Accessory\HistoryBehavior;
+use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
 use \Moro\Platform\Model\EntityInterface;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
@@ -149,6 +150,37 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	 */
 	protected function _doDelete()
 	{
+		$app = $this->getApplication();
+		$acl = $app->getServiceSecurityAcl();
+		$listDrop = [];
+		$listMove = [];
+
+		foreach ($this->getEntities() as $entity)
+		{
+			if ($acl->isGranted('ACTION_ERASE_ENTITY', $entity))
+			{
+				$listDrop[] = $entity;
+			}
+			else
+			{
+				$listMove[] = $entity;
+			}
+		}
+
+		$this->_setEntities($listMove);
+		$result = $this->_doMoveToTrash();
+
+		$this->_setEntities($listDrop);
+		$result = $this->_doDeleteFromDB() ?: $result;
+
+		return $result;
+	}
+
+	/**
+	 * @return \Symfony\Component\HttpFoundation\RedirectResponse
+	 */
+	protected function _doDeleteFromDB()
+	{
 		$application = $this->getApplication();
 		$service = $this->getService();
 		$list = $this->getEntities();
@@ -159,7 +191,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 			{
 				$application->getServiceFlash()->success('Запись была успешно удалена.');
 				return $application->redirect(
-					$this->getRequest()->query->get('next') ?: $application->url($this->routeIndex)
+					$this->getRequest()->query->get('next') ?: $this->getRequest()->query->get('back') ?: $application->url($this->routeIndex)
 				);
 			}
 			else
@@ -170,7 +202,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 				);
 			}
 		}
-		else
+		elseif (count($list))
 		{
 			$count = 0;
 
@@ -181,9 +213,48 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 			$application->getServiceFlash()->success('Количество удаленных записей: '.$count);
 			return $application->redirect(
-				$this->getRequest()->query->get('next') ?: $application->url($this->routeIndex)
+				$this->getRequest()->query->get('next') ?: $this->getRequest()->query->get('back') ?: $application->url($this->routeIndex)
 			);
 		}
+
+		return null;
+	}
+
+	/**
+	 * @return \Symfony\Component\HttpFoundation\RedirectResponse
+	 */
+	protected function _doMoveToTrash()
+	{
+		$application = $this->getApplication();
+		$service = $this->getService();
+		$list = $this->getEntities();
+
+		if (count($list) == 1 && ($entity = reset($list)) && $entity instanceof TagsEntityInterface)
+		{
+			$entity->addTags(['флаг: удалено']);
+			$entity instanceof EntityInterface && $service->commit($entity);
+			$application->getServiceFlash()->success('Запись была успешно отправлена в корзину.');
+		}
+		else
+		{
+			$count = 0;
+
+			foreach ($list as $entity)
+			{
+				if ($entity instanceof TagsEntityInterface)
+				{
+					$entity->addTags(['флаг: удалено']);
+					$entity instanceof EntityInterface && $service->commit($entity);
+					$count++;
+				}
+			}
+
+			$application->getServiceFlash()->success('Количество записей, отправленных в корзину: '.$count);
+		}
+
+		return $application->redirect(
+			$this->getRequest()->query->get('next') ?: $this->getRequest()->query->get('back') ?: $application->url($this->routeIndex)
+		);
 	}
 
 	/**

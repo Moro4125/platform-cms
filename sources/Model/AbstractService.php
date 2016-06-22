@@ -531,12 +531,12 @@ abstract class AbstractService implements SplSubject
 				{
 					if ($field[0] == '|' || $field[1] == '|')
 					{
-						$builder->orWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+						$builder->orWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 						$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 					}
 					else
 					{
-						$builder->andWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+						$builder->andWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 						$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 					}
 				}
@@ -897,12 +897,12 @@ abstract class AbstractService implements SplSubject
 			{
 				if ($field[0] == '|' || $field[1] == '|')
 				{
-					$builder->orWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+					$builder->orWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 				}
 				else
 				{
-					$builder->andWhere(ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+					$builder->andWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 				}
 			}

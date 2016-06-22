@@ -462,6 +462,7 @@ Application::getInstance(function (Application $app)
 
 			$service->setTableName($content->getTableName().'_chunks');
 			$service->setServiceCode(Application::SERVICE_CONTENT_CHUNKS);
+			$service->turnoffTags();
 			$service->detach($app->getBehaviorTags());
 			$service->attach($app->getBehaviorContentChunks());
 

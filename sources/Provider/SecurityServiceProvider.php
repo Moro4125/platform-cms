@@ -9,6 +9,7 @@ use \Silex\Application as CApplication;
 use \Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use \Symfony\Component\Security\Core\Encoder\Pbkdf2PasswordEncoder;
 use \Symfony\Component\Security\Http\Firewall\LogoutListener;
+use \Moro\Platform\Security\Voter\EntityEraseVoter;
 use \Moro\Platform\Security\User\PlatformUserProvider;
 use \Moro\Platform\Security\Authentication\UserAuthenticationSuccessHandler;
 use \Moro\Platform\Security\Authentication\UserAuthenticationFailureHandler;
@@ -70,6 +71,17 @@ class SecurityServiceProvider extends CProvider
 				$listener->addHandler(new UserLogoutHandler());
 				return $listener;
 			});
+		});
+
+		// Security voters.
+		$app['security.voters.entity_erase'] = $app->share(function($app) {
+			return new EntityEraseVoter($app);
+		});
+
+		$app['security.voters'] = $app->extend('security.voters', function($voters) use ($app) {
+			array_unshift($voters, $app['security.voters.entity_erase']);
+
+			return $voters;
 		});
 	}
 }
