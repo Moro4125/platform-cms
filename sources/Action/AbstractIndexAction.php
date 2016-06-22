@@ -361,7 +361,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 				continue;
 			}
 
-			return $this->_cached = [0, 1, 'id', 'id', 0, 0];
+			return $this->_cached = [0, $count, 'id', 'id', 0, 0];
 		}
 
 		$totalCount = $service->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);

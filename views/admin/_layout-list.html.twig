@@ -180,6 +180,15 @@
 						</td>
 					</tr>
 				{% endfor %}
+				{% if total == 0 %}
+					<tr class="b-list-row">
+						<td></td>
+						{% if icon_col_width %}<td></td>{% endif %}
+						<td><i class="text-danger">не найдено записей, подходящих под заданные условия</i></td>
+						<td class="hidden-xs hidden-sm"></td>
+						<td class="hidden-xs"></td>
+					</tr>
+				{% endif %}
 				</tbody>
 			</table>
 			<div class="panel-footer">
