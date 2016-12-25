@@ -75,7 +75,7 @@ trait TagsServiceTrait
 			$builder1->where('a.tag > "+~"');
 
 			$builder1->leftJoin('a', 'content_tags', 'ct', 'a.tag = ct.code');
-			$builder1->addSelect('ct.name, ct.parameters');
+			$builder1->addSelect('ct.name, ct.parameters, ct.kind');
 			$parameters = null;
 
 			if ($tags || $createdBy)
@@ -117,7 +117,7 @@ trait TagsServiceTrait
 						'lead' => empty($temp['lead']) ? '' : $temp['lead'],
 						'href' => '?search='.$search.$name.'.',
 						'good' => !empty($record['name']),
-						'bad' => !empty($temp['tags']) && !in_array($tagTarget, $temp['tags']),
+						'bad' => !empty($temp['tags']) && $record['kind'] != 1 && !in_array($tagTarget, $temp['tags']),
 					];
 				}
 			}

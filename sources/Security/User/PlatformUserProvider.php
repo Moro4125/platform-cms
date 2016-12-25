@@ -75,6 +75,11 @@ class PlatformUserProvider implements UserProviderInterface
 			throw new UsernameNotFoundException(sprintf('Profile "%s" does not exist.', $username));
 		}
 
+		if ($profile->hasTag('флаг: удалено'))
+		{
+			throw new UsernameNotFoundException(sprintf('Profile "%s" is deleted.', $username));
+		}
+
 		$roles = array_merge(explode(',', $auth->getRoles()), ['ROLE_USER']);
 		$credential = $auth->getCredential();
 
@@ -96,7 +101,7 @@ class PlatformUserProvider implements UserProviderInterface
 
 	/**
 	 * @param UserInterface|PlatformUser $user
-	 * @return User
+	 * @return User|PlatformUser
 	 */
 	public function refreshUser(UserInterface $user)
 	{
