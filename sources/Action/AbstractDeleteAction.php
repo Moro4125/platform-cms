@@ -249,7 +249,10 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 				}
 			}
 
-			$application->getServiceFlash()->success('Количество записей, отправленных в корзину: '.$count);
+			if ($count)
+			{
+				$application->getServiceFlash()->success('Количество записей, отправленных в корзину: '.$count);
+			}
 		}
 
 		return $application->redirect(
