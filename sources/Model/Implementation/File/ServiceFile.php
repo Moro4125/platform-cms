@@ -21,6 +21,7 @@ use \Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use \ArrayObject;
 use \DirectoryIterator;
 use \Exception;
+use \Symfony\Component\HttpKernel\HttpKernelInterface;
 use \Symfony\Component\Intl\Exception\NotImplementedException;
 use \PDO;
 
@@ -726,7 +727,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 
 				$request = Request::create($url, 'GET', ['remember' => 0], [], [], $_SERVER);
 				/** @var \Symfony\Component\HttpFoundation\Response $response */
-				$response = $application->handle($request);
+				$response = $application->handle($request, HttpKernelInterface::SUB_REQUEST);
 
 				if ($response->getStatusCode() == 200)
 				{
