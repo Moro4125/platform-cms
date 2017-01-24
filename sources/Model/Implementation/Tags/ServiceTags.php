@@ -69,6 +69,24 @@ class ServiceTags extends AbstractService implements ContentActionsInterface, Ta
 			$tags[] = normalizeTag('флаг: без пояснения');
 		}
 
+		$flag = true;
+		$needle = normalizeTag('Цель:');
+		$length = strlen($needle);
+
+		foreach ($tags as $tag)
+		{
+			if (substr($tag, 0, $length) === $needle)
+			{
+				$flag = false;
+				break;
+			}
+		}
+
+		if ($flag)
+		{
+			$tags[] = normalizeTag('Цель: ∅');
+		}
+
 		return $tags;
 	}
 

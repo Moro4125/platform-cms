@@ -77,23 +77,60 @@ class TagsChoiceType extends AbstractType
 	{
 		$service = $this->_application->getServiceTags();
 
+		/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface[] $list */
+		$list = [];
 		$filter = [
 			TagsInterface::PROP_KIND => TagsInterface::KIND_STANDARD,
+			'tag' => normalizeTag('Цель: ∅'),
 		];
 
-		if (!empty($options['filter']))
+		/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $tag */
+		foreach ($service->selectEntities(0, 1000, '!updated_at', array_keys($filter), array_values($filter)) as $tag)
 		{
-			if ($list = $service->selectEntities(0, 1, null, 'tag', $options['filter']))
+			$list[$tag->getCode()] = $tag;
+		}
+
+		ksort($list, SORT_STRING);
+
+		if (!empty($options['filter']) && $tempList = $service->selectEntities(0, 1, null, 'tag', $options['filter']))
+		{
+			/** @var TagsInterface $record */
+			$record = reset($tempList);
+			$filter['tag'] = $record->getName();
+			$topTags = [];
+
+			/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $tag */
+			foreach ($service->selectEntities(0, 1000, '!id', array_keys($filter), array_values($filter)) as $tag)
 			{
-				/** @var TagsInterface $record */
-				$record = reset($list);
-				$filter['tag'] = $record->getName();
+				$topTags[$tag->getCode()] = $tag;
+			}
+
+			ksort($topTags, SORT_STRING);
+			$list = array_merge($topTags, $list);
+		}
+
+		$usedTagsGroups = [];
+
+		foreach ($view->vars['value'] as $name)
+		{
+			if ($position = strpos($name, ':'))
+			{
+				$usedTagsGroups[substr($name, 0, $position + 1)] = true;
 			}
 		}
 
-		$list = $service->selectEntities(0, 100, 'code', array_keys($filter), array_values($filter));
+		$lastTags = [];
 
-		/** @var \Moro\Platform\Model\Implementation\Tags\TagsInterface $entity */
+		foreach ($list as $code => $entity)
+		{
+			if (($p = strpos($name = $entity->getName(), ':')) && isset($usedTagsGroups[substr($name, 0, $p + 1)]))
+			{
+				$lastTags[$code] = $entity;
+			}
+		}
+
+		$list = array_merge(array_diff_key($list, $lastTags), $lastTags);
+
 		foreach ($list as $entity)
 		{
 			if (!in_array($id = $entity->getName(), $view->vars['value']))

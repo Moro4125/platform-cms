@@ -188,6 +188,7 @@ class AbstractSetTagAction extends AbstractContentAction
 
 		$form->add('tags_add', 'choice_tags', [
 			'label' => 'Назначить ярлыки',
+			'filter' => 'Service: '.$this->serviceCode,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($tags_add, $tags_add),
@@ -195,6 +196,7 @@ class AbstractSetTagAction extends AbstractContentAction
 
 		$form->add('tags_del', 'choice_tags', [
 			'label' => 'Снять ярлыки',
+			'filter' => 'Service: '.$this->serviceCode,
 			'multiple' => true,
 			'required' => false,
 			'choices'  => array_combine($tags_del, $tags_del),
