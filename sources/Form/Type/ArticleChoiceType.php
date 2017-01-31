@@ -67,6 +67,7 @@ class ArticleChoiceType extends AbstractType
 		$resolver->setDefaults(array(
 			'validation_groups' => false,
 			'choices' => $choices,
+			'tag' => '',
 		));
 	}
 
@@ -107,10 +108,17 @@ class ArticleChoiceType extends AbstractType
 			$view->vars['value'] = reset($view->vars['value']);
 		}
 
+		$urlArgs = [];
+
+		if (!empty($options['tag']))
+		{
+			$urlArgs['tag'] = $options['tag'];
+		}
+
 		$view->vars['placeholder'] = null;
 		$view->vars['attr'] = array_merge($view->vars['attr'], [
 			'data-ajax--dataType' => 'json',
-			'data-ajax--url'      => $this->_application->url('admin-content-articles-select'),
+			'data-ajax--url'      => $this->_application->url('admin-content-articles-select', $urlArgs),
 			'data-template'       => 'templateSelect2Article',
 			'data-json'           => json_encode($list, JSON_UNESCAPED_UNICODE),
 			'data-allow-clear'    => empty($view->vars['multiple']),

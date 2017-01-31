@@ -33,6 +33,7 @@ class IndexAjaxArticlesAction
 		$pageSize = $this->_pageSize;
 
 		$list = [];
+		$tag = (string)$request->query->get('tag');
 		$page = max(1, (int)$request->query->get('page'));
 		$query = trim((string)$request->query->get('q'));
 		$offset = $pageSize * ($page - 1);
@@ -40,17 +41,40 @@ class IndexAjaxArticlesAction
 
 		($dots = strpos($query, '…')) && $query = substr($query, 0, $dots);
 
-		if ($size = $service->getCount([$field = '~name'], [$query], EntityInterface::FLAG_GET_FOR_UPDATE))
+		$fFields = [$field = '~name'];
+		$fValues = [$query];
+
+		if ($tag)
 		{
-			$list = $service->selectEntities($offset, $pageSize, $orderBy, ['~name'], [$query]);
+			$fFields[] = 'tag';
+			$fValues[] = $tag;
 		}
-		elseif ($size = $service->getCount([$field = strpos($query, ',') ? 'tag' : '~tag'], [$query], EntityInterface::FLAG_GET_FOR_UPDATE))
+
+		if ($size = $service->getCount($fFields, $fValues, EntityInterface::FLAG_GET_FOR_UPDATE))
 		{
-			$list = $service->selectEntities($offset, $pageSize, $orderBy, [$field], [$query]);
+			$list = $service->selectEntities($offset, $pageSize, $orderBy, $fFields, $fValues);
 		}
 		else
 		{
-			$field = 'not found';
+			$field = strpos($query, ',') ? 'tag' : '~tag';
+
+			$fFields = [$field];
+			$fValues = [$query];
+
+			if ($tag)
+			{
+				$fFields[] = 'tag';
+				$fValues[] = $tag;
+			}
+
+			if ($size = $service->getCount($fFields, $fValues, EntityInterface::FLAG_GET_FOR_UPDATE))
+			{
+				$list = $service->selectEntities($offset, $pageSize, $orderBy, $fFields, $fValues);
+			}
+			else
+			{
+				$field = 'not found';
+			}
 		}
 
 		return $app->json([
