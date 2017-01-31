@@ -198,6 +198,62 @@ class HistoryBehavior extends AbstractBehavior
 	/**
 	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
 	 *
+	 * @param string $key
+	 * @param ArrayObject $next
+	 * @param ArrayObject $prev
+	 * @param null|string|array $notNull
+	 */
+	protected function historyMergeIndex($key, ArrayObject $next, ArrayObject $prev, $notNull = null)
+	{
+		$value = $next->offsetGet($key);
+
+		if (!$prev->offsetExists($key))
+		{
+			list($del, $add, $upd) = $next->offsetGet($key);
+
+			foreach (array_unique(array_merge($del, $add, $upd)) as $index)
+			{
+				if ($next->offsetExists($offset = $key.'.'.$index))
+				{
+					$this->historyMergeSimple($offset, $next, $prev, $notNull);
+				}
+			}
+
+			$prev->offsetSet($key, $value);
+			$next->offsetUnset($key);
+		}
+		else
+		{
+			list($del1, $add1, $upd1) = $prev->offsetGet($key);
+			list($del2, $add2, $upd2) = $next->offsetGet($key);
+
+			$all0 = array_merge($del1, $del2, $add1, $add2, $upd1, $upd2);
+			$del0 = array_merge(array_diff((array)$del1, (array)$add2), array_diff((array)$del2, (array)$add1));
+			$add0 = array_merge(array_diff((array)$add1, (array)$del2), array_diff((array)$add2, (array)$del1));
+			$upd0 = array_diff($all0, $del0, $add0);
+
+			foreach (array_unique($all0) as $index)
+			{
+				if ($next->offsetExists($offset = $key.'.'.$index))
+				{
+					$this->historyMergeSimple($offset, $next, $prev, $notNull);
+				}
+			}
+
+			$upd0 = array_filter($upd0, function($index) use ($key, $prev) {
+				return $prev->offsetExists($key.'.'.$index);
+			});
+
+			$prev->offsetSet($key, [array_unique($del0), array_unique($add0), array_unique($upd0)]);
+			$next->offsetUnset($key);
+
+			empty($del0) && empty($add0) && empty($upd0) && !in_array($key,(array)$notNull) && $prev->offsetUnset($key);
+		}
+	}
+
+	/**
+	 * Helper for handlers of event HistoryInterface::STATE_TRY_MERGE_HISTORY
+	 *
 	 * @return null|string
 	 */
 	protected function historyHasNotMergedItems()

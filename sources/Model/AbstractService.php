@@ -945,9 +945,10 @@ abstract class AbstractService implements SplSubject
 		is_array($b) || $b = $b->getProperties();
 
 		$handler = function($a, $b, $prefix = '') use (&$result, &$handler) {
-			$keys = array_unique(array_merge(array_keys($a), array_keys($b)));
+			$ak = array_keys($a);
+			$bk = array_keys($b);
 
-			if (is_numeric(reset($keys)))
+			if (($ak || $bk) && (!$ak || $ak === range(0, count($ak) -1)) && (!$bk || $bk === range(0, count($bk) -1)))
 			{
 				$av = array_diff($a, $b);
 				$bv = array_diff($b, $a);
@@ -959,6 +960,9 @@ abstract class AbstractService implements SplSubject
 
 				return;
 			}
+
+			$keys = array_unique(array_merge($ak, $bk));
+			$temp = [];
 
 			foreach ($keys as $property)
 			{
@@ -972,6 +976,19 @@ abstract class AbstractService implements SplSubject
 				elseif (empty($av) != empty($bv) && gettype($av) != gettype($bv) || $av != $bv)
 				{
 					$result[$prefix.$property] = [$av, $bv];
+					$temp[] = $property;
+				}
+			}
+
+			if (is_numeric(reset($keys)))
+			{
+				$av = array_diff($ak, $bk);
+				$bv = array_diff($bk, $ak);
+				$cv = array_intersect($ak, $bk, $temp);
+
+				if (count($av) || count($bv) || count($cv))
+				{
+					$result[substr($prefix, 0, -1)] = [array_values($av), array_values($bv), array_values($cv)];
 				}
 			}
 		};

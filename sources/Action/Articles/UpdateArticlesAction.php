@@ -150,7 +150,7 @@ class UpdateArticlesAction extends AbstractUpdateAction
 
 	/**
 	 * @param \Moro\Platform\Model\EntityInterface $entity
-	 * @return $this
+	 * @return AbstractUpdateAction
 	 */
 	protected function _setEntity(EntityInterface $entity)
 	{
