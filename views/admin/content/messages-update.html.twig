@@ -93,9 +93,9 @@
 			<strong>Текста оповещения </strong>
 			{%- if diff["parameters.text"] is iterable -%}
 				<span>был изменён:</span>
-				{%- for temp in diff["parameters.text"] -%}
+				{%- for temp in diff["parameters.text"]|reverse -%}
 					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
-					<a class="history_diff" data-diff="{{ temp }}" data-from="history_text" data-title="Текст оповещения" href="#">
+					<a class="history_diff" data-reverse="Y" data-diff="{{ temp }}" data-from="history_text" data-title="Текст оповещения" href="#">
 						<span class="glyphicon glyphicon-file"></span>
 					</a>
 				{%- endfor -%}

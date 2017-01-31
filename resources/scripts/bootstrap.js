@@ -403,7 +403,7 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					jQuery(".history_diff").each(function() {
 						var self = jQuery(this);
 						if (self.data("from") == from) {
-							list.push(this);
+							self.data("reverse") ? list.unshift(this) : list.push(this);
 						}
 					});
 

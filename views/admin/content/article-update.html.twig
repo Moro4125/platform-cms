@@ -212,9 +212,9 @@
 			<strong>Текст лида </strong>
 			{%- if diff["parameters.lead"] is iterable -%}
 				<span>был изменён:</span>
-				{%- for temp in diff["parameters.lead"] -%}
+				{%- for temp in diff["parameters.lead"]|reverse -%}
 					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
-					<a class="history_diff" data-diff="{{ temp }}" data-from="history_lead" data-title="Текст лида" href="#">
+					<a class="history_diff" data-reverse="Y" data-diff="{{ temp }}" data-from="history_lead" data-title="Текст лида" href="#">
 						<span class="glyphicon glyphicon-file"></span>
 					</a>
 				{%- endfor -%}
@@ -280,9 +280,9 @@
 			<strong>Блок текста </strong>
 			{%- if diff["parameters.gallery_text"] is iterable -%}
 				<span>был изменён:</span>
-				{%- for temp in diff["parameters.gallery_text"] -%}
+				{%- for temp in diff["parameters.gallery_text"]|reverse -%}
 					<span>{% if not loop.first %}, {% else %}&nbsp;{% endif %}</span>
-					<a class="history_diff" data-diff="{{ temp }}" data-from="history_text" data-title="Блок текста" href="#">
+					<a class="history_diff" data-reverse="Y" data-diff="{{ temp }}" data-from="history_text" data-title="Блок текста" href="#">
 						<span class="glyphicon glyphicon-file"></span>
 					</a>
 				{%- endfor -%}
