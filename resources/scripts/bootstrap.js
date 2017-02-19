@@ -400,11 +400,15 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 					from = self.data("from");
 					text = jQuery("#" + from).data("text");
 
-					jQuery(".history_diff").each(function() {
-						var self = jQuery(this);
-						if (self.data("from") == from) {
-							self.data("reverse") ? list.unshift(this) : list.push(this);
-						}
+					jQuery(".history-changes").each(function() {
+						var chunk = [];
+						jQuery(".history_diff", this).each(function() {
+							var self = jQuery(this);
+							if (self.data("from") == from) {
+								self.data("reverse") ? chunk.unshift(this) : chunk.push(this);
+							}
+						});
+						list = list.concat(chunk);
 					});
 
 					for (i = 0; i < list.length; i = (list[i] != that) ? i + 1 : list.length) {
