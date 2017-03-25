@@ -44,6 +44,11 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	public $pageSize = 30;
 
 	/**
+	 * @var bool  Флаг использования поиска по числовому идентификатору.
+	 */
+	public $useId = true;
+
+	/**
 	 * @var bool  Флаг использования поиска по началу названия.
 	 */
 	public $useName = true;
@@ -62,11 +67,6 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	 * @var bool  Флаг использования поиска по адресу эл.почты.
 	 */
 	public $useEmail = false;
-
-	/**
-	 * @var bool  Флаг использования поиска по числовому идентификатору.
-	 */
-	public $useId = true;
 
 	/**
 	 * @var string  Заголовок окна.
