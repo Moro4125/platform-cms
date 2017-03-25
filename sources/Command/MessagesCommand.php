@@ -49,6 +49,8 @@ class MessagesCommand extends AbstractCommand
 			/** @noinspection HtmlUnknownTag */
 			$output->writeln('<error>Known actions: send.</error>');
 		}
+
+		return null;
 	}
 
 	/**

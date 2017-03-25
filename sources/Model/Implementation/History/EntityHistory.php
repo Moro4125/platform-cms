@@ -68,5 +68,6 @@ class EntityHistory implements HistoryInterface
 	public function setRequestId($id)
 	{
 		$this->_properties[self::PROP_REQUEST_ID] = (string)$id;
+		return $this;
 	}
 }

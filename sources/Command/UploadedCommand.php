@@ -67,6 +67,8 @@ class UploadedCommand extends AbstractCommand
 			/** @noinspection HtmlUnknownTag */
 			$output->writeln('<error>Please, enter on of the actions: status, restore, clean.</error>');
 		}
+
+		return null;
 	}
 
 	/**

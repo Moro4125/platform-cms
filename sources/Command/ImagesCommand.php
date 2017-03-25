@@ -59,6 +59,8 @@ class ImagesCommand extends AbstractCommand
 			/** @noinspection HtmlUnknownTag */
 			$output->writeln('<error>Please, enter on of the actions: status or clean.</error>');
 		}
+
+		return null;
 	}
 
 	/**

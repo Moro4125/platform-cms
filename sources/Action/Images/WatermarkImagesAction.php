@@ -82,5 +82,7 @@ class WatermarkImagesAction extends AbstractSilentAction
 
 		$message = sprintf('Изменения коснулись %1$s изображений и %2$s файлов', count($applied), $files);
 		$this->getApplication()->getServiceFlash()->info($message);
+
+		return null;
 	}
 }

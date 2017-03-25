@@ -20,7 +20,7 @@ class CreateSubscribersAction extends AbstractCreateAction
 	public $routeUpdate = 'admin-users-subscribers-update';
 
 	/**
-	 * @return \Moro\Platform\Model\Implementation\Subscribers\EntitySubscribers
+	 * @return \Moro\Platform\Model\Implementation\Subscribers\SubscribersInterface
 	 */
 	protected function _createNewEntity()
 	{

@@ -20,7 +20,7 @@ class CreateProfilesAction extends AbstractCreateAction
 	public $routeUpdate = 'admin-users-profiles-update';
 
 	/**
-	 * @return \Moro\Platform\Model\Implementation\Users\EntityUsers
+	 * @return \Moro\Platform\Model\Implementation\Users\UsersInterface
 	 */
 	protected function _createNewEntity()
 	{

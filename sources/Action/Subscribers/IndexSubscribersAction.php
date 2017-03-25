@@ -4,7 +4,6 @@
  */
 namespace Moro\Platform\Action\Subscribers;
 use \Moro\Platform\Action\AbstractIndexAction;
-use \Moro\Platform\Model\Implementation\Subscribers\SubscribersInterface;
 use \Moro\Platform\Application;
 
 /**

@@ -233,7 +233,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 * @param null|string $order
 	 * @param null|string $where
 	 * @param null|string $value
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminListForm(Application $application, $offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
@@ -249,7 +249,7 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	 * @param \Moro\Platform\Application $application
 	 * @param ContentInterface|\Moro\Platform\Model\EntityInterface $entity
 	 * @param Request $request
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminUpdateForm(Application $application, EntityInterface $entity, Request $request)
 	{

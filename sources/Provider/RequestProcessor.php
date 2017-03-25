@@ -5,7 +5,7 @@
 namespace Moro\Platform\Provider;
 use \Silex\Application;
 use \Symfony\Component\HttpFoundation\RequestStack;
-use \Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * RequestProcessor adds extra information about the request.
@@ -55,7 +55,7 @@ class RequestProcessor
         return $this->clientIp;
     }
 
-    private function getUsername(SecurityContextInterface $securityContext)
+    private function getUsername(TokenStorageInterface $securityContext)
     {
         try {
             $token = $securityContext->getToken();

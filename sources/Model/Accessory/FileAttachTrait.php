@@ -49,7 +49,7 @@ trait FileAttachTrait
 	/**
 	 * @param Application $app
 	 * @param null|EntityInterface $entity
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminUploadForm(Application $app, EntityInterface $entity = null)
 	{

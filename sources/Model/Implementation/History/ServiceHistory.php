@@ -10,6 +10,8 @@ use \Moro\Platform\Model\EntityInterface;
 /**
  * Class ServiceHistory
  * @package Moro\Platform\Model\Implementation\History
+ *
+ * @method HistoryInterface[] selectEntities($offset = null, $count = null, $orderBy = null, $filter = null, $value = null, $flags = null)
  */
 class ServiceHistory extends AbstractService
 {

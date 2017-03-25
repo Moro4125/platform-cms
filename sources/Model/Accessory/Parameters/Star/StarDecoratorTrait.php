@@ -16,7 +16,8 @@ trait StarDecoratorTrait
 	 */
 	public function hasStar($user)
 	{
-		return isset($this->_entity) ? $this->_entity->hasStar($user) : [];
+		/** @noinspection PhpUndefinedMethodInspection */
+		return isset($this->_entity) ? $this->_entity->hasStar($user) : null;
 	}
 
 	/**
@@ -25,6 +26,7 @@ trait StarDecoratorTrait
 	 */
 	public function addStar($user)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		isset($this->_entity) && $this->_entity->addStar($user);
 
 		return $this;
@@ -36,6 +38,7 @@ trait StarDecoratorTrait
 	 */
 	public function delStar($user)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		isset($this->_entity) && $this->_entity->delStar($user);
 
 		return $this;

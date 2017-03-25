@@ -32,7 +32,6 @@ class ClientRoleBehavior extends AbstractBehavior
 
 	/**
 	 * @param AbstractService $service
-	 * @return array
 	 */
 	protected function _initContext($service)
 	{
@@ -46,18 +45,18 @@ class ClientRoleBehavior extends AbstractBehavior
 
 	/**
 	 * @param \ArrayObject $args
-	 * @return array
+	 * @return array|null
 	 */
 	protected function _onBeforeSelect($args)
 	{
 		if ($args['flags'] & EntityInterface::FLAG_GET_FOR_UPDATE == 0)
 		{
-			return;
+			return null;
 		}
 
 		if ($args['flags'] & EntityInterface::FLAG_SYSTEM_CHANGES)
 		{
-			return;
+			return null;
 		}
 
 		$filter = $args['filter'];
@@ -71,6 +70,8 @@ class ClientRoleBehavior extends AbstractBehavior
 
 		$args['filter'] = $filter;
 		$args['value']  = $value;
+
+		return null;
 	}
 
 	/**

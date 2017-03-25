@@ -90,7 +90,7 @@ class DiffMatchPatch
 	 * @param boolean $checkLines Optional speedup flag.  If present and false,
 	 *     then don't run a line-level diff first to identify the changed areas.
 	 *     Defaults to true, which does a faster, slightly less optimal diff
-	 * @return array <number|string> Array of diff tuples.
+	 * @return array <number|string> Array of diff tuple.
 	 */
 	public function diffMain($text1, $text2, $checkLines = true)
 	{
@@ -128,7 +128,7 @@ class DiffMatchPatch
 
 		$this->diffCleanupMerge($diffs);
 		return $diffs;
-	}
+	}/** @noinspection SpellCheckingInspection */
 
 	/**
 	 * Find the differences between two texts.  Assumes that the texts do not
@@ -139,7 +139,7 @@ class DiffMatchPatch
 	 * @param boolean $checkLines Speedup flag.  If false, then don't run a
 	 *     line-level diff first to identify the changed areas.
 	 *     If true, then run a faster, slightly less optimal diff
-	 * @return array <number|string> Array of diff tuples.
+	 * @return array <number|string> Array of diff tuple.
 	 * @private
 	 */
 	protected function diffCompute($text1, $text2, $checkLines)
@@ -320,7 +320,7 @@ class DiffMatchPatch
 	/**
 	 * Split a text into an array of strings.  Reduce the texts to a string of
 	 * hashes where each Unicode character represents one line.
-	 * Modifies linearray and linehash through being a closure.
+	 * Modifies lineArray and lineHash through being a closure.
 	 *
 	 * @param string $text String to encode
 	 * @param array $lineArray
@@ -371,7 +371,7 @@ class DiffMatchPatch
 	 * Rehydrate the text in a diff from a string of line hashes to real lines of
 	 * text.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @param array $lineArray {Array.<string>} Array of unique strings.
 	 */
 	protected function diffCharsToLines(&$diffs, $lineArray)
@@ -399,7 +399,7 @@ class DiffMatchPatch
 	 *
 	 * @param string $text1 Old string to be diffed.
 	 * @param string $text2 New string to be diffed.
-	 * @return array {Array.<Array.<number|string>>?} Array of diff tuples or null if no
+	 * @return array {Array.<Array.<number|string>>?} Array of diff tuple or null if no
 	 *     diff available.
 	 */
 	protected function diffMap($text1, $text2)
@@ -579,7 +579,7 @@ class DiffMatchPatch
 	 * @param array $v_map {Array.<Object>} Array of paths.ers
 	 * @param string $text1 Old string fragment to be diffed.
 	 * @param string $text2 New string fragment to be diffed.
-	 * @return array {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @return array {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffPath1($v_map, $text1, $text2)
 	{
@@ -653,7 +653,7 @@ class DiffMatchPatch
 	 * @param array $v_map {Array.<Object>} Array of paths.
 	 * @param string $text1 Old string fragment to be diffed.
 	 * @param string $text2 New string fragment to be diffed.
-	 * @return array {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @return array {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffPath2($v_map, $text1, $text2)
 	{
@@ -836,7 +836,7 @@ class DiffMatchPatch
 	}
 
 	/**
-	 * Does a mb_substring of shorttext exist within longtext such that the mb_substring
+	 * Does a mb_substring of shortText exist within longtext such that the mb_substring
 	 * is at least half the length of longtext?
 	 * Closure, but does not reference any external variables.
 	 *
@@ -844,8 +844,8 @@ class DiffMatchPatch
 	 * @param string $shortText Shorter string.
 	 * @param int $i Start index of quarter length mb_substring within longtext
 	 * @return array {Array.<string>?} Five element Array, containing the prefix of
-	 *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
-	 *     of shorttext and the common middle.  Or null if there was no match.
+	 *     longtext, the suffix of longtext, the prefix of shortText, the suffix
+	 *     of shortText and the common middle.  Or null if there was no match.
 	 */
 	protected function diffHalfMatchI($longText, $shortText, $i)
 	{
@@ -887,7 +887,7 @@ class DiffMatchPatch
 	/**
 	 * Reduce the number of edits by eliminating semantically trivial equalities.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffCleanupSemantic(&$diffs)
 	{
@@ -955,7 +955,7 @@ class DiffMatchPatch
 	 * which can be shifted sideways to align the edit to a word boundary.
 	 * e.g: The c<ins>at c</ins>ame. -> The <ins>cat </ins>came.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffCleanupSemanticLossless(&$diffs)
 	{
@@ -1099,7 +1099,7 @@ class DiffMatchPatch
 	/**
 	 * Reduce the number of edits by eliminating operationally trivial equalities.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffCleanupEfficiency(&$diffs)
 	{
@@ -1199,9 +1199,9 @@ class DiffMatchPatch
 
 	/**
 	 * Reorder and merge like edit sections.  Merge equalities.
-	 * Any edit section can move as long as it doesn't cross an equality.
+	 * Any edit section can move as long as it does not cross an equality.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 */
 	protected function diffCleanupMerge(&$diffs)
 	{
@@ -1235,7 +1235,7 @@ class DiffMatchPatch
 					{
 						if ($count_delete !== 0 && $count_insert !== 0)
 						{
-							// Factor out any common prefixies.
+							// Factor out any common prefixes.
 							$commonLength = $this->diffCommonPrefix($text_insert, $text_delete);
 
 							if ($commonLength !== 0)
@@ -1256,7 +1256,7 @@ class DiffMatchPatch
 								$text_delete = mb_substr($text_delete, $commonLength);
 							}
 
-							// Factor out any common suffixies.
+							// Factor out any common suffixes.
 							$commonLength = $this->diffCommonSuffix($text_insert, $text_delete);
 
 							if ($commonLength !== 0)
@@ -1360,7 +1360,7 @@ class DiffMatchPatch
 	 * text2.
 	 * e.g. 'The cat' vs 'The big cat', 1->1, 5->8
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @param int $loc Location within text1.
 	 * @return int Location within text2.
 	 */
@@ -1405,7 +1405,7 @@ class DiffMatchPatch
 	/**
 	 * Convert a diff array into a pretty HTML report.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @return string HTML representation.
 	 */
 	public function diffPrettyHtml($diffs)
@@ -1450,7 +1450,7 @@ class DiffMatchPatch
 	/**
 	 * Compute and return the source text (all equalities and deletions).
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @return string Source text.
 	 */
 	public function diffText1($diffs)
@@ -1471,7 +1471,7 @@ class DiffMatchPatch
 	/**
 	 * Compute and return the destination text (all equalities and insertions).
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @return string Destination text.
 	 */
 	public function diffText2($diffs)
@@ -1493,7 +1493,7 @@ class DiffMatchPatch
 	 * Compute the Levenshtein distance; the number of inserted, deleted or
 	 * substituted characters.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @return int Number of changes.
 	 */
 	public function diffLevenshtein($diffs)
@@ -1537,7 +1537,7 @@ class DiffMatchPatch
 	 * E.g. =3\t-2\t+ing  -> Keep 3 chars, delete 2 chars, insert 'ing'.
 	 * Operations are tab-separated.  Inserted text is escaped using %xx notation.
 	 *
-	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @param array $diffs {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @return string Delta text.
 	 */
 	public function diffToDelta($diffs)
@@ -1571,7 +1571,7 @@ class DiffMatchPatch
 	 *
 	 * @param string $text1 Source string for the diff.
 	 * @param string $delta Delta text.
-	 * @return array {Array.<Array.<number|string>>} Array of diff tuples.
+	 * @return array {Array.<Array.<number|string>>} Array of diff tuple.
 	 * @throws Exception If invalid input.
 	 */
 	public function diffFromDelta($text1, $delta)
@@ -1877,7 +1877,7 @@ class DiffMatchPatch
 		$padding = 0;
 
 		while ((mb_strlen($pattern) === 0 // Javascript's indexOf/lastIndexOd return 0/strlen respectively if pattern = ''
-			|| mb_strpos($text, $pattern) !== mb_strrpos($text, $pattern)) && $pattern !== $previousPattern // avoid infinte loop
+			|| mb_strpos($text, $pattern) !== mb_strrpos($text, $pattern)) && $pattern !== $previousPattern // avoid infinite loop
 			&& mb_strlen($pattern) < $this->MATCH_MAX_BITS - $this->Patch_Margin - $this->Patch_Margin)
 		{
 			$padding += $this->Patch_Margin;
@@ -1929,10 +1929,10 @@ class DiffMatchPatch
 	 * a = text1, b = text2, c = diffs
 	 *
 	 * @param string|array $a {string|Array.<Array.<number|string>>} text1 (methods 1,3,4) or
-	 * Array of diff tuples for text1 to text2 (method 2).
+	 * Array of diff tuple for text1 to text2 (method 2).
 	 * @param string|array $opt_b {string|Array.<Array.<number|string>>} text2 (methods 1,4) or
-	 * Array of diff tuples for text1 to text2 (method 3) or undefined (method 2).
-	 * @param string|array $opt_c {string|Array.<Array.<number|string>>} Array of diff tuples for
+	 * Array of diff tuple for text1 to text2 (method 3) or undefined (method 2).
+	 * @param string|array $opt_c {string|Array.<Array.<number|string>>} Array of diff tuple for
 	 * text1 to text2 (method 4) or undefined (methods 1,2,3).
 	 * @return PatchObj[] {Array.<patch_obj>} Array of patch objects.
 	 * Array of patch objects.
@@ -1988,8 +1988,8 @@ class DiffMatchPatch
 		$patchDiffLength = 0; // Keeping our own length var is faster in JS.
 		$charCount1 = 0; // Number of characters into the text1 string.
 		$charCount2 = 0; // Number of characters into the text2 string.
-		// Start with text1 (prepatch_text) and apply the diffs until we arrive at
-		// text2 (postpatch_text).  We recreate the patches one by one to determine
+		// Start with text1 (prePatchText) and apply the diffs until we arrive at
+		// text2 (postPatchText).  We recreate the patches one by one to determine
 		// context info.
 		$prePatchText = $text1;
 		$postPatchText = $text1;
@@ -2100,7 +2100,7 @@ class DiffMatchPatch
 		}
 
 		return $patchesCopy;
-	}
+	}/** @noinspection SpellCheckingInspection */
 
 	/**
 	 * Merge a set of patches onto the text.  Return a patched text, as well
@@ -2662,9 +2662,9 @@ class PatchObj
 	public $length2 = 0;
 
 	/**
-	 * Emmulate GNU diff's format.
+	 * Emulate GNU diff's format.
 	 * Header: @@ -382,8 +481,9 @@
-	 * Indicies are printed as 1-based, not 0-based.
+	 * Indices are printed as 1-based, not 0-based.
 	 *
 	 * @return string The GNU diff string.
 	 * @throws Exception
@@ -2673,31 +2673,31 @@ class PatchObj
 	{
 		if ($this->length1 === 0)
 		{
-			$coords1 = $this->start1 . ',0';
+			$coordinates1 = $this->start1 . ',0';
 		}
 		elseif ($this->length1 == 1)
 		{
-			$coords1 = $this->start1 + 1;
+			$coordinates1 = $this->start1 + 1;
 		}
 		else
 		{
-			$coords1 = ($this->start1 + 1) . ',' . $this->length1;
+			$coordinates1 = ($this->start1 + 1) . ',' . $this->length1;
 		}
 
 		if ($this->length2 === 0)
 		{
-			$coords2 = $this->start2 . ',0';
+			$coordinates2 = $this->start2 . ',0';
 		}
 		elseif ($this->length2 == 1)
 		{
-			$coords2 = $this->start2 + 1;
+			$coordinates2 = $this->start2 + 1;
 		}
 		else
 		{
-			$coords2 = ($this->start2 + 1) . ',' . $this->length2;
+			$coordinates2 = ($this->start2 + 1) . ',' . $this->length2;
 		}
 
-		$text = array('@@ -' . $coords1 . ' +' . $coords2 . " @@\n");
+		$text = array('@@ -' . $coordinates1 . ' +' . $coordinates2 . " @@\n");
 
 		// Escape the body of the patch with %xx notation.
 		for ($x = 0, $l = count($this->diffs); $x < $l; $x++)

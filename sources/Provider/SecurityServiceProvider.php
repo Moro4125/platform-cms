@@ -3,7 +3,6 @@
  * Class SecurityProvider
  */
 namespace Moro\Platform\Provider;
-use \Silex\Application;
 use \Silex\Provider\SecurityServiceProvider as CProvider;
 use \Silex\Application as CApplication;
 use \Symfony\Component\Security\Core\Encoder\EncoderFactory;

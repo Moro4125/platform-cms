@@ -49,7 +49,7 @@ class ServiceOptions extends AbstractService implements ArrayAccess
 
 	/**
 	 * @param \Moro\Platform\Application $application
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminForm(Application $application)
 	{

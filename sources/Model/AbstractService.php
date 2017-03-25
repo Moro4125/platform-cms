@@ -434,7 +434,7 @@ abstract class AbstractService implements SplSubject
 
 	/**
 	 * @param EntityInterface $entity
-	 * @return AbstractDecorator|EntityTrait
+	 * @return AbstractDecorator|EntityInterface
 	 */
 	protected function _applyDecorator(EntityInterface $entity)
 	{

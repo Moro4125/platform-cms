@@ -7,7 +7,6 @@ use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Class FieldsetExtension
@@ -22,15 +21,6 @@ class FieldsetExtension extends AbstractTypeExtension
 	{
 		// расширение будет работать с любым типом полей
 		return 'form';
-	}
-
-	/**
-	 * @param OptionsResolverInterface $resolver
-	 */
-	public function setDefaultOptions(OptionsResolverInterface $resolver)
-	{
-		/** @noinspection PhpParamsInspection */
-		$this->configureOptions($resolver);
 	}
 
 	/**

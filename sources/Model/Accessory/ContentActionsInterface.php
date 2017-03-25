@@ -44,7 +44,7 @@ interface ContentActionsInterface extends LockInterface
 	 * @param \Moro\Platform\Application $application
 	 * @param EntityInterface $entity
 	 * @param Request $request
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	function createAdminUpdateForm(Application $application, EntityInterface $entity, Request $request);
 

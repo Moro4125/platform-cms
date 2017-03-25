@@ -15,6 +15,7 @@ trait UpdatedByDecoratorTrait
 	 */
 	public function getCreatedBy()
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->getCreatedBy() : null;
 	}
 
@@ -26,6 +27,7 @@ trait UpdatedByDecoratorTrait
 	{
 		if (isset($this->_entity))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$this->_entity->setCreatedBy($user ? (string)$user : null);
 		}
 
@@ -37,6 +39,7 @@ trait UpdatedByDecoratorTrait
 	 */
 	public function getUpdatedBy()
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->getUpdatedBy() : null;
 	}
 
@@ -48,6 +51,7 @@ trait UpdatedByDecoratorTrait
 	{
 		if (isset($this->_entity))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$this->_entity->setUpdatedBy($user ? (string)$user : null);
 		}
 

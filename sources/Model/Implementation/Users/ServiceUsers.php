@@ -267,7 +267,7 @@ class ServiceUsers extends AbstractService implements ContentActionsInterface, T
 	 * @param null|string $order
 	 * @param null|string $where
 	 * @param null|string $value
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminListForm(Application $application, $offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
@@ -283,7 +283,7 @@ class ServiceUsers extends AbstractService implements ContentActionsInterface, T
 	 * @param Application $application
 	 * @param UsersInterface|EntityInterface $entity
 	 * @param Request $request
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminUpdateForm(Application $application, EntityInterface $entity, Request $request)
 	{

@@ -15,6 +15,7 @@ trait TagsDecoratorTrait
 	 */
 	public function getTags()
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->getTags() : [];
 	}
 
@@ -24,6 +25,7 @@ trait TagsDecoratorTrait
 	 */
 	public function setTags(array $tags)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		isset($this->_entity) && $this->_entity->setTags($tags);
 
 		return $this;
@@ -35,6 +37,7 @@ trait TagsDecoratorTrait
 	 */
 	public function addTags(array $tags)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		isset($this->_entity) && $this->_entity->addTags($tags);
 
 		return $this;
@@ -46,6 +49,7 @@ trait TagsDecoratorTrait
 	 */
 	public function delTags(array $tags)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		isset($this->_entity) && $this->_entity->delTags($tags);
 
 		return $this;
@@ -57,6 +61,7 @@ trait TagsDecoratorTrait
 	 */
 	public function hasTag($tag)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->hasTag($tag) : false;
 	}
 }

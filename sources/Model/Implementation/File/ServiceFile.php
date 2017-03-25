@@ -418,7 +418,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 * @param null|string $order
 	 * @param null|string $where
 	 * @param null|string $value
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminListForm(Application $application, $offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
@@ -434,7 +434,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 * @param \Moro\Platform\Application $application
 	 * @param null|string $back
 	 * @param null|string $tags
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminUploadsForm(Application $application, $back = null, $tags = null)
 	{

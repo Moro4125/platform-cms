@@ -15,6 +15,7 @@ trait OrderAtDecoratorTrait
 	 */
 	public function getOrderAt()
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->getOrderAt() : null;
 	}
 
@@ -26,6 +27,7 @@ trait OrderAtDecoratorTrait
 	{
 		if (isset($this->_entity))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$this->_entity->setOrderAt($value);
 		}
 

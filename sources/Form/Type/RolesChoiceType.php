@@ -4,11 +4,9 @@
  */
 namespace Moro\Platform\Form\Type;
 use \Symfony\Component\Form\AbstractType;
-use \Symfony\Component\Form\ChoiceList\View\ChoiceView;
 use \Symfony\Component\Form\FormView;
 use \Symfony\Component\Form\FormInterface;
 use \Symfony\Component\OptionsResolver\OptionsResolver;
-use \Moro\Platform\Model\Implementation\Tags\TagsInterface;
 use \Moro\Platform\Application;
 
 /**

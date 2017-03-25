@@ -15,6 +15,7 @@ trait ParametersDecoratorTrait
 	 */
 	public function getParameters()
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->getParameters() : [];
 	}
 
@@ -26,6 +27,7 @@ trait ParametersDecoratorTrait
 	{
 		if (isset($this->_entity))
 		{
+			/** @noinspection PhpUndefinedMethodInspection */
 			$this->_entity->setParameters($parameters);
 		}
 
@@ -39,6 +41,7 @@ trait ParametersDecoratorTrait
 	 */
 	public function selectParameter($name, $default = null)
 	{
+		/** @noinspection PhpUndefinedMethodInspection */
 		return isset($this->_entity) ? $this->_entity->selectParameter($name, $default) : $default;
 	}
 }

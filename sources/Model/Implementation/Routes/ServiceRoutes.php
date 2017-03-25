@@ -8,7 +8,7 @@ use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Form\RoutesForm;
 use \Moro\Platform\Model\EntityInterface;
-use \Symfony\Component\Form\Form;
+use \Symfony\Component\Form\FormInterface;
 use \Exception;
 use \PDO;
 
@@ -279,7 +279,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	/**
 	 * @param \Moro\Platform\Application $application
 	 * @param RoutesInterface[] $list
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminListForm(Application $application, $list)
 	{
@@ -293,10 +293,10 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 	/**
 	 * @param \Moro\Platform\Application $application
-	 * @param Form $form
+	 * @param FormInterface $form
 	 * @return int
 	 */
-	public function commitAdminListForm(Application $application, Form $form)
+	public function commitAdminListForm(Application $application, FormInterface $form)
 	{
 		$affected =  0;
 		$list = $this->selectEntities(null, null, null, null, null, EntityInterface::FLAG_GET_FOR_UPDATE);
