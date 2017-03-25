@@ -346,8 +346,15 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$where === '~|code' && $where = '~|hash';
 		$order === 'code'  && $order = 'name';
 
-		is_array($where) && (false !== $index = array_search('~code', $where, true)) && ($where[$index] = '~hash');
-		is_array($where) && (false !== $index = array_search('~|code', $where, true)) && ($where[$index] = '~|hash');
+		while (is_array($where) && (false !== $index = array_search('~code', $where, true)))
+		{
+			$where[$index] = '~hash';
+		}
+
+		while (is_array($where) && (false !== $index = array_search('~|code', $where, true)))
+		{
+			$where[$index] = '~|hash';
+		}
 
 		$list  = $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 		$user  = '+star:'.$this->_userToken->getUsername();
@@ -366,8 +373,15 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$where === '~code' && $where = '~hash';
 		$where === '~|code' && $where = '~|hash';
 
-		is_array($where) && (false !== $index = array_search('~code', $where, true)) && ($where[$index] = '~hash');
-		is_array($where) && (false !== $index = array_search('~|code', $where, true)) && ($where[$index] = '~|hash');
+		while (is_array($where) && (false !== $index = array_search('~code', $where, true)))
+		{
+			$where[$index] = '~hash';
+		}
+
+		while (is_array($where) && (false !== $index = array_search('~|code', $where, true)))
+		{
+			$where[$index] = '~|hash';
+		}
 
 		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}

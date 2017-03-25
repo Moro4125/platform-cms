@@ -264,7 +264,6 @@ abstract class AbstractIndexAction extends AbstractContentAction
 				return $this->_cached = [$start, $count, $_order, $_where, $_value, $_total];
 			}
 
-			($dots = strpos($search, '…')) && $search = substr($search, 0, $dots);
 			$this->_tags = null;
 
 			if ($this->useName && empty($useName) && ($useName = true) && substr($search, -1) != '.')
@@ -275,10 +274,12 @@ abstract class AbstractIndexAction extends AbstractContentAction
 				continue;
 			}
 
-			if ($this->useCode && empty($useCode) && $useCode = true)
+			if ($this->useCode && empty($useCode) && ($useCode = true) && !strpos($search, ','))
 			{
+				$localSearch = ($dots = strpos($search, '…')) ? substr($search, 0, $dots) : $search;
+
 				$_where = array_merge($where, ['~code']);
-				$_value = array_merge($value, [ltrim(strtr($search, ['.html' => '']), '/')]);
+				$_value = array_merge($value, [ltrim(strtr($localSearch, ['.html' => '']), '/')]);
 				$_order = 'code';
 				continue;
 			}
@@ -336,6 +337,8 @@ abstract class AbstractIndexAction extends AbstractContentAction
 
 				foreach (array_map('trim', explode(',', trim($search, '.'))) as $chunk)
 				{
+					($dots = strpos($chunk, '…')) && $chunk = substr($chunk, 0, $dots);
+
 					$chunk = ltrim(strtr($chunk, ['.html' => '']), '/');
 					$_where = array_merge($_where, ['~|code']);
 					$_value = array_merge($_value, [$chunk]);

@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Model;
 use \Doctrine\DBAL\Connection;
+use \Doctrine\DBAL\Query\Expression\CompositeExpression;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
 use \Moro\Platform\Model\Exception\CommitFailedException;
 use \Moro\Platform\Model\Exception\ReadOnlyEntityException;
@@ -522,6 +523,9 @@ abstract class AbstractService implements SplSubject
 				$builder->addOrderBy(ltrim($field, '!'), ($field[0] == '!') ? 'DESC' : 'ASC');
 			}
 
+			$orBlock = null;
+			$orObject = null;
+
 			foreach ((array)$filter as $index => $field)
 			{
 				$place = ':w'.$index;
@@ -529,9 +533,21 @@ abstract class AbstractService implements SplSubject
 
 				if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 				{
+					if ($orBlock && $orBlock != $field)
+					{
+						$builder->andWhere($orObject);
+						$orBlock = null;
+						$orObject = null;
+					}
+
 					if ($field[0] == '|' || $field[1] == '|')
 					{
-						$builder->orWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+						if (!$orObject && $orBlock = $field)
+						{
+							$orObject = new CompositeExpression(CompositeExpression::TYPE_OR);
+						}
+
+						$orObject->add('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 						$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 					}
 					else
@@ -548,6 +564,11 @@ abstract class AbstractService implements SplSubject
 				{
 					$values[$place] = $result;
 				}
+			}
+
+			if ($orBlock)
+			{
+				$builder->andWhere($orObject);
 			}
 
 			$statement = $this->_connection->prepare($builder->getSQL());
@@ -887,17 +908,31 @@ abstract class AbstractService implements SplSubject
 		];
 
 		$isArray = is_array($filter) && is_array($value);
+		$orBlock = null;
+		$orObject = null;
 
 		foreach ((array)$filter as $index => $field)
 		{
 			$place = ':w'.$index;
 			$temporary = $isArray ? array_shift($value) : $value;
 
+			if ($orBlock && $orBlock != $field)
+			{
+				$builder->andWhere($orObject);
+				$orBlock = null;
+				$orObject = null;
+			}
+
 			if (null === $result = $this->notify(self::STATE_SELECT_ENTITIES, $builder, $field, $temporary, $place))
 			{
 				if ($field[0] == '|' || $field[1] == '|')
 				{
-					$builder->orWhere('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
+					if (!$orObject && $orBlock = $field)
+					{
+						$orObject = new CompositeExpression(CompositeExpression::TYPE_OR);
+					}
+
+					$orObject->add('m.'.ltrim($field, '~!|').($field[0] == '~' ? ' like ' :( $field[0] == '!' ? '<>' : ' = ')).$place);
 					$values[$place] = (is_string($temporary) && $field[0] == '~') ? $temporary . '%' : $temporary;
 				}
 				else
@@ -914,6 +949,11 @@ abstract class AbstractService implements SplSubject
 			{
 				$values[$place] = $result;
 			}
+		}
+
+		if ($orBlock)
+		{
+			$builder->andWhere($orObject);
 		}
 
 		$sql = $builder->getSQL();
