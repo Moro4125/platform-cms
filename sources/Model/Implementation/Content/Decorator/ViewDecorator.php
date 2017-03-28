@@ -16,6 +16,13 @@ class ViewDecorator extends AbstractDecorator
 	const IMG_VIEW_HORIZONTAL = 'horizontal';
 	const IMG_VIEW_VERTICAL   = 'vertical';
 	const IMG_VIEW_SQUARE     = 'square';
+	const IMG_VIEW_RATIO      = 'ratio';
+	const IMG_VIEW_ORIGINAL   = 'original';
+
+	/**
+	 * @var string
+	 */
+	protected $_imageViewDefault = self::IMG_VIEW_HORIZONTAL;
 
 	/**
 	 * @var array
@@ -24,6 +31,8 @@ class ViewDecorator extends AbstractDecorator
 		self::IMG_VIEW_HORIZONTAL => [ 'width' => 154, 'height' => 96 ],
 		self::IMG_VIEW_VERTICAL   => [ 'width' => 96,  'height' => 154 ],
 		self::IMG_VIEW_SQUARE     => [ 'width' => 96,  'height' => 96 ],
+		self::IMG_VIEW_RATIO      => [ 'width' => 154, 'height' => 0 ],
+		self::IMG_VIEW_ORIGINAL   => [ 'width' => 0,   'height' => 0 ],
 	];
 
 	/**
@@ -74,7 +83,7 @@ class ViewDecorator extends AbstractDecorator
 			switch (TRUE)
 			{
 				case isset($args['images'][$match[3]]) && is_object($args['images'][$match[3]]):
-					$meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL];
+					$meta = $this->_imageViews[$this->_imageViewDefault];
 
 					for ($i = 0; $i <= 1; $i++)
 					{
@@ -83,6 +92,8 @@ class ViewDecorator extends AbstractDecorator
 							case '-': $meta = $this->_imageViews[self::IMG_VIEW_HORIZONTAL]; break;
 							case '|': $meta = $this->_imageViews[self::IMG_VIEW_VERTICAL]; break;
 							case '+': $meta = $this->_imageViews[self::IMG_VIEW_SQUARE]; break;
+							case '*': $meta = $this->_imageViews[self::IMG_VIEW_RATIO]; break;
+							case '@': $meta = $this->_imageViews[self::IMG_VIEW_ORIGINAL]; break;
 						}
 					}
 
