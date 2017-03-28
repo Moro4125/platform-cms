@@ -42,12 +42,25 @@ class MarkdownExtension extends CMarkdownExtension
 	 */
 	protected function _filterTypography($text)
 	{
-		foreach ($this->_typography as $pattern => $replacement)
+		$result = '';
+
+		foreach (preg_split('{(?>(</?[A-Za-z][^>]*>))}', $text, -1, PREG_SPLIT_DELIM_CAPTURE) as $index => $chunk)
 		{
-			$text = preg_replace($pattern, $replacement, $text);
+			if ($index % 2)
+			{
+				$result .= $chunk;
+				continue;
+			}
+
+			foreach ($this->_typography as $pattern => $replacement)
+			{
+				$chunk = preg_replace($pattern, $replacement, $chunk);
+			}
+
+			$result .= $chunk;
 		}
 
-		return $text;
+		return $result;
 	}
 
 	/**
