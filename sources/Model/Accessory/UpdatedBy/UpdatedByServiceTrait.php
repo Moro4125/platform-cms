@@ -57,6 +57,7 @@ trait UpdatedByServiceTrait
 
 		if ($this->_userToken && ($insert || !$entity->hasFlag(EntityInterface::FLAG_SYSTEM_CHANGES)))
 		{
+			/** @see \Moro\Platform\Model\Accessory\HistoryBehavior */
 			/** @var \Moro\Platform\Security\User\PlatformUser $helper */
 			if (($helper = $this->_userToken->getUser()) instanceof PlatformUser && $profile = $helper->getProfile())
 			{

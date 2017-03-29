@@ -8,6 +8,7 @@ use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Moro\Platform\Model\Implementation\History\ServiceHistory;
+use \Moro\Platform\Security\User\PlatformUser;
 use \Moro\Platform\Tools\DiffMatchPatch;
 use \Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use \ArrayObject;
@@ -352,6 +353,17 @@ class HistoryBehavior extends AbstractBehavior
 					HistoryInterface::PROP_ENTITY_ID => $id,
 				], null, EntityInterface::FLAG_GET_FOR_UPDATE);
 
+				/** @see \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait */
+				/** @var \Moro\Platform\Security\User\PlatformUser $h */
+				if (($h = $this->_userToken->getUser()) instanceof PlatformUser && $profile = $h->getProfile())
+				{
+					$user = explode('@', $profile->getEmail())[0];
+				}
+				else
+				{
+					$user = $this->_userToken->getUsername();
+				}
+
 				/** @var HistoryInterface $last */
 				while (TRUE)
 				{
@@ -360,7 +372,7 @@ class HistoryBehavior extends AbstractBehavior
 					switch (FALSE)
 					{
 						case ($last = reset($list)): break;
-						case ($this->_userToken->getUsername() == $last->getCreatedBy()): break;
+						case ($user == $last->getCreatedBy()): break;
 						case ($updatedAt = $last->getUpdatedAt() ?: $last->getCreatedAt()): break;
 						case (time() - $updatedAt < 3600): break;
 						case (time() - $last->getCreatedAt() < 43200): break;
