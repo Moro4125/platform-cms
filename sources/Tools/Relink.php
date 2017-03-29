@@ -200,9 +200,25 @@ class Relink
 			$prefix.= '(?><!\-(?:[-][^-]*)+?\-\->)|(?></?[A-Za-z]+[^>]*>)|';
 			$suffix = '(?=[“»\\x00-\\x2C\\x2E\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])}'.($this->_utf8 ? 'u' : '');
 
-			for ($i = $u = 0; $i < $count; $i += $limit, $u++)
+			for ($u = 0; $links = array_splice($list, 0, $limit); $u++)
 			{
-				$links = array_slice($list, $i, $limit);
+				foreach ($links as $key => $temp)
+				{
+					$offset = 0;
+
+					while ($pos = strpos($key, ' ', $offset))
+					{
+						$subKey = substr($key, 0, $pos);
+						$offset = $pos + 1;
+
+						if (isset($links[$subKey]))
+						{
+							$list[$subKey] = $links[$subKey];
+						}
+					}
+				}
+
+				$links = array_diff_key($links, $list);
 				$tree  = $this->_links2tree($links);
 				$regex = $this->_tree2regex($tree);
 
@@ -219,6 +235,7 @@ class Relink
 	 */
 	public function setLinks(array $links = null)
 	{
+		$links && krsort($links);
 		$this->_links = $links;
 		$this->_regex = null;
 		return $this;
