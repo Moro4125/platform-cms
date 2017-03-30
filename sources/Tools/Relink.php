@@ -202,23 +202,46 @@ class Relink
 
 			for ($u = 0; $links = array_splice($list, 0, $limit); $u++)
 			{
-				foreach ($links as $key => $temp)
+				for ($flag = 0, $changes = []; $flag <= 1; $flag++, $changes = [])
 				{
-					$offset = 0;
-
-					while ($pos = strpos($key, ' ', $offset))
+					foreach ($flag ? $links : $list as $key => $temp)
 					{
-						$subKey = substr($key, 0, $pos);
-						$offset = $pos + 1;
+						$offset = 0;
 
-						if (isset($links[$subKey]))
+						while ($pos = strpos($key, ' ', $offset))
 						{
-							$list[$subKey] = $links[$subKey];
+							$subKey = substr($key, 0, $pos);
+
+							if (isset($links[$subKey]))
+							{
+								$changes[$subKey] = $links[$subKey];
+							}
+							elseif (isset($list[$subKey]) && isset($links[$key]))
+							{
+								$changes[$key] = $links[$key];
+							}
+
+							$subKey = substr($key, $pos + 1);
+
+							if (isset($links[$subKey]))
+							{
+								$changes[$subKey] = $links[$subKey];
+							}
+							elseif (isset($list[$subKey]) && isset($links[$key]))
+							{
+								$changes[$key] = $links[$key];
+							}
+
+							$offset = $pos + 1;
 						}
 					}
-				}
 
-				$links = array_diff_key($links, $list);
+					if ($changes)
+					{
+						$list  = array_merge($list, $changes);
+						$links = array_diff_key($links, $changes);
+					}
+				}
 
 				ksort($links);
 
@@ -238,7 +261,6 @@ class Relink
 	 */
 	public function setLinks(array $links = null)
 	{
-		$links && krsort($links);
 		$this->_links = $links;
 		$this->_regex = null;
 		return $this;
