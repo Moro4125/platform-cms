@@ -87,7 +87,10 @@ class RelinkForm extends AbstractContent
 				'required' => false,
 				'attr' => [
 					'placeholder' => $title,
-				]
+				],
+				'label_attr' => [
+					'title' => $title,
+				],
 			]);
 		}
 

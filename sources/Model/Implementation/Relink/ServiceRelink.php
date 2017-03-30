@@ -146,7 +146,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergeList($key, $next, $prev);
 			}
-			elseif (in_array($key, ['name', 'href', 'class', 'parameters.open_tab', 'parameters.nofollow']))
+			elseif (in_array($key, ['name', 'href', 'parameters.title', 'class', 'parameters.open_tab', 'parameters.nofollow']))
 			{
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergeSimple($key, $next, $prev);
