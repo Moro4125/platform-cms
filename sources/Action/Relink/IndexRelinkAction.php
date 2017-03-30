@@ -24,4 +24,5 @@ class IndexRelinkAction extends AbstractIndexAction
 	public $routeBindTags = 'admin-content-relink-set-tag';
 
 	public $useCode = false;
+	public $useEmail = true; // As URL.
 }

@@ -175,6 +175,21 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	 */
 	public function selectEntitiesForAdminListForm($offset = null, $count = null, $order = null, $where = null, $value = null)
 	{
+		$where === '~email' && $where = '~href';
+		$where === '~|email' && $where = '~|href';
+		$order === 'email'  && $order = 'name';
+
+		while (is_array($where) && (false !== $index = array_search('~email', $where, true)))
+		{
+			$where[$index] = '~href';
+		}
+
+		while (is_array($where) && (false !== $index = array_search('~|email', $where, true)))
+		{
+			$where[$index] = '~|href';
+		}
+
+
 		$list  = $this->selectEntities($offset, $count, $order, $where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 		$user  = '+star:'.$this->_userToken->getUsername();
 		$stars = $this->selectEntities(0, ceil($count / 3), '!updated_at', 'tag', $user, EntityInterface::FLAG_GET_FOR_UPDATE);
@@ -189,6 +204,19 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 	 */
 	public function getCountForAdminListForm($where = null, $value = null)
 	{
+		$where === '~email' && $where = '~href';
+		$where === '~|email' && $where = '~|href';
+
+		while (is_array($where) && (false !== $index = array_search('~email', $where, true)))
+		{
+			$where[$index] = '~href';
+		}
+
+		while (is_array($where) && (false !== $index = array_search('~|email', $where, true)))
+		{
+			$where[$index] = '~|href';
+		}
+
 		return $this->getCount($where, $value, EntityInterface::FLAG_GET_FOR_UPDATE);
 	}
 
