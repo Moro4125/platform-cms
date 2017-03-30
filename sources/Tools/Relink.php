@@ -86,7 +86,7 @@ class Relink
 	}
 
 	/**
-	 * @param array $links
+	 * @param array $links  Must be sorted by key.
 	 * @return array
 	 */
 	protected function _links2tree(array $links)
@@ -219,6 +219,9 @@ class Relink
 				}
 
 				$links = array_diff_key($links, $list);
+
+				ksort($links);
+
 				$tree  = $this->_links2tree($links);
 				$regex = $this->_tree2regex($tree);
 

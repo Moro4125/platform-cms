@@ -54,6 +54,10 @@ class UpdateRelinkAction extends AbstractUpdateAction
 			$this->getApplication()->getServiceFlash()->alert($msg);
 		}
 
-		return parent::_getViewParameters();
+		$parameters = parent::_getViewParameters();
+
+		$parameters['title'] = $this->getEntity()->getName().' - Редактирование правила перелинковки';
+
+		return $parameters;
 	}
 }
