@@ -3,6 +3,7 @@
 
 {% block workarea %}
 	{% set updateUrl = url("admin-content-relink-update", {id: 777}) %}
+	{% set cloneUrl  = url("admin-content-relink-clone",  {id: 777}) %}
 	{% set deleteUrl = url("admin-content-relink-delete", {ids: 777}) %}
 	{% set tgStarUrl = url("admin-content-relink-star", {id: 777}) %}
 	{{ parent() }}

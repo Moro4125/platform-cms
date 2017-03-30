@@ -53,6 +53,7 @@ Application::getInstance(function (Application $app)
 		'admin-content-relink'           => ['content/relink',                  'Relink\\IndexRelinkAction'],
 		'admin-content-relink-create'    => ['content/relink/create',           'Relink\\CreateRelinkAction'],
 		'admin-content-relink-update'    => ['content/relink/update/{id}',      'Relink\\UpdateRelinkAction'],
+		'admin-content-relink-clone'     => ['content/relink/clone/{id}',       'Relink\\CloneRelinkAction'],
 		'admin-content-relink-delete'    => ['content/relink/delete/{ids}',     'Relink\\DeleteRelinkAction'],
 		'admin-content-relink-set-tag'   => ['content/relink/set-tag/{ids}',    'Relink\\SetTagRelinkAction'],
 		'admin-content-relink-star'      => ['content/relink/star/{id}',        'Relink\\ToggleStarRelinkAction'],

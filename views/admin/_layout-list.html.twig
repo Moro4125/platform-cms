@@ -304,6 +304,7 @@
 {% block list_column_todo__actions %}
 	{% if updateUrl|default(false) %}<li><a href="{{ updateUrl|replace({ "777": item.id }) }}">Редактировать</a></li>{% endif %}
 	{% if setTopUrl|default(false) %}<li><a href="{{ setTopUrl|replace({ "777": item.id }) }}">Поднять</a></li>{% endif %}
+	{% if cloneUrl|default(false) %}<li><a href="{{ cloneUrl|replace({ "777": item.id }) }}">Клонировать</a></li>{% endif %}
 	{% if deleteUrl|default(false) %}<li><a href="{{ deleteUrl|replace({ "777": item.id }) }}">Удалить</a></li>{% endif %}
 {% endblock %}
 
