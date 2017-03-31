@@ -240,6 +240,20 @@ class CompileRoutesAction
 			{
 				$service->getByFileName($file) || unlink($app->getOption('path.root').$file);
 			}
+
+			if ($file && $relinkService = $app->getServiceRelink())
+			{
+				$linkTags = [];
+
+				foreach ($relinkService->selectByHref($file.'%', EntityInterface::FLAG_GET_FOR_UPDATE) as $relink)
+				{
+					$linkTags[] = 'link-'.$relink->getId();
+					$relink->addTags(['флаг: удалено']);
+					$relinkService->commit($relink);
+				}
+
+				$linkTags && $service->setCompileFlagForTag($linkTags, '~ Изменения по запросу модуля перелинковки ~');
+			}
 		}
 		catch (Exception $exception)
 		{

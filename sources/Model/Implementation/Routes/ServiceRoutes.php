@@ -129,11 +129,12 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 
 	/**
 	 * @param string|array $tag
+	 * @param null|string $title
 	 * @return $this
 	 * @throws Exception
 	 * @throws \Doctrine\DBAL\ConnectionException
 	 */
-	public function setCompileFlagForTag($tag)
+	public function setCompileFlagForTag($tag, $title = null)
 	{
 		try
 		{
@@ -144,6 +145,7 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 				foreach ($this->selectEntities(null, null, null, 'tag', $tagEx, EntityInterface::FLAG_SYSTEM_CHANGES) as $entity)
 				{
 					$entity->delTags(['предпросмотр']);
+					$title && $entity->setTitle($title);
 					$entity->setCompileFlag(2);
 					$this->commit($entity);
 				}

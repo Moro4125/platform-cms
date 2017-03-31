@@ -428,16 +428,26 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 
 	/**
 	 * @param string $href
+	 * @param null|int $flags
 	 * @return RelinkInterface[]
 	 *
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function selectByHref($href)
+	public function selectByHref($href, $flags = null)
 	{
 		assert(is_string($href));
 
 		$builder = $this->_connection->createQueryBuilder();
-		$sqlQuery = $builder->select('*')->from($this->_table)->where(RelinkInterface::PROP_HREF.'=?')->getSQL();
+
+		if (substr($href, -1) == '%')
+		{
+			$sqlQuery = $builder->select('*')->from($this->_table)->where(RelinkInterface::PROP_HREF.' LIKE ?')->getSQL();
+		}
+		else
+		{
+			$sqlQuery = $builder->select('*')->from($this->_table)->where(RelinkInterface::PROP_HREF.'=?')->getSQL();
+		}
+
 		$statement = $this->_connection->prepare($sqlQuery);
 		$result = [];
 
@@ -445,7 +455,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 		{
 			while ($record = $statement->fetch(PDO::FETCH_ASSOC))
 			{
-				$result[] = $this->_newEntityFromArray($record, 0);
+				$result[] = $this->_newEntityFromArray($record, (int)$flags);
 			}
 		}
 

@@ -152,8 +152,16 @@ trait HeadingServiceTrait
 	{
 		$draft  = normalizeTag('флаг: черновик');
 		$active = normalizeTag('флаг: опубликовано');
+		$erased = normalizeTag('флаг: удалено');
 
-		if (!in_array($active, $tags))
+		if (in_array($erased, $tags))
+		{
+			while (false !== $index = array_search($active, $tags, true))
+			{
+				unset($tags[$index]);
+			}
+		}
+		elseif (!in_array($active, $tags))
 		{
 			while (false !== $index = array_search($draft, $tags, true))
 			{
@@ -193,9 +201,16 @@ trait HeadingServiceTrait
 	{
 		if ($entity instanceof TagsEntityInterface)
 		{
+			$result = false;
+
 			foreach ($entity->getTags() as $tag)
 			{
 				$tag = normalizeTag($tag);
+
+				if ($tag == 'флаг:удалено')
+				{
+					return false;
+				}
 
 				if ('раздел:' === mb_substr($tag, 0, 7))
 				{
@@ -204,9 +219,11 @@ trait HeadingServiceTrait
 					$builder->innerJoin('m', $this->getTableName().'_tags', 't', 't.target = m.id');
 					$builder->andWhere('t.tag = :heading');
 					$builder->groupBy('m.id');
-					return true;
+					$result = true;
 				}
 			}
+
+			return $result;
 		}
 
 		unset($nextFlag);
