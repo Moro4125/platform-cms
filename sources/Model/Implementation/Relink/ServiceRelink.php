@@ -112,12 +112,12 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 			$tags[] = normalizeTag('Переход: не для роботов');
 		}
 
-		if (empty($parameters['is_abbr']))
+		if (!empty($parameters['is_abbr']))
 		{
 			$tags[] = normalizeTag('Флаг: аббревиатура');
 		}
 
-		if (empty($parameters['use_name']))
+		if (!empty($parameters['use_name']))
 		{
 			$tags[] = normalizeTag('Флаг: замена фразы');
 		}

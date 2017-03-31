@@ -5,6 +5,7 @@
 namespace Moro\Platform\Action\Relink;
 use \Moro\Platform\Action\AbstractUpdateAction;
 use \Moro\Platform\Application;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class UpdateRelinkAction
@@ -22,6 +23,27 @@ class UpdateRelinkAction extends AbstractUpdateAction
 	public $routeDelete = 'admin-content-relink-delete';
 
 	public $useTags = false;
+
+	/**
+	 * @param Request $request
+	 * @return AbstractUpdateAction
+	 */
+	public function setRequest(Request $request)
+	{
+		if ($request->isMethod('POST') && $request->request->has('admin_update'))
+		{
+			$form = $request->request->get('admin_update');
+			$host = $request->getSchemeAndHttpHost();
+
+			if (isset($form['href']) && strncmp($form['href'], $host, strlen($host)) === 0)
+			{
+				$form['href'] = substr($form['href'], strlen($host));
+				$request->request->set('admin_update', $form);
+			}
+		}
+
+		return parent::setRequest($request);
+	}
 
 	/**
 	 * @return void
@@ -43,7 +65,7 @@ class UpdateRelinkAction extends AbstractUpdateAction
 	/**
 	 * @return array
 	 */
-	public function _getViewParameters()
+	protected function _getViewParameters()
 	{
 		$host = $this->getRequest()->getSchemeAndHttpHost();
 		$href = $this->getEntity()->getHref();
