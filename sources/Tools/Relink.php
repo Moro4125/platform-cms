@@ -190,9 +190,6 @@ class Relink
 			$blockMarker = preg_quote((string)$this->_blockMarker, '}');
 			$skipMarker = preg_quote((string)$this->_skipMarker, '}');
 
-			$count = count($list);
-			$limit = ceil($count / ceil($count / intval($this->_linksInRegex) ?: $count));
-
 			$prefix = '{';
 			$skipMarker   && $prefix .= '(?><!\-\-'.$skipMarker.':.+?\-\->)|';
 			$blockMarker  && $prefix .= '(?><!\-\-/'.$blockMarker.'\-\->(?:[^<]*<)+?!\-\-'.$blockMarker.'\-\->)|';
@@ -200,55 +197,35 @@ class Relink
 			$prefix.= '(?><!\-(?:[-][^-]*)+?\-\->)|(?></?[A-Za-z]+[^>]*>)|';
 			$suffix = '(?=[“»\\x00-\\x2C\\x2E\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])}'.($this->_utf8 ? 'u' : '');
 
-			for ($u = 0; $links = array_splice($list, 0, $limit); $u++)
+			$this->_regex = [];
+			$linksBySize = [];
+
+			foreach ($list as $word => $url)
 			{
-				for ($flag = 0, $changes = []; $flag <= 1; $flag++, $changes = [])
+				for ($wordsCount = 0, $offset = 0; $pos = strpos($word, ' ', $offset); $offset = $pos + 1)
 				{
-					foreach ($flag ? $links : $list as $key => $temp)
-					{
-						$offset = 0;
-
-						while ($pos = strpos($key, ' ', $offset))
-						{
-							$subKey = substr($key, 0, $pos);
-
-							if (isset($links[$subKey]))
-							{
-								$changes[$subKey] = $links[$subKey];
-							}
-							elseif (isset($list[$subKey]) && isset($links[$key]))
-							{
-								$changes[$key] = $links[$key];
-							}
-
-							$subKey = substr($key, $pos + 1);
-
-							if (isset($links[$subKey]))
-							{
-								$changes[$subKey] = $links[$subKey];
-							}
-							elseif (isset($list[$subKey]) && isset($links[$key]))
-							{
-								$changes[$key] = $links[$key];
-							}
-
-							$offset = $pos + 1;
-						}
-					}
-
-					if ($changes)
-					{
-						$list  = array_merge($list, $changes);
-						$links = array_diff_key($links, $changes);
-					}
+					$wordsCount++;
 				}
 
-				ksort($links);
+				$linksBySize[$wordsCount][$word] = $url;
+			}
 
-				$tree  = $this->_links2tree($links);
-				$regex = $this->_tree2regex($tree);
+			krsort($linksBySize, SORT_NUMERIC);
 
-				$this->_regex[$u] = $prefix . str_replace(' ', '\\s+', $regex) . $suffix;
+			foreach ($linksBySize as $list)
+			{
+				$count = count($list);
+				$limit = ceil($count / ceil($count / intval($this->_linksInRegex) ?: $count));
+
+				while ($links = array_splice($list, 0, $limit))
+				{
+					ksort($links);
+
+					$tree  = $this->_links2tree($links);
+					$regex = $this->_tree2regex($tree);
+
+					$this->_regex[] = $prefix . str_replace(' ', '\\s+', $regex) . $suffix;
+				}
 			}
 		}
 
@@ -605,11 +582,26 @@ class Relink
 					}
 
 					$link = $links[$key];
-					$found[$link] = empty($found[$link]) ?( $this->_uniqueLinkLimit ? 1 : 0 ): $found[$link] + 1;
+					$found[$link] = empty($found[$link])
+						?( ($this->_uniqueLinkLimit && strncmp($link, '<a ', 3) === 0)
+							? 1
+							: 0
+						): $found[$link] + 1;
 
 					if ($total !== 0 && $found[$link] <= $this->_uniqueLinkLimit)
 					{
-						$parts[$pos] = [$pos, $pos + strlen($text), str_replace('%text%', $words, $link)];
+						$end = $pos + strlen($text);
+
+						foreach ($parts as $part)
+						{
+							if ($part[0] <= $pos && $part[1] >= $pos || $part[0] <= $end && $part[1] >= $end)
+							{
+								$found[$link] = empty($found[$link]) ? 0 : $found[$link] - 1;
+								continue 2;
+							}
+						}
+
+						$parts[$pos] = [$pos, $end, str_replace('%text%', $words, $link)];
 						$total--;
 					}
 				}

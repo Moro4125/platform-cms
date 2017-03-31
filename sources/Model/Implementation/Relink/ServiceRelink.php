@@ -112,6 +112,11 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 			$tags[] = normalizeTag('Переход: не для роботов');
 		}
 
+		if (empty($parameters['is_abbr']))
+		{
+			$tags[] = normalizeTag('аббревиатура');
+		}
+
 		if ($classes = $entity->getClass())
 		{
 			foreach (array_filter(explode(' ', $classes)) as $cssClass)
@@ -146,7 +151,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergeList($key, $next, $prev);
 			}
-			elseif (in_array($key, ['name', 'href', 'parameters.title', 'class', 'parameters.open_tab', 'parameters.nofollow']))
+			elseif (in_array($key, ['name', 'href', 'parameters.title', 'class', 'parameters.open_tab', 'parameters.nofollow', 'parameters.is_abbr']))
 			{
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergeSimple($key, $next, $prev);
@@ -283,6 +288,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 
 		$data['open_tab'] = !empty($args['open_tab']);
 		$data['nofollow'] = !empty($args['nofollow']);
+		$data['is_abbr']  = !empty($args['is_abbr']);
 
 		return $application->getServiceFormFactory()->createBuilder(new RelinkForm($entity->getId(), $tags), $data)->getForm();
 	}
@@ -322,6 +328,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 				'title'    => 'Подсказка',
 				'open_tab' => 'Открывать ссылку в новой вкладке или окне',
 				'nofollow' => 'Запретить роботам переход по ссылке',
+				'is_abbr'  => 'Является аббревиатурой',
 			];
 
 			foreach (array_keys($list) as $key)
@@ -364,6 +371,7 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 				{
 					$id = $entity->getId();
 					$parameters = $entity->getParameters();
+					$abbr = !empty($parameters['is_abbr']);
 					$href = $entity->getHREF();
 
 					if ($href && strncmp($href, '/', 1) === 0)
@@ -371,12 +379,13 @@ class ServiceRelink extends AbstractService implements ContentActionsInterface, 
 						$href = $prefix.$href;
 					}
 
-					$link = $href ? '<a href="'.htmlspecialchars($href).'"' : '<span';
+					$link = $href ? '<a href="'.htmlspecialchars($href).'"' :( $abbr ? '<abbr' : '<span');
 					$link.= ( $class = $entity->getClass() ) ? ' class="'.htmlspecialchars($class).'"' : '';
 					$link.= empty($parameters['title']) ? '' : ' title="'.htmlspecialchars($parameters['title']).'"';
 					$link.= (!empty($parameters['open_tab']) && $href) ? ' target="_blank"' : '';
 					$link.= (!empty($parameters['nofollow']) && $href) ? ' rel="nofollow"' : '';
-					$link.= '>%text%'.($href ? '</a>' : '</span>');
+					$link.= ($href && $abbr) ? '><abbr title="'.htmlspecialchars(@$parameters['title']).'"' : '';
+					$link.= '>%text%'.($href ?( $abbr ? '</abbr></a>' : '</a>' ):( $abbr ? '</abbr>' : '</span>'));
 
 					foreach (['nominativus','genitivus','dativus','accusativus','instrumentalis','praepositionalis'] as $key)
 					{

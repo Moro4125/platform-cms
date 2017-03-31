@@ -118,7 +118,7 @@
 		</li>
 	{% endif %}
 
-	{% for key, name in {"parameters.open_tab": "открытия в новой вкладке","parameters.nofollow": "запрета индексации роботами"} %}
+	{% for key, name in {"parameters.open_tab": "открытия в новой вкладке","parameters.nofollow": "запрета индексации роботами", "parameters.is_abbr": "аббревиатуры"} %}
 		{% if diff[key]|default(false) %}
 			<li>
 				<strong>Флаг</strong>

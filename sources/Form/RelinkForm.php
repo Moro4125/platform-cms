@@ -113,6 +113,7 @@ class RelinkForm extends AbstractContent
 		$list = [
 			'open_tab' => 'Открывать ссылку в новой вкладке или окне',
 			'nofollow' => 'Запретить роботам переход по ссылке',
+			'is_abbr'  => 'Является аббревиатурой',
 		];
 
 		foreach ($list as $code => $label)
