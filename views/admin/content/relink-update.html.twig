@@ -2,6 +2,7 @@
 
 {% block workarea %}
 	{{ form_start(form) }}
+	<style>label{margin-bottom:2px;}</style>
 
 	<div class="row">
 		<div class="col-md-5 col-sm-12 col-xs-12">
@@ -118,7 +119,7 @@
 		</li>
 	{% endif %}
 
-	{% for key, name in {"parameters.open_tab": "открытия в новой вкладке","parameters.nofollow": "запрета индексации роботами", "parameters.is_abbr": "аббревиатуры"} %}
+	{% for key, name in {"parameters.open_tab": "открытия в новой вкладке","parameters.nofollow": "запрета индексации роботами", "parameters.is_abbr": "аббревиатуры", "parameters.use_name": "замены фразы названием"} %}
 		{% if diff[key]|default(false) %}
 			<li>
 				<strong>Флаг</strong>

@@ -17,4 +17,7 @@
 	{%- if item.href -%}
 		<small class="text-muted">  ●  {{ item.href }}</small>
 	{%- endif -%}
+	{%- if item.parameters.title|default(false) and item.parameters.title != item.name -%}
+		<small class="text-muted">  ●  {{ item.parameters.title }}</small>
+	{%- endif -%}
 {% endblock %}
