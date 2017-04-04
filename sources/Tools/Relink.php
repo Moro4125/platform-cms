@@ -508,6 +508,8 @@ class Relink
 
 			foreach ($matches[0] as list($text, $pos))
 			{
+				$words = null;
+
 				if ($text[0] == '<')
 				{
 					if ($text[1] == '!')
@@ -560,7 +562,7 @@ class Relink
 						}
 					}
 				}
-				elseif ($anchors === 0)
+				else
 				{
 					if (!isset($links[$key = $words = preg_replace($spaceless, ' ', $text)]))
 					{
@@ -576,7 +578,7 @@ class Relink
 						}
 					}
 
-					if (empty($links[$key]))
+					if (empty($links[$key]) || $anchors && strncmp($links[$key], '<a ', 3) === 0)
 					{
 						continue;
 					}
