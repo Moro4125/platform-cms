@@ -100,8 +100,13 @@ class ViewDecorator extends AbstractDecorator
 					/** @var \Moro\Platform\Model\Implementation\File\FileInterface $file */
 					$file = $args['images'][$match[3]];
 					$hash = $file->getHash();
-					$href = $this->_application->url('image', array_merge($meta, ['hash' => $hash]));
 					$temp = $file->getParameters();
+					$href = $this->_application->url('image', array_merge($meta, [
+						'hash' => $hash,
+						'format' => (isset($temp['extension']) && in_array($temp['extension'], ['png', 'gif']))
+							? $temp['extension']
+							: 'jpg'
+					]));
 					$lead = strtr(isset($temp['lead']) ? $temp['lead'] : '', '"', "'");
 					$adds.= "\n[".$hash."]: ".$href."\t\"".$lead."\"\t";
 

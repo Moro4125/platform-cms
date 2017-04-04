@@ -519,6 +519,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 							$entity = $this->createEntity($hash, '1x1');
 							$entity->setName(substr($name, 0, strrpos($name, '.') ?: strlen($name)));
 							$entity->setParameters([
+								'extension' => strtolower(substr($name, (strpos($name, '.') ?: strlen($name)) + 1)),
 								'size'   => $file->getSize(),
 								'width'  => $width,
 								'height' => $height,

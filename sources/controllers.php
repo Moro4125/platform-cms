@@ -108,7 +108,7 @@ Application::getInstance(function (Application $app)
 		'hash'      => '[0-9a-v]{32}',
 		'width'     => '\\d+',
 		'height'    => '\\d+',
-		'format'    => 'jpg|png',
+		'format'    => 'jpg|png|gif',
 		'extension' => '[0-9a-z]+',
 	];
 

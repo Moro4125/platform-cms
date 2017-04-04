@@ -45,6 +45,18 @@ class ShowImagesAction
 	 */
 	public function __invoke(SilexApplication $app, Request $request, $salt, $hash, $width, $height, $format = 'jpg')
 	{
+		$errorFileSuffix = "{$width}_{$height}.jpg?original={$hash}&format=".urlencode($format);
+
+		if (isset($this->_mimes[$format]))
+		{
+			if (!$request->query->has('silent') || !$request->query->get('silent'))
+			{
+				$app->getServiceFlash()->error("Задан неизвестный формат \"$format\" для формирования изображения.");
+			}
+
+			return $app->redirect($app->getOption('images.not_found').$errorFileSuffix);
+		}
+
 		if (!file_exists($file = $app->getServiceFile()->getPathForHash($hash)))
 		{
 			if (!$request->query->has('silent') || !$request->query->get('silent'))
@@ -52,7 +64,7 @@ class ShowImagesAction
 				$app->getServiceFlash()->error("Отсутствует изображение с хэшем \"$hash\".");
 			}
 
-			return $app->redirect($app->getOption('images.not_found')."{$width}_{$height}.jpg?original={$hash}");
+			return $app->redirect($app->getOption('images.not_found').$errorFileSuffix);
 		}
 
 		if (empty(self::$_masks))
