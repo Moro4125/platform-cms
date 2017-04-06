@@ -43,6 +43,7 @@ class OptionsAction
 		}
 
 		return $application->render($this->template, [
+			'title' => 'Настройки'.' :: '.$request->getHost(),
 			'form' => $form->createView(),
 		]);
 	}

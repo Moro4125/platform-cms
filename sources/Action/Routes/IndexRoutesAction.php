@@ -66,6 +66,7 @@ class IndexRoutesAction
 			}
 
 			return $app->render($this->_template, [
+				'title'  => 'Публикация'.' :: '.$request->getHost(),
 				'form'   => $form->createView(),
 				'routes' => $list,
 				'page'   => $page,
