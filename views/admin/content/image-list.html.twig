@@ -81,7 +81,7 @@
 
 {% block list_column_icon %}
 	<td>
-		<img src="{{ app.url('image', {hash: item.hash, width: 96, height: 96}) }}" width="48" height="48" />
+		<img src="{{ app.url('image', {hash: item.hash, width: 96, height: 96, format: item.parameters.extension|default("jpg")}) }}" width="48" height="48" />
 	</td>
 {% endblock %}
 

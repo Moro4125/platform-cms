@@ -47,7 +47,7 @@ class ShowImagesAction
 	{
 		$errorFileSuffix = "{$width}_{$height}.jpg?original={$hash}&format=".urlencode($format);
 
-		if (isset($this->_mimes[$format]))
+		if (!isset($this->_mimes[$format]))
 		{
 			if (!$request->query->has('silent') || !$request->query->get('silent'))
 			{

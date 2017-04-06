@@ -68,7 +68,7 @@
 		<div class="row row-img-cropper">
 			<div class="col-md-8">
 				<div class="thumbnail img-container">
-					<img class="cropper" src="{{ app.url('image', {hash: item.hash, width: 0, height: 0, remember: false}) }}" >
+					<img class="cropper" src="{{ app.url('image', {hash: item.hash, width: 0, height: 0, remember: false, format: item.parameters.extension|default("jpg")}) }}" >
 				</div>
 			</div>
 			<div class="col-md-4">
@@ -86,7 +86,7 @@
 						</div>
 					</div>
 					<div class="img-preview-container">
-						<div class="img-preview"></div>
+						<div class="img-preview cropper-bg"></div>
 					</div>
 				</div>
 				<div class="tab-content">
