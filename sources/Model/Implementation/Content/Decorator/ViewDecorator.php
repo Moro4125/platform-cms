@@ -25,6 +25,11 @@ class ViewDecorator extends AbstractDecorator
 	protected $_imageViewDefault = self::IMG_VIEW_HORIZONTAL;
 
 	/**
+	 * @var string
+	 */
+	protected $_title;
+
+	/**
 	 * @var array
 	 */
 	protected $_imageViews = [
@@ -43,6 +48,44 @@ class ViewDecorator extends AbstractDecorator
 		$parameters = $this->getParameters();
 
 		return !empty($parameters['link']) && strncmp($parameters['link'], '/', 1);
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function hasTitle()
+	{
+		if ($this->_title === null)
+		{
+			$this->getTitle();
+		}
+
+		return !empty($this->_title);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		if ($this->_title === null)
+		{
+			$args = $this->getParameters();
+			$text = isset($args['gallery_text']) ? $args['gallery_text'] : '';
+			$markdown = $this->_application->getTwigExtensionMarkdown();
+			$html = $markdown->parseMarkdown($text);
+
+			if (preg_match('{<h1(?>[^>]*)>(.*?)</h1>}us', $html, $match) && !empty($match[1]))
+			{
+				$this->_title = trim(strip_tags($match[1]));
+			}
+			else
+			{
+				$this->_title = false;
+			}
+		}
+
+		return $this->_title ?: $this->getName();
 	}
 
 	/**

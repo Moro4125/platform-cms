@@ -69,7 +69,8 @@ class MarkdownExtension extends CMarkdownExtension
 	public function getFilters()
 	{
 		return array_merge(parent::getFilters(), [
-			'markdownClean' => new \Twig_Filter_Method($this, 'cleanMarkdown', ['is_safe' => ['html']])
+			'markdownClean' => new \Twig_Filter_Method($this, 'cleanMarkdown', ['is_safe' => ['html']]),
+			'stripTitle' => new \Twig_Filter_Method($this, 'stripTitle', ['is_safe' => ['html'], 'pre_escape' => 'html']),
 		]);
 	}
 
@@ -100,5 +101,14 @@ class MarkdownExtension extends CMarkdownExtension
 	public function cleanMarkdown($content)
 	{
 		return strtr($content, ['*' => '', '[' => '', ']' => ' ']);
+	}
+
+	/**
+	 * @param string $content
+	 * @return string
+	 */
+	public function stripTitle($content)
+	{
+		return preg_replace('{<h1(?>[^>]*)>.*?</h1>}su', '', $content, -1);
 	}
 }
