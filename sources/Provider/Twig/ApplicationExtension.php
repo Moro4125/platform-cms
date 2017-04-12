@@ -130,7 +130,7 @@ class ApplicationExtension extends Twig_Extension
 			$url = substr($url, 0, $pos);
 		}
 
-		return $url;
+		return preg_replace('{^(f|ht)tps?://[^/]+}', '', $url);
 	}
 
 	/**
