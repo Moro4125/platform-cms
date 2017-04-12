@@ -13,6 +13,22 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 			else {
 				jQuery(target).closest("tr").removeClass("highlight");
 			}
+		},
+		selectText = function(element) {
+			var doc = document,
+				text = typeof element == "string" ? doc.getElementById(element) : element,
+				range, selection;
+			if (doc.body.createTextRange) {
+				range = document.body.createTextRange();
+				range.moveToElementText(text);
+				range.select();
+			} else if (window.getSelection) {
+				selection = window.getSelection();
+				range = document.createRange();
+				range.selectNodeContents(text);
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
 		};
 
 	jQuery("script[type='text/x-mustache']").each(function() {
@@ -499,6 +515,15 @@ require(["jquery", "mustache", "bootstrap"], function(jQuery, Mustache) {
 
 				return false;
 			}
+		});
+	});
+
+	jQuery(".h-simple-select").each(function() {
+		var self = jQuery(this);
+		self.on("click", function(event) {
+			selectText(event.target);
+			event.stopPropagation();
+			event.preventDefault();
 		});
 	});
 

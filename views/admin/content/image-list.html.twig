@@ -70,28 +70,44 @@
 
 {% block list_column_todo__extended %}
 	{{- parent() -}}
+	{#
 	<div class="text-right">
 		<span class="label">
 			{% set args = {hash: item.hash, width: item.parameters.width, height: item.parameters.height, remember: false } %}
 			<a target="_blank" href="{{ app.url('image', args) }}">{{ item.smallHash }}</a>
 		</span>
 	</div>
+	#}
 {% endblock %}
 
 
 {% block list_column_icon %}
 	<td>
-		<img src="{{ app.url('image', {hash: item.hash, width: 96, height: 96, format: item.parameters.extension|default("jpg")}) }}" width="48" height="48" />
+		{% set args = {hash: item.hash, width: item.parameters.width, height: item.parameters.height, remember: false } %}
+		<a target="_blank" href="{{ app.url('image', args) }}">
+			<img src="{{ app.url('image', {hash: item.hash, width: 96, height: 96, format: item.parameters.extension|default("jpg")}) }}" width="48" height="48" />
+		</a>
 	</td>
 {% endblock %}
 
 
+{% block list_column_name__info %}
+	{{- item.name -}}
+	<small class="text-muted">  ●  {{ item.parameters.width ~ "x" ~ item.parameters.height }}</small>
+	{%- if item.parameters.lead|default("") -%}
+		<small class="text-muted">  ●  {{ item.parameters.lead|striptags }}</small>
+	{%- endif -%}
+{% endblock %}
+
+
 {% block list_column_name__tags %}
-	<span class="label label-info">{{ item.parameters.width ~ "x" ~ item.parameters.height }}</span>
+	<span class="label label-info h-simple-select">{{ item.smallHash }}</span>
 	{% if headingFlag %}
 		{% set heading = item.getHeadingName() %}
 		{% if heading %}
-			<span class="label label-success">{{ heading }}</span>
+			<span class="label label-success">
+				<a href="?search=Раздел:{{ heading }}">{{ heading }}</a>
+			</span>
 		{% elseif item.getIsDraft() %}
 			<span class="label label-danger">черновик</span>
 		{% endif %}

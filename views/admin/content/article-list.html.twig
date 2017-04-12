@@ -31,11 +31,13 @@
 
 
 {% block list_column_name__tags %}
-	<span class="label label-info">{{ item.code }}</span>
+	<span class="label label-info h-simple-select">{{ item.code }}</span>
 	{%- if headingFlag -%}
 		{%- set heading = item.getHeadingName() -%}
 		{%- if heading -%}
-			<span class="label label-success">{{ heading }}</span>
+			<span class="label label-success">
+				<a href="?search=Раздел:{{ heading }}">{{ heading }}</a>
+			</span>
 		{%- elseif item.getIsDraft() -%}
 			<span class="label label-danger">черновик</span>
 		{%- endif -%}

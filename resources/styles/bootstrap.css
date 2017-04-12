@@ -48,7 +48,7 @@ tr.highlight.require-preview {
     overflow: hidden;
 }
 
-td > img {
+td > img, td > a > img {
     margin: -4px -8px -8px -8px;
 }
 
@@ -360,6 +360,10 @@ table.admin-list .nowrap-row {
     white-space: nowrap;
 }
 
+.label > a, .label > a:hover {
+    color: white;
+}
+
 .loading-results {
     margin:0;
     padding:0;
@@ -513,7 +517,8 @@ form > table.table {
     font-size: 80%;
 }
 
-.b-file-upload .file-preview-frame{
+.b-file-upload .file-preview-frame,
+.b-file-upload .file-preview-frame .kv-file-content {
     height: auto !important;
     position: relative;
 }
@@ -527,6 +532,22 @@ form > table.table {
     display: block;
     top: 50px;
     z-index: 100;
+}
+
+.kv-file-content .b-file-upload__link {
+    top: 10px;
+}
+
+.krajee-default .file-footer-caption {
+    padding: 4px 16px;
+}
+
+.krajee-default.file-preview-frame .file-thumbnail-footer {
+    height: auto;
+}
+
+.krajee-default .file-footer-buttons .kv-file-zoom {
+    display: none;
 }
 
 .b-admin-panel {
