@@ -102,8 +102,10 @@
 									{{ form_widget(form["hide_mask" ~ kind]) }}
 								</div>
 							{% endif %}
-							<div class="col-xs-4 text-right">
+							<div class="col-xs-12 text-right">
+								<hr/>
 								<div class="btn-group btn-group-xs" role="group">
+									{{ form_widget(form["append" ~ kind]) }}
 									{{ form_widget(form["copy" ~ kind]) }}
 								</div>
 							</div>

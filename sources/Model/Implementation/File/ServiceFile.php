@@ -3,6 +3,12 @@
  * Class ServiceFile
  */
 namespace Moro\Platform\Model\Implementation\File;
+use \Imagine\Gd\Imagine as GdImagine;
+use \Imagine\Image\ImageInterface;
+use \Imagine\Image\Palette\RGB;
+use \Imagine\Image\Profile;
+use \Imagine\Image\Box;
+use \Imagine\Image\Point;
 use \Moro\Platform\Application;
 use \Moro\Platform\Form\ImagesUploadForm;
 use \Moro\Platform\Model\AbstractService;
@@ -12,8 +18,6 @@ use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Form\Index\ImagesIndexForm;
 use \Moro\Platform\Form\ImageUpdateForm;
-use \Imagine\Image\Box;
-use \Imagine\Image\Point;
 use \Moro\Platform\Model\Implementation\History\HistoryInterface;
 use \Symfony\Component\Form\Form;
 use \Symfony\Component\HttpFoundation\Request;
@@ -771,6 +775,66 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 * @param string $kind
 	 * @return int
 	 */
+	public function applyAdminImageAppendForm(Application $application, Form $form, FileInterface $entity, $kind)
+	{
+		$data = $form->getData();
+		$name = $entity->getName();
+		$hash = $entity->getHash();
+		$path = $this->getPathForHash($hash);
+		$temp = tempnam(dirname($path), 'img');
+		$parameters = $entity->getParameters();
+		$transparent = isset($parameters['extension'])
+			? in_array($parameters['extension'], ['png', 'gif'])
+			: false;
+
+		$service = $application->getServiceImagine();
+		$gdLib = $service instanceof GdImagine;
+		$filter = $gdLib ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS;
+		$image = $service->open($path);
+
+		$size = $image->getSize();
+		$ratio = (int)$data['crop'.$kind.'_w'] / (int)$data['crop'.$kind.'_h'];
+		$w = (int)max($size->getWidth(),  floor($size->getHeight() * $ratio));
+		$h = (int)max($size->getHeight(), floor($size->getWidth()  / $ratio));
+		$x = (int)floor(($w - $size->getWidth())  / 2);
+		$y = (int)floor(($h - $size->getHeight()) / 2);
+
+		$bgColor = (new RGB())->color('#888', $transparent ? 0 : 100);
+		$newImage = $service->create(new Box($w, $h), $bgColor);
+		$gdLib || $newImage->profile(Profile::fromPath($application->getOption('images.icc')));
+
+		if ($transparent)
+		{
+			$newImage->paste($image, new Point($x, $y));
+			$newImage->save($temp, ['format' => 'png']);
+		}
+		else
+		{
+			$iRatio = max($w / $size->getWidth(), $h / $size->getHeight());
+			$bgWidth = ceil($size->getWidth() * $iRatio);
+			$bgHeight = ceil($size->getHeight() * $iRatio);
+
+			$bgImage = $image->copy();
+			$bgImage->resize(new Box(round($size->getWidth() / 4), round($size->getHeight() / 4)), $filter);
+			$bgImage->effects()->blur(1);
+			$bgImage->resize(new Box($bgWidth, $bgHeight), $filter);
+			$bgImage->crop(new Point(round(($bgWidth - $w) / 2), round(($bgHeight - $h) / 2)), new Box($w, $h));
+
+			$newImage->paste($bgImage, new Point(0, 0));
+			$newImage->paste($image, new Point($x, $y));
+			$newImage->save($temp, ['format' => 'jpeg', 'jpeg_quality' => 100]);
+		}
+
+		return $this->_saveTempImageAsEntity($temp, $name, $w, $h, $parameters, $transparent ? 'png' : 'jpg');
+	}
+
+	/**
+	 * @param \Moro\Platform\Application $application
+	 * @param Form $form
+	 * @param FileInterface $entity
+	 * @param string $kind
+	 * @return int
+	 */
 	public function applyAdminImageCopyForm(Application $application, Form $form, FileInterface $entity, $kind)
 	{
 		$data = $form->getData();
@@ -778,17 +842,34 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		$hash = $entity->getHash();
 		$path = $this->getPathForHash($hash);
 		$temp = tempnam(dirname($path), 'img');
+		$parameters = $entity->getParameters();
+		$transparent = isset($parameters['extension'])
+			? in_array($parameters['extension'], ['png', 'gif'])
+			: false;
 
 		$x = max(0, (int)$data['crop'.$kind.'_x']);
 		$y = max(0, (int)$data['crop'.$kind.'_y']);
 		$w = min((int)$data['crop'.$kind.'_w'], $entity->getParameters()['width']  - $x);
 		$h = min((int)$data['crop'.$kind.'_h'], $entity->getParameters()['height'] - $y);
-		$minSize = min($w, $h);
 
 		$image = $application->getServiceImagine()->open($path);
 		$image->crop(new Point($x, $y), new Box($w, $h));
-		$image->save($temp, ['format' => 'jpeg', 'jpeg_quality' => 100]);
+		$image->save($temp, $transparent ? ['format' => 'png'] : ['format' => 'jpeg', 'jpeg_quality' => 100]);
 
+		return $this->_saveTempImageAsEntity($temp, $name, $w, $h, $parameters, $transparent ? 'png' : 'jpg');
+	}
+
+	/**
+	 * @param string $temp
+	 * @param string $name
+	 * @param int $w
+	 * @param int $h
+	 * @param null|array $parameters
+	 * @param null|string $extension
+	 * @return int
+	 */
+	protected function _saveTempImageAsEntity($temp, $name, $w, $h, array $parameters = null, $extension = 'jpg')
+	{
 		$hash = $this->getHashForFile($temp);
 		$path = $this->getPathForHash($hash);
 		@mkdir(dirname($path), 0755, true);
@@ -798,15 +879,17 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		{
 			$entity = $this->createEntity($hash, '1x1', true);
 			$entity->setName($name);
-			$entity->setParameters([
+			$entity->setParameters(array_merge($parameters, [
+				'extension' => $extension,
 				'size'   => filesize($path),
 				'width'  => $w,
 				'height' => $h,
-				'crop_x' => floor(($w - $minSize) / 2),
+				'crop_x' => floor(($w - min($w, $h)) / 2),
 				'crop_y' => 0,
-				'crop_w' => $minSize,
-				'crop_h' => $minSize,
-			]);
+				'crop_w' => min($w, $h),
+				'crop_h' => min($w, $h),
+			]));
+			$entity->addTags(['копия']);
 
 			$this->commit($entity);
 		}

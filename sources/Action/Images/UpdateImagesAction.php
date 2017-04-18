@@ -41,6 +41,14 @@ class UpdateImagesAction extends AbstractUpdateAction
 		foreach (array_keys($service->getKinds()) as $kind)
 		{
 			/** @noinspection PhpUndefinedMethodInspection */
+			if ($form->get('append'.$kind)->isClicked())
+			{
+				$query = $this->getRequest()->query->all();
+				$query['id'] = $service->applyAdminImageAppendForm($application, $form, $entity, $kind) ?: $id;
+				return $application->redirect($application->url($this->route, $query));
+			}
+
+			/** @noinspection PhpUndefinedMethodInspection */
 			if ($form->get('copy'.$kind)->isClicked())
 			{
 				$query = $this->getRequest()->query->all();

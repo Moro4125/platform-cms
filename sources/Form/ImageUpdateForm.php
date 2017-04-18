@@ -122,8 +122,12 @@ class ImageUpdateForm extends AbstractContent
 			}
 
 			$builder->add('copy'.$kind, 'submit', [
-				'label' => 'Создать копию',
+				'label' => 'Вырезать область',
 				'attr'  => ['title' => 'Вырезать выделенную область и сохранить в качестве нового изображения.'],
+			]);
+			$builder->add('append'.$kind, 'submit', [
+				'label' => 'Добавить поля',
+				'attr'  => ['title' => 'Добавить поля так, что бы изображение полностью вписывалось в заданное соотношение сторон. Сохранить в качестве нового изображения.'],
 			]);
 			$builder->add('crop'.$kind.'_a', 'checkbox', [
 				'label'    => '',

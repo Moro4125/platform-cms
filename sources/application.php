@@ -455,7 +455,17 @@ class Application extends CApplication
 		{
 			$route = 'admin-image';
 			empty($parameters['hash']) && $parameters['hash'] = '00000000000000000000000000000000';
-			empty($parameters['format']) && $parameters['format'] = 'jpg';
+
+			if (empty($parameters['format']))
+			{
+				$image = $this->getServiceFile()->getByHashAndKind($parameters['hash'], '1x1', true);
+				$parameters['format'] = $image
+					?( array_key_exists('extension', $image->getParameters())
+						? $image->getParameters()['extension']
+						: 'jpg'
+					): 'jpg';
+			}
+
 			$parameters['salt'] = substr($parameters['hash'], -2);
 		}
 
