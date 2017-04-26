@@ -47,8 +47,8 @@
     "select2/select2": "~4.0",
     "mustache/mustache-js": "~2.0",
     "jackmoore/autosize": "~3.0",
-    "symfony/doctrine-bridge": "^2.7",
-    "raven/raven": "~0.13.0",
+    "symfony/doctrine-bridge": "~2.7",
+    "sentry/sentry": "~1.6",
     "swiftmailer/swiftmailer": "~v5.4.1"
   },
   "require-dev": {
@@ -59,7 +59,7 @@
     "component-baseurl": "/assets"
   },
   "bin": [
-    "bin/platform.php"
+    "bin/platform"
   ],
   "extra": {
     "component": {
