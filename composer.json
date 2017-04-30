@@ -35,7 +35,7 @@
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.6",
-    "moro/platform-cms-installer": "~1.1",
+    "moro/platform-cms-installer": "~1.1.1",
     "fengyuanchen/cropperp": "~2.0",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
