@@ -397,7 +397,7 @@ abstract class AbstractService implements SplSubject
 				$record['_flags'] |= EntityInterface::FLAG_TIMESTAMP_CONVERTED;
 			}
 		}
-		elseif (isset($record[EntityInterface::PROP_CREATED_AT]))
+		elseif (isset($record[EntityInterface::PROP_UPDATED_AT]))
 		{
 			if (!is_numeric($record[EntityInterface::PROP_UPDATED_AT]))
 			{
