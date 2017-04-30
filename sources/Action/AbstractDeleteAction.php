@@ -221,6 +221,14 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	}
 
 	/**
+	 * @param $entity TagsEntityInterface
+	 */
+	protected function _prepareForMoveToTrash($entity)
+	{
+		$entity->addTags(['флаг: удалено']);
+	}
+
+	/**
 	 * @return \Symfony\Component\HttpFoundation\RedirectResponse
 	 */
 	protected function _doMoveToTrash()
@@ -231,7 +239,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 
 		if (count($list) == 1 && ($entity = reset($list)) && $entity instanceof TagsEntityInterface)
 		{
-			$entity->addTags(['флаг: удалено']);
+			$this->_prepareForMoveToTrash($entity);
 			$entity instanceof EntityInterface && $service->commit($entity);
 			$application->getServiceFlash()->success('Запись была успешно отправлена в корзину.');
 		}
@@ -243,7 +251,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 			{
 				if ($entity instanceof TagsEntityInterface)
 				{
-					$entity->addTags(['флаг: удалено']);
+					$this->_prepareForMoveToTrash($entity);
 					$entity instanceof EntityInterface && $service->commit($entity);
 					$count++;
 				}

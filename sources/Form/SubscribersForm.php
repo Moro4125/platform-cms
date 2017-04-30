@@ -7,6 +7,7 @@ use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\Regex;
 use \Moro\Platform\Form\Constraints\UniqueField;
 use \Moro\Platform\Model\Implementation\Users\UsersInterface;
+use \Moro\Platform\Model\Implementation\Subscribers\SubscribersInterface;
 use \Moro\Platform\Application;
 
 /**
@@ -69,9 +70,9 @@ class SubscribersForm extends AbstractContent
 			'label' => 'E-mail',
 			'constraints' => [
 				new UniqueField([
-					'message'  => 'Email пользователя должен быть уникальным.',
-					'table'    => Application::getInstance()->getServiceUsers()->getTableName(),
-					'field'    => UsersInterface::PROP_EMAIL,
+					'message'  => 'Email подписчика должен быть уникальным.',
+					'table'    => Application::getInstance()->getServiceSubscribers()->getTableName(),
+					'field'    => SubscribersInterface::PROP_EMAIL,
 					'ignoreId' => $this->_id,
 					'dbal'     => Application::getInstance()->getServiceDataBase(),
 				]),

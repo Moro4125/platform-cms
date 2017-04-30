@@ -1,6 +1,8 @@
 <?php
 /**
  * Class MessagesCommand
+ *
+ * Cron: vendor/bin/platform messages --send -q
  */
 namespace Moro\Platform\Command;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -71,7 +73,9 @@ class MessagesCommand extends AbstractCommand
 
 		if ($startingLine >= $finishLine)
 		{
-			$verbose && $output->writeln('Nothing to do.');
+			$msg = 'Nothing to do (subscriber line %1$s, message line %2$s).';
+			$format = 'Y.d.m H:i:s \\G\\M\\T';
+			$verbose && $output->writeln(sprintf($msg, gmdate($format, $startingLine), gmdate($format, $finishLine)));
 			return;
 		}
 

@@ -244,7 +244,9 @@ class ServiceMessages extends AbstractService implements ContentActionsInterface
 		$statement = $this->_connection->prepare($builder->getSQL());
 
 		$line = $statement->execute() ? $statement->fetch(PDO::FETCH_COLUMN) : null;
-		return $line ? (new DateTime($line, new DateTimeZone('UTC')))->getTimestamp() : 0;
+		$line && $line = new DateTime($line, new DateTimeZone('UTC'));
+
+		return $line ? $line->getTimestamp() : 0;
 	}
 
 	/**

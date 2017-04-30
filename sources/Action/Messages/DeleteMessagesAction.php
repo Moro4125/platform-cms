@@ -19,4 +19,12 @@ class DeleteMessagesAction extends AbstractDeleteAction
 	public $template    = '@PlatformCMS/admin/content/messages-delete.html.twig';
 	public $route       = 'admin-content-messages-delete';
 	public $routeIndex  = 'admin-content-messages';
+
+	/**
+	 * @param $entity TagsEntityInterface
+	 */
+	protected function _prepareForMoveToTrash($entity)
+	{
+		$entity->addTags(['флаг: удалено']);
+	}
 }
