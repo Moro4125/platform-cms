@@ -10,6 +10,7 @@ use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 use \Moro\Platform\Model\Accessory\FileAttachTrait;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
+use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Star\StarServiceTrait;
@@ -32,6 +33,7 @@ use \Exception;
 class ServiceMessages extends AbstractService implements ContentActionsInterface, TagsServiceInterface
 {
 	use UpdatedByServiceTrait;
+	use OrderAtServiceTrait;
 	use TagsServiceTrait;
 	use MonologServiceTrait;
 	use LockTrait;

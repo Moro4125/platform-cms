@@ -29,6 +29,7 @@ use \Exception;
 class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
+	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Star\StarServiceTrait;
 	use \Moro\Platform\Model\Accessory\Parameters\Chain\ChainServiceTrait;

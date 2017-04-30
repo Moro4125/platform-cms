@@ -8,6 +8,7 @@ use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\LockTrait;
 use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
+use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
@@ -34,6 +35,7 @@ use \Exception;
 class ServiceSubscribers extends AbstractService implements ContentActionsInterface, TagsServiceInterface
 {
 	use UpdatedByServiceTrait;
+	use OrderAtServiceTrait;
 	use TagsServiceTrait;
 	use StarServiceTrait;
 	use MonologServiceTrait;

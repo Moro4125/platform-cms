@@ -13,6 +13,7 @@ use \Moro\Platform\Model\Implementation\Users\UsersInterface;
  */
 class ServiceUsersAuth extends AbstractService
 {
+	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
 	use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 
 	protected $_table = 'users_auth';
