@@ -15,6 +15,7 @@ use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
+use \Moro\Platform\Model\Accessory\HistoryMetaInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Form\Index\ImagesIndexForm;
 use \Moro\Platform\Form\ImageUpdateForm;
@@ -35,7 +36,7 @@ use \PDO;
  *
  * @method FileInterface getEntityById($id, $withoutException = null, $flags = null)
  */
-class ServiceFile extends AbstractService implements ContentActionsInterface, TagsServiceInterface
+class ServiceFile extends AbstractService implements ContentActionsInterface, TagsServiceInterface, HistoryMetaInterface
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
@@ -164,6 +165,18 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		}
 
 		$next->offsetUnset('kind');
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHistoryMetadata()
+	{
+		return [
+			HistoryMetaInterface::HISTORY_META_PATCH_FIELDS => [],
+			HistoryMetaInterface::HISTORY_META_BLACK_FIELDS => [],
+			HistoryMetaInterface::HISTORY_META_WHITE_FIELDS => ['kind', 'parameters.comment'],
+		];
 	}
 
 	/**

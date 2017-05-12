@@ -358,9 +358,9 @@ abstract class AbstractUpdateAction extends AbstractContentAction
 
 		/** @var HistoryBehavior $behavior */
 		$behavior = $this->getService();
-		$behavior->setPatchFields((array)$this->_patchTextKeys);
-		$behavior->setBlackFields((array)$this->_diffBlackKeys);
-		$behavior->setWhiteFields((array)$this->_diffWhiteKeys);
+		$behavior->addPatchFields((array)$this->_patchTextKeys);
+		$behavior->addBlackFields((array)$this->_diffBlackKeys);
+		$behavior->addWhiteFields((array)$this->_diffWhiteKeys);
 
 		$this->getService()->applyAdminUpdateForm($application, $entity, $form);
 	}

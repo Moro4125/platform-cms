@@ -80,9 +80,12 @@ class HistoryBehavior extends AbstractBehavior
 			AbstractService::STATE_COMMIT_FINISHED => '_onCommitFinished',
 			AbstractService::STATE_DELETE_FINISHED => '_onDeleteFinished',
 		];
-		$this->setPatchFields([]);
-		$this->setBlackFields([]);
-		$this->setWhiteFields([]);
+
+		$meta = ($service instanceof HistoryMetaInterface) ? $service->getHistoryMetadata() : null;
+
+		$this->setPatchFields($meta ? (array)$meta[HistoryMetaInterface::HISTORY_META_PATCH_FIELDS] : []);
+		$this->setBlackFields($meta ? (array)$meta[HistoryMetaInterface::HISTORY_META_BLACK_FIELDS] : []);
+		$this->setWhiteFields($meta ? (array)$meta[HistoryMetaInterface::HISTORY_META_WHITE_FIELDS] : []);
 	}
 
 	/**
@@ -97,6 +100,17 @@ class HistoryBehavior extends AbstractBehavior
 	/**
 	 * @param array $fields
 	 */
+	public function addPatchFields(array $fields)
+	{
+		assert(isset($this->_context));
+		$this->_context[self::KEY_PATCH_FIELDS] = isset($this->_context[self::KEY_PATCH_FIELDS])
+			? array_unique(array_merge($this->_context[self::KEY_PATCH_FIELDS], $fields))
+			: $fields;
+	}
+
+	/**
+	 * @param array $fields
+	 */
 	public function setBlackFields(array $fields)
 	{
 		assert(isset($this->_context));
@@ -106,10 +120,32 @@ class HistoryBehavior extends AbstractBehavior
 	/**
 	 * @param array $fields
 	 */
+	public function addBlackFields(array $fields)
+	{
+		assert(isset($this->_context));
+		$this->_context[self::KEY_BLACK_FIELDS] = isset($this->_context[self::KEY_BLACK_FIELDS])
+			? array_unique(array_merge($this->_context[self::KEY_BLACK_FIELDS], $fields))
+			: $fields;
+	}
+
+	/**
+	 * @param array $fields
+	 */
 	public function setWhiteFields(array $fields)
 	{
 		assert(isset($this->_context));
 		$this->_context[self::KEY_WHITE_FIELDS] = $fields;
+	}
+
+	/**
+	 * @param array $fields
+	 */
+	public function addWhiteFields(array $fields)
+	{
+		assert(isset($this->_context));
+		$this->_context[self::KEY_WHITE_FIELDS] = isset($this->_context[self::KEY_WHITE_FIELDS])
+			? array_unique(array_merge($this->_context[self::KEY_WHITE_FIELDS], $fields))
+			: $fields;
 	}
 
 	/**

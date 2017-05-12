@@ -8,6 +8,7 @@ use \Moro\Platform\Form\ChunkForm;
 use \Moro\Platform\Model\AbstractService;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\ContentActionsInterface;
+use \Moro\Platform\Model\Accessory\HistoryMetaInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Chain\ChainServiceInterface;
 use \Moro\Platform\Model\Exception\EntityNotFoundException;
@@ -26,7 +27,7 @@ use \Exception;
  *
  * @method EntityContent[] getEntitiesById(array $idList, $flags = null)
  */
-class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface
+class ServiceContent extends AbstractService implements ContentActionsInterface, TagsServiceInterface, ChainServiceInterface, HistoryMetaInterface
 {
 	use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 	use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
@@ -149,6 +150,18 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$key = 'parameters.chunks.num'.$countValue;
 			$prev->offsetExists($key) && $prev->offsetUnset($key);
 		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHistoryMetadata()
+	{
+		return [
+			HistoryMetaInterface::HISTORY_META_PATCH_FIELDS => ['parameters.lead', 'parameters.gallery_text'],
+			HistoryMetaInterface::HISTORY_META_BLACK_FIELDS => ['parameters.chain'],
+			HistoryMetaInterface::HISTORY_META_WHITE_FIELDS => ['parameters.comment'],
+		];
 	}
 
 	/**

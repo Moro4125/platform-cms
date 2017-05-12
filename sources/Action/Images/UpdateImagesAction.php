@@ -23,11 +23,6 @@ class UpdateImagesAction extends AbstractUpdateAction
 	public $routeDelete = 'admin-content-images-delete';
 
 	/**
-	 * @var array
-	 */
-	protected $_diffWhiteKeys = ['kind', 'parameters.comment'];
-
-	/**
 	 * @param int $id
 	 * @return mixed
 	 */

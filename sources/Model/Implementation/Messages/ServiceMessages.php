@@ -8,6 +8,7 @@ use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\LockTrait;
 use \Moro\Platform\Model\Accessory\MonologServiceTrait;
 use \Moro\Platform\Model\Accessory\FileAttachTrait;
+use \Moro\Platform\Model\Accessory\HistoryMetaInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsServiceTrait;
 use \Moro\Platform\Model\Accessory\UpdatedBy\UpdatedByServiceTrait;
 use \Moro\Platform\Model\Accessory\OrderAt\OrderAtServiceTrait;
@@ -30,7 +31,7 @@ use \Exception;
  * Class ServiceMessages
  * @package Moro\Platform\Model\Implementation\Messages
  */
-class ServiceMessages extends AbstractService implements ContentActionsInterface, TagsServiceInterface
+class ServiceMessages extends AbstractService implements ContentActionsInterface, TagsServiceInterface, HistoryMetaInterface
 {
 	use UpdatedByServiceTrait;
 	use OrderAtServiceTrait;
@@ -103,6 +104,18 @@ class ServiceMessages extends AbstractService implements ContentActionsInterface
 				$this->historyMergePatch($key, $next, $prev);
 			}
 		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHistoryMetadata()
+	{
+		return [
+			HistoryMetaInterface::HISTORY_META_PATCH_FIELDS => ['parameters.text'],
+			HistoryMetaInterface::HISTORY_META_BLACK_FIELDS => [],
+			HistoryMetaInterface::HISTORY_META_WHITE_FIELDS => ['parameters.comment'],
+		];
 	}
 
 	/**

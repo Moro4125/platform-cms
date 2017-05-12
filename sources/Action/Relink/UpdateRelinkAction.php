@@ -5,7 +5,7 @@
 namespace Moro\Platform\Action\Relink;
 use \Moro\Platform\Action\AbstractUpdateAction;
 use \Moro\Platform\Application;
-use Symfony\Component\HttpFoundation\Request;
+use \Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class UpdateRelinkAction
