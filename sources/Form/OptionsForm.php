@@ -3,7 +3,10 @@
  * Class OptionsForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\ImageChoiceType;
 use \Symfony\Component\Form\AbstractType;
+use \Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 
@@ -27,13 +30,32 @@ class OptionsForm extends AbstractType
 	protected $_dataList;
 
 	/**
-	 * @param \Moro\Platform\Application $application
-	 * @param \Moro\Platform\Model\Implementation\Options\EntityOptions[] $dataList
+	 * @var array
 	 */
-	public function __construct(Application $application, array $dataList)
+	protected $_typesMap = [
+		'text'         => TextType::class,
+		'textarea'     => TextareaType::class,
+		'choice_image' => ImageChoiceType::class,
+	];
+
+	/**
+	 * @param $application
+	 * @return $this
+	 */
+	public function setApplication($application)
 	{
 		$this->_application = $application;
-		$this->_dataList = $dataList;
+		return $this;
+	}
+
+	/**
+	 * @param array $list
+	 * @return $this
+	 */
+	public function setDataList(array $list)
+	{
+		$this->_dataList = $list;
+		return $this;
 	}
 
 	/**
@@ -58,7 +80,7 @@ class OptionsForm extends AbstractType
 				'required' => false,
 			];
 
-			$builder->add($code, $entity->getType(), $parameters);
+			$builder->add($code, $this->_typesMap[$entity->getType()], $parameters);
 		}
 	}
 }

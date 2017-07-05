@@ -5,7 +5,7 @@
 namespace Moro\Platform\Provider;
 use \Silex\Application;
 use \Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * RequestProcessor adds extra information about the request.

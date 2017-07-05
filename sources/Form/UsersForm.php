@@ -3,6 +3,9 @@
  * Class UsersForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\RolesChoiceType;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use \Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -19,34 +22,6 @@ use \Moro\Platform\Application;
 class UsersForm extends AbstractContent
 {
 	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param int $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
-	/**
 	 * @param FormBuilderInterface $builder
 	 * @param array $options
 	 */
@@ -54,7 +29,7 @@ class UsersForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Псевдоним',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Псевдоним".']),
@@ -69,7 +44,7 @@ class UsersForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('email', 'text', [
+		$builder->add('email', TextType::class, [
 			'label' => 'E-mail',
 			'constraints' => [
 				new UniqueField([
@@ -83,17 +58,17 @@ class UsersForm extends AbstractContent
 			'required' => true,
 		]);
 
-		$builder->add('first_name', 'text', [
+		$builder->add('first_name', TextType::class, [
 			'label' => 'Имя',
 			'required' => false,
 		]);
 
-		$builder->add('second_name', 'text', [
+		$builder->add('second_name', TextType::class, [
 			'label' => 'Фамилия',
 			'required' => false,
 		]);
 
-		$builder->add('patronymic', 'text', [
+		$builder->add('patronymic', TextType::class, [
 			'label' => 'Отчество',
 			'required' => false,
 		]);
@@ -107,7 +82,7 @@ class UsersForm extends AbstractContent
 			'second_options' => ['label' => 'Повтор'],
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_USERS,
 			'multiple' => true,
@@ -117,7 +92,7 @@ class UsersForm extends AbstractContent
 
 		// security.role_hierarchy
 
-		$builder->add('roles', 'choice_roles', [
+		$builder->add('roles', RolesChoiceType::class, [
 			'label'    => 'Группы',
 			'multiple' => true,
 			'required' => false,

@@ -10,7 +10,10 @@
     }
   ],
   "autoload": {
-    "psr-4": {"Moro\\Platform\\": "sources/"},
+    "psr-4": {
+      "Moro\\Platform\\": "sources/",
+      "Saxulum\\SaxulumBootstrapProvider\\": "library/saxulum-bootstrap-provider/src/Saxulum/SaxulumBootstrapProvider"
+    },
     "files": [
       "sources/functions.php"
     ],
@@ -20,26 +23,25 @@
   },
   "require": {
     "php": ">=5.5",
-    "silex/silex": "~1.3",
+    "silex/silex": "~2.0",
     "doctrine/dbal": "~2.5",
-    "symfony/console": "~2.6",
-    "symfony/security": "~2.6",
-    "symfony/form": "~2.6",
-    "symfony/validator": "~2.6",
-    "symfony/config": "~2.6",
-    "symfony/translation": "~2.6",
-    "symfony/security-csrf": "~2.6",
-    "symfony/twig-bridge": "~2.6",
-    "knplabs/console-service-provider": "~1.0",
+    "symfony/console": "~3.0",
+    "symfony/security": "~3.0",
+    "symfony/form": "~3.0",
+    "symfony/validator": "~3.0",
+    "symfony/config": "~3.0",
+    "symfony/translation": "~3.0",
+    "symfony/security-csrf": "~3.0",
+    "symfony/twig-bridge": "~3.0",
+    "knplabs/console-service-provider": "~2.0",
     "knplabs/knp-menu": "~2.0",
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
-    "moro/team-migrations-silex": "~1.6",
+    "moro/team-migrations-silex": "~2.0",
     "moro/platform-cms-installer": "~1.1.1",
     "fengyuanchen/cropperp": "~2.0",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
-    "saxulum/saxulum-bootstrap-provider": "~1.0",
     "michelf/php-markdown": "~1.5",
     "aptoma/twig-markdown": "~1.2",
     "kartik-v/bootstrap-fileinput": "~4.1",
@@ -55,7 +57,7 @@
     "hybridauth/hybridauth": "~2.6"
   },
   "config": {
-    "component-dir": "http/assets",
+    "component-dir": "web/assets",
     "component-baseurl": "/assets"
   },
   "bin": [
@@ -156,7 +158,12 @@
   "archive": {
     "exclude": [
       ".gitignore",
-      "http"
+      "web/assets",
+      "web/download",
+      "web/images",
+      "web/security",
+      "web/*.html",
+      "web/*.xml"
     ]
   }
 }

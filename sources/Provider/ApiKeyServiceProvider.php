@@ -4,7 +4,8 @@
  */
 namespace Moro\Platform\Provider;
 use \Silex\Application;
-use \Silex\ServiceProviderInterface;
+use \Pimple\ServiceProviderInterface;
+use \Pimple\Container;
 use \Moro\Platform\Security\Http\Firewall\ApiKeyAuthenticationListener;
 use \Moro\Platform\Security\Provider\ApiKeyAuthenticationProvider;
 
@@ -19,22 +20,22 @@ use \Moro\Platform\Security\Provider\ApiKeyAuthenticationProvider;
 class ApiKeyServiceProvider implements ServiceProviderInterface
 {
 	/**
-	 * @param Application $app
+	 * @param Application|Container $app
 	 */
-	public function register(Application $app)
+	public function register(Container $app)
 	{
 		$app['security.authentication_listener.factory.api_key'] = $app->protect(function ($name, $options) use ($app)
 		{
 			unset($options); // not in use
-			$app['security.authentication_provider.' . $name . '.api_key'] = $app->share(function () use ($app)
+			$app['security.authentication_provider.' . $name . '.api_key'] = function () use ($app)
 			{
 				return new ApiKeyAuthenticationProvider($app['api_key.user_provider'], $app['api_key.encoder']);
-			});
+			};
 
-			$app['security.authentication_listener.' . $name . '.api_key'] = $app->share(function () use ($app)
+			$app['security.authentication_listener.' . $name . '.api_key'] = function () use ($app)
 			{
 				return new ApiKeyAuthenticationListener($app['security.token_storage'], $app['security.authentication_manager']);
-			});
+			};
 
 			return array(
 				'security.authentication_provider.' . $name . '.api_key',
@@ -43,12 +44,5 @@ class ApiKeyServiceProvider implements ServiceProviderInterface
 				'pre_auth' // // the position of the listener in the stack
 			);
 		});
-	}
-
-	/**
-	 * @param \Silex\Application $app
-	 */
-	public function boot(Application $app)
-	{
 	}
 }

@@ -3,10 +3,11 @@
  * Class FieldsetExtension
  */
 namespace Moro\Platform\Form\Type\Extension;
-use Symfony\Component\Form\AbstractTypeExtension;
-use Symfony\Component\Form\FormView;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use \Symfony\Component\Form\AbstractTypeExtension;
+use \Symfony\Component\Form\Extension\Core\Type\FormType;
+use \Symfony\Component\Form\FormView;
+use \Symfony\Component\Form\FormInterface;
+use \Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Class FieldsetExtension
@@ -20,7 +21,7 @@ class FieldsetExtension extends AbstractTypeExtension
 	public function getExtendedType()
 	{
 		// расширение будет работать с любым типом полей
-		return 'form';
+		return FormType::class;
 	}
 
 	/**

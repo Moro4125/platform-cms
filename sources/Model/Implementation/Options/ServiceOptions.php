@@ -60,8 +60,14 @@ class ServiceOptions extends AbstractService implements ArrayAccess
 			return $entity->getSort() > 0;
 		});
 
+		$application->extend(OptionsForm::class, function(OptionsForm $form, $app) use ($dataList) {
+			$form->setApplication($app);
+			$form->setDataList($dataList);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new OptionsForm($application, $dataList), array_map(function(EntityOptions $entity) {
+		$builder = $service->createBuilder(OptionsForm::class, array_map(function(EntityOptions $entity) {
 			return (string)$entity->getValue();
 		}, $dataList));
 

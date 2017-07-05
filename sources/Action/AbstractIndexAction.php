@@ -84,7 +84,7 @@ abstract class AbstractIndexAction extends AbstractContentAction
 	protected $_form;
 
 	/**
-	 * @var array
+	 * @var string
 	 */
 	protected $_tags;
 

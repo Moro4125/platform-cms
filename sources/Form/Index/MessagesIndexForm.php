@@ -3,6 +3,7 @@
  * Class MessagesIndexForm
  */
 namespace Moro\Platform\Form\Index;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -19,7 +20,7 @@ class MessagesIndexForm extends AbstractIndexForm
 	{
 		parent::buildForm($builder, $options);
 
-		$builder->add('send', 'submit', [
+		$builder->add('send', SubmitType::class, [
 				'label' => ' ',
 				'attr' => [
 					'title' => 'Отправить оповещение подписчикам.',

@@ -3,6 +3,7 @@
  * Class ImagesIndexForm
  */
 namespace Moro\Platform\Form\Index;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -23,14 +24,14 @@ class ImagesIndexForm extends AbstractIndexForm
 		{
 			if ($this->_application->getOption('images.watermark'))
 			{
-				$builder->add('hide_watermark', 'submit', [
+				$builder->add('hide_watermark', SubmitType::class, [
 					'label' => ' ',
 					'attr' => [
 						'title' => 'Скрыть водяной знак.',
 					],
 				]);
 
-				$builder->add('show_watermark', 'submit', [
+				$builder->add('show_watermark', SubmitType::class, [
 					'label' => ' ',
 					'attr' => [
 						'title' => 'Показать водяной знак.',
@@ -40,14 +41,14 @@ class ImagesIndexForm extends AbstractIndexForm
 
 			if ($this->_application->getOption('images.mask1'))
 			{
-				$builder->add('hide_mask', 'submit', [
+				$builder->add('hide_mask', SubmitType::class, [
 						'label' => ' ',
 						'attr' => [
 							'title' => 'Скрыть обрамление.',
 						],
 				]);
 
-				$builder->add('show_mask', 'submit', [
+				$builder->add('show_mask', SubmitType::class, [
 						'label' => ' ',
 						'attr' => [
 							'title' => 'Показать обрамление.',

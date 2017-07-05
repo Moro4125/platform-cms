@@ -7,8 +7,8 @@ use \Symfony\Component\Security\Core\Role\RoleInterface;
 use \Symfony\Component\HttpKernel\KernelEvents;
 use \Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use \Silex\Application;
-use \Silex\ServiceProviderInterface;
-use \Silex\Application as CApplication;
+use \Pimple\ServiceProviderInterface;
+use \Pimple\Container;
 use \Raven_Client;
 use \Exception;
 
@@ -29,11 +29,11 @@ class SentryProvider implements ServiceProviderInterface
 	 * This method should only be used to configure services and parameters.
 	 * It should not get services.
 	 *
-	 * @param \Moro\Platform\Application|CApplication $app
+	 * @param \Moro\Platform\Application|Container $app
 	 */
-	public function register(CApplication $app)
+	public function register(Container $app)
 	{
-		$app['sentry'] = $app->share(function() use ($app) {
+		$app['sentry'] = function() use ($app) {
 			$options = $app->getOptions('sentry');
 			$dsn = isset($options['dsn']) ? $options['dsn'] : null;
 			unset($options['dsn'], $options['active']);
@@ -60,7 +60,7 @@ class SentryProvider implements ServiceProviderInterface
 			]);
 
 			return $client;
-		});
+		};
 
 		$app->on(KernelEvents::CONTROLLER, function(FilterControllerEvent $event) use ($app) {
 			$controller = $event->getRequest()->attributes->get('_route');
@@ -77,18 +77,5 @@ class SentryProvider implements ServiceProviderInterface
 			array_pop($this->_controllersStack);
 			$app->getServiceSentry()->tags_context(['controller' => end($this->_controllersStack)]);
 		});
-	}
-
-	/**
-	 * Bootstraps the application.
-	 *
-	 * This method is called after all services are registered
-	 * and should be used for "dynamic" configuration (whenever
-	 * a service must be requested).
-	 *
-	 * @param \Moro\Platform\Application|CApplication $app
-	 */
-	public function boot(CApplication $app)
-	{
 	}
 }

@@ -6,6 +6,7 @@ namespace Moro\Platform\Action;
 use \Moro\Platform\Model\Accessory\HistoryBehavior;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
 use \Moro\Platform\Model\EntityInterface;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
@@ -124,7 +125,7 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	}
 
 	/**
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function getForm()
 	{
@@ -269,17 +270,17 @@ abstract class AbstractDeleteAction extends AbstractContentAction
 	}
 
 	/**
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	protected function _createForm()
 	{
 		$factory = $this->getApplication()->getServiceFormFactory();
 		$form = $factory->create();
 
-		$form->add('delete', 'submit', [
+		$form->add('delete', SubmitType::class, [
 			'label' => 'Да, удалить',
 		]);
-		$form->add('cancel', 'submit', [
+		$form->add('cancel', SubmitType::class, [
 			'label' => 'Нет, отменить',
 		]);
 

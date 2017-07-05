@@ -159,8 +159,15 @@ class ServiceSubscribers extends AbstractService implements ContentActionsInterf
 	{
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
+		$application->extend(AbstractIndexForm::class, function(AbstractIndexForm $form, $app) use ($list) {
+			$form->setApplication($app);
+			$form->setList($list);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new AbstractIndexForm($list), array_fill_keys(array_keys($list), false));
+		$dataArr = array_fill_keys(array_keys($list), false);
+		$builder = $service->createNamedBuilder('admin_list', AbstractIndexForm::class, $dataArr);
 
 		return $builder->getForm();
 	}
@@ -184,7 +191,16 @@ class ServiceSubscribers extends AbstractService implements ContentActionsInterf
 			'tags'   => isset($args['tags']) ? $args['tags'] : [],
 		];
 
-		return $application->getServiceFormFactory()->createBuilder(new SubscribersForm($entity->getId(), $tags), $data)->getForm();
+		$application->extend(SubscribersForm::class, function(SubscribersForm $form) use ($entity, $tags) {
+			$form->setId($entity->getId());
+			$form->setTags($tags);
+			return $form;
+		});
+
+		$service = $application->getServiceFormFactory();
+		$builder = $service->createNamedBuilder('admin_update', SubscribersForm::class, $data);
+
+		return $builder->getForm();
 	}
 
 	/**

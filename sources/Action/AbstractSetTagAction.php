@@ -3,12 +3,14 @@
  * Class AbstractSetTagAction
  */
 namespace Moro\Platform\Action;
+use \Moro\Platform\Application;
+use \Moro\Platform\Form\Type\TagsChoiceType;
 use \Moro\Platform\Model\EntityInterface;
 use \Moro\Platform\Model\Accessory\Parameters\Tags\TagsEntityInterface;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\HttpFoundation\Request;
 use \Symfony\Component\HttpFoundation\Response;
 use \Silex\Application as SilexApplication;
-use \Moro\Platform\Application;
 
 /**
  * Class AbstractSetTagAction
@@ -107,7 +109,7 @@ class AbstractSetTagAction extends AbstractContentAction
 	}
 
 	/**
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function getForm()
 	{
@@ -172,7 +174,7 @@ class AbstractSetTagAction extends AbstractContentAction
 	}
 
 	/**
-	 * @return \Symfony\Component\Form\Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	protected function _createForm()
 	{
@@ -186,7 +188,7 @@ class AbstractSetTagAction extends AbstractContentAction
 		$tags_del = @$request->get('form')['tags_del'] ?: [];
 		$tags_del = array_unique(array_merge($tags_del, isset($args['tags_del']) ? $args['tags_del'] : []));
 
-		$form->add('tags_add', 'choice_tags', [
+		$form->add('tags_add', TagsChoiceType::class, [
 			'label' => 'Назначить ярлыки',
 			'filter' => 'Service: '.$this->serviceCode,
 			'multiple' => true,
@@ -194,7 +196,7 @@ class AbstractSetTagAction extends AbstractContentAction
 			'choices'  => array_combine($tags_add, $tags_add),
 		]);
 
-		$form->add('tags_del', 'choice_tags', [
+		$form->add('tags_del', TagsChoiceType::class, [
 			'label' => 'Снять ярлыки',
 			'filter' => 'Service: '.$this->serviceCode,
 			'multiple' => true,
@@ -202,10 +204,10 @@ class AbstractSetTagAction extends AbstractContentAction
 			'choices'  => array_combine($tags_del, $tags_del),
 		]);
 
-		$form->add('commit', 'submit', [
+		$form->add('commit', SubmitType::class, [
 			'label' => 'Применить',
 		]);
-		$form->add('cancel', 'submit', [
+		$form->add('cancel', SubmitType::class, [
 			'label' => 'Отмена',
 		]);
 

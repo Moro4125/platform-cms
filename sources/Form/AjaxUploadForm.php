@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\AbstractType;
+use \Symfony\Component\Form\Extension\Core\Type\FileType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -19,10 +20,12 @@ class AjaxUploadForm extends AbstractType
 
 	/**
 	 * @param string $action
+	 * @return $this
 	 */
-	public function __construct($action)
+	public function setAction($action)
 	{
 		$this->_action = $action;
+		return $this;
 	}
 
 	/**
@@ -41,7 +44,7 @@ class AjaxUploadForm extends AbstractType
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('uploads', 'file', [
+		$builder->add('uploads', FileType::class, [
 			'label' => ' ',
 			'multiple' => true,
 			'required' => false,

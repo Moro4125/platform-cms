@@ -3,6 +3,9 @@
  * Class MessagesForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\Regex;
 use \Symfony\Component\Validator\Constraints\NotBlank;
@@ -15,34 +18,6 @@ use \Moro\Platform\Application;
 class MessagesForm extends AbstractContent
 {
 	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param int $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
-	/**
 	 * @param FormBuilderInterface $builder
 	 * @param array $options
 	 */
@@ -50,7 +25,7 @@ class MessagesForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Заголовок',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Заголовок".']),
@@ -65,7 +40,7 @@ class MessagesForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('text', 'textarea', [
+		$builder->add('text', TextareaType::class, [
 			'label'    => 'Сообщение',
 			'required' => false,
 			'attr'	=> [
@@ -73,7 +48,7 @@ class MessagesForm extends AbstractContent
 			]
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_MESSAGES,
 			'multiple' => true,

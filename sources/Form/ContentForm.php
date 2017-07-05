@@ -3,12 +3,15 @@
  * Class ContentForm
  */
 namespace Moro\Platform\Form;
-use \Symfony\Component\Form\FormBuilderInterface;
+use \Moro\Platform\Form\Type\ImageChoiceType;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Moro\Platform\Form\Constraints\UniqueField;
 use \Moro\Platform\Model\Implementation\Content\EntityContent;
+use \Moro\Platform\Application;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
+use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Symfony\Component\Validator\Constraints\Regex;
-use \Moro\Platform\Form\Constraints\UniqueField;
-use \Moro\Platform\Application;
 
 /**
  * Class ContentForm
@@ -24,7 +27,7 @@ class ContentForm extends ChunkForm
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('code', 'text', [
+		$builder->add('code', TextType::class, [
 			'label' => 'Код',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Символьный код".']),
@@ -44,12 +47,12 @@ class ContentForm extends ChunkForm
 			'attr' => ['placeholder' => 'Символьный код', 'title' => 'Уникальный символьный код материала'],
 		]);
 
-		$builder->add('icon', 'choice_image', [
+		$builder->add('icon', ImageChoiceType::class, [
 			'label'    => 'Анонс',
 			'required' => false,
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_CONTENT,
 			'multiple' => true,
@@ -57,7 +60,7 @@ class ContentForm extends ChunkForm
 			'choices'  => array_combine($this->_tags, $this->_tags),
 		]);
 
-		$builder->add('external', 'text', [
+		$builder->add('external', TextType::class, [
 			'label' => 'Ссылка',
 			'required' => false,
 			'attr' => ['placeholder' => 'Только для внешней ссылки', 'title' => 'Ссылка, используемая в анонсе материала.'],

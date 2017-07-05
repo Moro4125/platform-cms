@@ -30,7 +30,7 @@ class Application extends CApplication
 	use \Silex\Application\MonologTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "2.3.2";
+	const PLATFORM_VERSION = "3.0.0-alpha";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
@@ -369,6 +369,7 @@ class Application extends CApplication
 			$collection = $controllers->flush();
 
 			$middleware || $middleware = function($next) {
+				/** @noinspection PhpParamsInspection */
 				return $next();
 			};
 
@@ -621,21 +622,6 @@ class Application extends CApplication
 	public function finish($callback, $priority = 0)
 	{
 		parent::finish($callback, $priority);
-		return $this;
-	}
-
-	/**
-	 * @param string $id
-	 * @param string $class
-	 * @param null|callable $callback
-	 * @return $this
-	 */
-	public function update($id, $class, callable $callback = null)
-	{
-		is_string($class) && $this->offsetSet($id.'.class', $class);
-		is_object($class) && $callback === null && $callback = $class;
-		$callback && $this->offsetSet($id, $this->share($this->extend($id, $callback)));
-
 		return $this;
 	}
 

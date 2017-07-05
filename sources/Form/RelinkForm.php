@@ -3,6 +3,9 @@
  * Class RelinkForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Moro\Platform\Application;
@@ -14,34 +17,6 @@ use \Moro\Platform\Application;
 class RelinkForm extends AbstractContent
 {
 	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param int $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
-	/**
 	 * @param FormBuilderInterface $builder
 	 * @param array $options
 	 */
@@ -49,7 +24,7 @@ class RelinkForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Название',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Название".']),
@@ -60,7 +35,7 @@ class RelinkForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_RELINK,
 			'multiple' => true,
@@ -81,7 +56,7 @@ class RelinkForm extends AbstractContent
 		foreach ($list as $code => $temp)
 		{
 			list($label, $title) = $temp;
-			$builder->add($code, 'text', [
+			$builder->add($code, TextType::class, [
 				'label' => $label,
 				'group' => $group1,
 				'required' => false,
@@ -103,7 +78,7 @@ class RelinkForm extends AbstractContent
 
 		foreach ($list as $code => $label)
 		{
-			$builder->add($code, 'text', [
+			$builder->add($code, TextType::class, [
 				'label' => $label,
 				'group' => $group2,
 				'required' => false,
@@ -119,7 +94,7 @@ class RelinkForm extends AbstractContent
 
 		foreach ($list as $code => $label)
 		{
-			$builder->add($code, 'checkbox', [
+			$builder->add($code, CheckboxType::class, [
 				'label' => $label,
 				'group' => $group2,
 				'required' => false,

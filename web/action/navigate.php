@@ -4,7 +4,7 @@
  *
  * How to use this file in the application:
  *    require_once __DIR__.'/../../bootstrap.php'; // Connect this file only once.
- *    require __DIR__.'/../../vendor/moro/platform-cms/http/action/navigate.php';
+ *    require __DIR__.'/../../vendor/moro/platform-cms/web/action/navigate.php';
  */
 use \Symfony\Component\HttpFoundation\Request;
 date_default_timezone_set('UTC');

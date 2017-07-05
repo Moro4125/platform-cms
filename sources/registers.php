@@ -4,7 +4,6 @@
  */
 namespace Moro\Platform;
 use \Silex\Provider\DoctrineServiceProvider;
-use \Silex\Provider\UrlGeneratorServiceProvider;
 use \Silex\Provider\TwigServiceProvider;
 use \Silex\Provider\ValidatorServiceProvider;
 use \Silex\Provider\TranslationServiceProvider;
@@ -13,10 +12,10 @@ use \Silex\Provider\SessionServiceProvider;
 use \Silex\Provider\RememberMeServiceProvider;
 use \Silex\Provider\SwiftmailerServiceProvider;
 use \Symfony\Component\HttpKernel\Fragment\SsiFragmentRenderer;
-use \Saxulum\SaxulumBootstrapProvider\Silex\Provider\SaxulumBootstrapProvider;
+use \Saxulum\SaxulumBootstrapProvider\Provider\SaxulumBootstrapProvider;
 use \Monolog\Logger;
 use \Knp\Provider\ConsoleServiceProvider;
-use \Knp\Menu\Integration\Silex\KnpMenuServiceProvider;
+use \Moro\Platform\Provider\KnpMenuServiceProvider;
 use \Knp\Menu\Matcher\Matcher;
 use \Knp\Menu\Matcher\Voter\RouteVoter;
 use \Aptoma\Twig\Extension\MarkdownEngine\MichelfMarkdownEngine;
@@ -125,7 +124,7 @@ Application::getInstance(function (Application $app)
 		],
 	]);
 
-	$app['hybridauth.providers'] = $app->share(function() use ($app) {
+	$app['hybridauth.providers'] = function() use ($app) {
 		$socialOptions = $app->getOptions('social');
 		$projectPath = $app->getOption('path.project');
 		$vkPath = '/vendor/hybridauth/hybridauth/additional-providers/hybridauth-vkontakte/Providers/Vkontakte.php';
@@ -162,6 +161,13 @@ Application::getInstance(function (Application $app)
 				'scope'      => 'email',
 			],
 		];
+	};
+
+	// Current request service.
+	$app['request'] = $app->factory(function($app) {
+		/** @var \Symfony\Component\HttpFoundation\RequestStack $stack */
+		$stack = $app['request_stack'];
+		return $stack->getCurrentRequest();
 	});
 
 	// Remember_me provider for security service.
@@ -184,9 +190,6 @@ Application::getInstance(function (Application $app)
 			],
 		]),
 	]);
-
-	// URL Generator Service Provider
-	$app->register(new UrlGeneratorServiceProvider());
 
 	// Symfony Console Provider.
 	$app->register(new ConsoleServiceProvider(), [
@@ -218,19 +221,58 @@ Application::getInstance(function (Application $app)
 	]);
 
 	// Form Service Provider.
-	$app->register(new FormServiceProvider());
+	$app->register(new FormServiceProvider(), [
+		'form.list' => [
+			\Moro\Platform\Form\RoutesForm::class,
+			\Moro\Platform\Form\ContentForm::class,
+			\Moro\Platform\Form\ChunkForm::class,
+			\Moro\Platform\Form\ImageUpdateForm::class,
+			\Moro\Platform\Form\ImagesUploadForm::class,
+			\Moro\Platform\Form\AjaxUploadForm::class,
+			\Moro\Platform\Form\MessagesForm::class,
+			\Moro\Platform\Form\OptionsForm::class,
+			\Moro\Platform\Form\RelinkForm::class,
+			\Moro\Platform\Form\SubscribersForm::class,
+			\Moro\Platform\Form\TagsForm::class,
+			\Moro\Platform\Form\UsersForm::class,
+			\Moro\Platform\Form\Index\AbstractIndexForm::class,
+			\Moro\Platform\Form\Index\ImagesIndexForm::class,
+			\Moro\Platform\Form\Index\MessagesIndexForm::class,
+		]
+	]);
+
+	foreach ($app['form.list'] as $class)
+	{
+		$closure = function() use ($class) {
+			$factory = function(Application $app) use ($class, &$factory) {
+				$app[$class.'-r.i.p.'] = $app->raw($class);
+				unset($app[$class]);
+				$app[$class] = $factory;
+
+				return new $class();
+			};
+
+			return $factory;
+		};
+
+		$app[$class] = $app->factory($closure());
+	}
+
+	$app->extend('form.types', function($types, $app) {
+		return array_merge($types, $app['form.list']);
+	});
 
 	// Validator Service Provider.
 	$app->register(new ValidatorServiceProvider());
 
 	// Twig Service Provider.
 	$app->register(new TwigServiceProvider(), [
-		'twig.extension.markdown' => $app->share(function() use ($app) {
+		'twig.extension.markdown' => function() use ($app) {
 			return new MarkdownExtension(new MichelfMarkdownEngine());
-		}),
+		},
 	]);
 
-	$app->update('twig', function(\Twig_Environment $twig, Application $application) {
+	$app->extend('twig', function(\Twig_Environment $twig, Application $application) {
 		$twig->setCache($application->getOption('path.temp').DIRECTORY_SEPARATOR.'twig');
 		$twig->addExtension($application['twig.extension.markdown']);
 		$twig->addExtension($extension = new ApplicationExtension($application));
@@ -240,7 +282,7 @@ Application::getInstance(function (Application $app)
 		return $twig;
 	});
 
-	$app->update('twig.loader.filesystem', function (\Twig_Loader_Filesystem $twigLoaderFilesystem) {
+	$app->extend('twig.loader.filesystem', function (\Twig_Loader_Filesystem $twigLoaderFilesystem) {
 			$twigLoaderFilesystem->addPath(dirname(__DIR__).DIRECTORY_SEPARATOR.'views', 'PlatformCMS');
 
 			return $twigLoaderFilesystem;
@@ -260,6 +302,7 @@ Application::getInstance(function (Application $app)
 
 	// Translation Service Provider.
 	$app->register(new TranslationServiceProvider(), [
+		'locale' => $app->getOption('locale'),
 		'translator.domains' => [
 		],
 	]);
@@ -267,18 +310,18 @@ Application::getInstance(function (Application $app)
 	// Http Fragment Service Provider.
 	/** @noinspection SpellCheckingInspection */
 	$app->register(new HttpFragmentServiceProvider(), [
-		'fragment.renderer.ssi' => $app->share(function ($app) {
+		'fragment.renderer.ssi' => function ($app) {
 			$renderer = new SsiFragmentRenderer($app['http_cache.ssi'], $app['fragment.renderer.inline']);
 			$renderer->setFragmentPath($app['fragment.path']);
 
 			return $renderer;
-		}),
-		'fragment.renderers' => $app->share(function ($app) {
+		},
+		'fragment.renderers' => function ($app) {
 			$renders = [ $app['fragment.renderer.inline'], $app['fragment.renderer.hinclude'] ];
 			$renders[] = $app['fragment.renderer.ssi'];
 
 			return $renders;
-		}),
+		},
 	]);
 
 	// HTTP Cache Service Provider.
@@ -310,27 +353,27 @@ Application::getInstance(function (Application $app)
 	$lockTime = $app->getOption('content.lock-time');
 
 	// Model behavior TAGS.
-	$app[Application::BEHAVIOR_TAGS] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::BEHAVIOR_TAGS] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::BEHAVIOR_TAGS.$suffixClass, TagsServiceBehavior::class);
 
 		/** @var TagsServiceBehavior $behavior */
 		$behavior = new $class();
 		$behavior->setApplication($app);
 		return $behavior;
-	});
+	};
 
 	// Model behavior HEADINGS.
-	$app[Application::BEHAVIOR_HEADINGS] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::BEHAVIOR_HEADINGS] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::BEHAVIOR_HEADINGS.$suffixClass, HeadingBehavior::class);
 
 		/** @var HeadingBehavior $behavior */
 		$behavior = new $class();
 		$behavior->setServiceTags($app->getServiceTags());
 		return $behavior;
-	});
+	};
 
 	// Model behavior HISTORY.
-	$app[Application::BEHAVIOR_HISTORY] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::BEHAVIOR_HISTORY] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::BEHAVIOR_HISTORY.$suffixClass, HistoryBehavior::class);
 
 		/** @var HistoryBehavior $behavior */
@@ -339,10 +382,10 @@ Application::getInstance(function (Application $app)
 		$behavior->setServiceDiffMatchPatch($app->getServiceDiffMatchPatch());
 		$behavior->setUserToken($app->getServiceSecurityToken());
 		return $behavior;
-	});
+	};
 
 	// Model behavior CLIENT_ROLE.
-	$app[Application::BEHAVIOR_CLIENT_ROLE] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::BEHAVIOR_CLIENT_ROLE] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::BEHAVIOR_CLIENT_ROLE.$suffixClass, ClientRoleBehavior::class);
 
 		/** @var ClientRoleBehavior $behavior */
@@ -355,12 +398,12 @@ Application::getInstance(function (Application $app)
 		$behavior->setEnabled(strncmp($route, 'admin-', 6) === 0 && $route != 'admin-compile');
 
 		return $behavior;
-	});
+	};
 
 	// Model behavior CONTENT_CHUNKS.
 	if ($app->getOption('content.multi_page'))
 	{
-		$app[Application::BEHAVIOR_CONTENT_CHUNKS] = $app->share(function() use ($app, $suffixClass) {
+		$app[Application::BEHAVIOR_CONTENT_CHUNKS] = function() use ($app, $suffixClass) {
 			$class = $app->offsetGet(Application::BEHAVIOR_CONTENT_CHUNKS.$suffixClass, ChunksBehavior::class);
 
 			/** @var ChunksBehavior $behavior */
@@ -368,11 +411,11 @@ Application::getInstance(function (Application $app)
 			$behavior->setContentService($app->getServiceContent());
 
 			return $behavior;
-		});
+		};
 	}
 
 	// Service ROUTES.
-	$app[Application::SERVICE_ROUTES] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_ROUTES] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_ROUTES.$suffixClass, ServiceRoutes::class);
 
 		/** @var ServiceRoutes $service */
@@ -386,17 +429,17 @@ Application::getInstance(function (Application $app)
 		}
 
 		return $service;
-	});
+	};
 
 	// Service DIFF_MATCH_PATCH.
-	$app[Application::SERVICE_DIFF_MATCH_PATCH] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_DIFF_MATCH_PATCH] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_DIFF_MATCH_PATCH.$suffixClass, DiffMatchPatch::class);
 
 		return new $class();
-	});
+	};
 
 	// Service HISTORY.
-	$app[Application::SERVICE_HISTORY] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_HISTORY] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_HISTORY.$suffixClass, ServiceHistory::class);
 
 		/** @var ServiceHistory $service */
@@ -404,10 +447,10 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_HISTORY);
 		$service->setServiceUser($app->getServiceSecurityToken());
 		return $service;
-	});
+	};
 
 	// Service OPTIONS.
-	$app[Application::SERVICE_OPTIONS] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_OPTIONS] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_OPTIONS.$suffixClass, ServiceOptions::class);
 
 		/** @var ServiceOptions $service */
@@ -415,10 +458,10 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_OPTIONS);
 		$service->setLogger($app->getServiceLogger());
 		return $service;
-	});
+	};
 
 	// Service CONTENT.
-	$app[Application::SERVICE_CONTENT] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_CONTENT] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_CONTENT.$suffixClass, ServiceContent::class);
 
 		/** @var ServiceContent $service */
@@ -453,12 +496,12 @@ Application::getInstance(function (Application $app)
 		}
 
 		return $service;
-	});
+	};
 
 	// Service CONTENT_CHUNKS.
 	if ($app->getOption('content.multi_page'))
 	{
-		$app[Application::SERVICE_CONTENT_CHUNKS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+		$app[Application::SERVICE_CONTENT_CHUNKS] = function() use ($app, $suffixClass, $lockTime) {
 			$content = $app->getServiceContent();
 			$service = clone $content;
 
@@ -469,11 +512,11 @@ Application::getInstance(function (Application $app)
 			$service->attach($app->getBehaviorContentChunks());
 
 			return $service;
-		});
+		};
 	}
 
 	// Service FILE.
-	$app[Application::SERVICE_FILE] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_FILE] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_FILE.$suffixClass, ServiceFile::class);
 
 		/** @var ServiceFile $service */
@@ -498,10 +541,10 @@ Application::getInstance(function (Application $app)
 		}
 
 		return $service;
-	});
+	};
 
 	// Service RELINK.
-	$app[Application::SERVICE_RELINK] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_RELINK] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_RELINK.$suffixClass, ServiceRelink::class);
 
 		/** @var ServiceRelink $service */
@@ -514,20 +557,20 @@ Application::getInstance(function (Application $app)
 		$service->setLockTime($lockTime);
 
 		return $service;
-	});
+	};
 
 	// Service RELINK TOOL.
-	$app[Application::SERVICE_RELINK_TOOL] = $app->share(function() use ($app, $suffixClass) {
+	$app[Application::SERVICE_RELINK_TOOL] = function() use ($app, $suffixClass) {
 		$class = $app->offsetGet(Application::SERVICE_RELINK_TOOL.$suffixClass, Relink::class);
 
 		/** @var Relink $service */
 		$service = new $class();
 		$service->setLinks($app->getServiceRelink()->getLinks());
 		return $service;
-	});
+	};
 
 	// Service TAGS.
-	$app[Application::SERVICE_TAGS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_TAGS] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_TAGS.$suffixClass, ServiceTags::class);
 
 		/** @var ServiceTags $service */
@@ -539,10 +582,10 @@ Application::getInstance(function (Application $app)
 		$service->setLockTime($lockTime);
 
 		return $service;
-	});
+	};
 
 	// Service API KEYS.
-	$app[Application::SERVICE_API_KEY] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_API_KEY] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_API_KEY.$suffixClass, ServiceApiKey::class);
 
 		/** @var ServiceTags $service */
@@ -550,10 +593,10 @@ Application::getInstance(function (Application $app)
 		$service->setServiceCode(Application::SERVICE_API_KEY);
 
 		return $service;
-	});
+	};
 
 	// Service USERS.
-	$app[Application::SERVICE_USERS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_USERS] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_USERS.$suffixClass, ServiceUsers::class);
 
 		/** @var ServiceUsers $service */
@@ -567,10 +610,10 @@ Application::getInstance(function (Application $app)
 		$service->setLockTime($lockTime);
 
 		return $service;
-	});
+	};
 
 	// Service USERS_AUTH.
-	$app[Application::SERVICE_USERS_AUTH] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_USERS_AUTH] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_USERS_AUTH.$suffixClass, ServiceUsersAuth::class);
 
 		/** @var ServiceUsersAuth $service */
@@ -579,10 +622,10 @@ Application::getInstance(function (Application $app)
 		$service->setLogger($app->getServiceLogger());
 
 		return $service;
-	});
+	};
 
 	// Service SUBSCRIBERS.
-	$app[Application::SERVICE_SUBSCRIBERS] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_SUBSCRIBERS] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_SUBSCRIBERS.$suffixClass, ServiceSubscribers::class);
 
 		/** @var ServiceSubscribers $service */
@@ -592,10 +635,10 @@ Application::getInstance(function (Application $app)
 		$service->setLogger($app->getServiceLogger());
 
 		return $service;
-	});
+	};
 
 	// Service NOTIFICATIONS.
-	$app[Application::SERVICE_MESSAGES] = $app->share(function() use ($app, $suffixClass, $lockTime) {
+	$app[Application::SERVICE_MESSAGES] = function() use ($app, $suffixClass, $lockTime) {
 		$class = $app->offsetGet(Application::SERVICE_MESSAGES.$suffixClass, ServiceMessages::class);
 
 		/** @var ServiceMessages $service */
@@ -606,7 +649,7 @@ Application::getInstance(function (Application $app)
 		$service->setLogger($app->getServiceLogger());
 
 		return $service;
-	});
+	};
 });
 
 Application::getInstance(function (Application $app)

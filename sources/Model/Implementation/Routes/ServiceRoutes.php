@@ -285,8 +285,13 @@ class ServiceRoutes extends AbstractService implements TagsServiceInterface
 	 */
 	public function createAdminListForm(Application $application, $list)
 	{
+		$application->extend(RoutesForm::class, function(RoutesForm $form) use ($list) {
+			$form->setList($list);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new RoutesForm($list), array_map(function(RoutesInterface $entity) {
+		$builder = $service->createBuilder(RoutesForm::class, array_map(function(RoutesInterface $entity) {
 			return (bool)$entity->getCompileFlag();
 		}, $list));
 

@@ -253,8 +253,14 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 	{
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
+		$application->extend(AbstractIndexForm::class, function (AbstractIndexForm $form, $app) use ($list) {
+			$form->setApplication($app);
+			$form->setList($list);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new AbstractIndexForm($list), array_fill_keys(array_keys($list), false));
+		$builder = $service->createNamedBuilder('admin_list',AbstractIndexForm::class, array_fill_keys(array_keys($list), false));
 
 		return $builder->getForm();
 	}
@@ -323,9 +329,15 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			return $match[0];
 		}, $data['gallery_text']);
 
-		$form = $request->attributes->get('n') ? new ChunkForm($entity->getId(), $tags) : new ContentForm($entity->getId(), $tags);
+		$form = $request->attributes->get('n') ? ChunkForm::class : ContentForm::class;
 
-		return $application->getServiceFormFactory()->createBuilder($form, $data)->getForm();
+		$application->extend($form, function(ChunkForm $form) use ($entity, $tags) {
+			$form->setId($entity->getId());
+			$form->setTags($tags);
+			return $form;
+		});
+
+		return $application->getServiceFormFactory()->createNamedBuilder('admin_update', $form, $data)->getForm();
 	}
 
 	/**

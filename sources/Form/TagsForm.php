@@ -3,6 +3,10 @@
  * Class TagsForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Symfony\Component\Validator\Constraints\Regex;
@@ -17,34 +21,6 @@ use \Moro\Platform\Application;
 class TagsForm extends AbstractContent
 {
 	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param int $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
-	/**
 	 * @param FormBuilderInterface $builder
 	 * @param array $options
 	 */
@@ -52,7 +28,7 @@ class TagsForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Ярлык',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Ярлык".']),
@@ -67,7 +43,7 @@ class TagsForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('code', 'hidden', [
+		$builder->add('code', HiddenType::class, [
 			'constraints' => [
 				new UniqueField([
 					'message'  => 'Название ярлыка должно быть уникальным.',
@@ -81,7 +57,7 @@ class TagsForm extends AbstractContent
 			'required' => false,
 		]);
 
-		$builder->add('kind', 'choice', [
+		$builder->add('kind', ChoiceType::class, [
 			'label' => 'Тип ярлыка',
 			'choices' => [
 				0 => 'Обычный',
@@ -90,12 +66,12 @@ class TagsForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('lead', 'text', [
+		$builder->add('lead', TextType::class, [
 			'label' => 'Описание',
 			'required' => false,
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_TAGS,
 			'multiple' => true,

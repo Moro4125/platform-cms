@@ -8,9 +8,9 @@
  * file that was distributed with this source code.
  */
 namespace Moro\Platform\Provider;
-use \Silex\Application;
-use \Silex\ServiceProviderInterface;
-use \Silex\HttpCache;
+use \Pimple\ServiceProviderInterface;
+use \Pimple\Container;
+use \Silex\Provider\HttpCache\HttpCache;
 use \Symfony\Component\HttpKernel\HttpCache\Ssi;
 use \Symfony\Component\HttpKernel\HttpCache\Store;
 use \Symfony\Component\HttpKernel\EventListener\SurrogateListener;
@@ -22,9 +22,9 @@ use \Symfony\Component\HttpKernel\EventListener\SurrogateListener;
  */
 class HttpCacheServiceProvider implements ServiceProviderInterface
 {
-    public function register(Application $app)
+    public function register(Container $app)
     {
-        $app['http_cache'] = $app->share(function ($app) {
+        $app['http_cache'] = function ($app) {
             $app['http_cache.options'] = array_replace(
                 array(
                     'debug' => $app['debug'],
@@ -32,25 +32,20 @@ class HttpCacheServiceProvider implements ServiceProviderInterface
             );
 
             return new HttpCache($app, $app['http_cache.store'], $app['http_cache.ssi'], $app['http_cache.options']);
-        });
+        };
 
-        $app['http_cache.ssi'] = $app->share(function() {
+        $app['http_cache.ssi'] = function() {
             return new Ssi();
-        });
+        };
 
-        $app['http_cache.store'] = $app->share(function ($app) {
+        $app['http_cache.store'] = function ($app) {
             return new Store($app['http_cache.cache_dir']);
-        });
+        };
 
-        $app['http_cache.ssi_listener'] = $app->share(function ($app) {
+        $app['http_cache.ssi_listener'] = function ($app) {
             return new SurrogateListener($app['http_cache.ssi']);
-        });
+        };
 
         $app['http_cache.options'] = array();
-    }
-
-    public function boot(Application $app)
-    {
-        //$app['dispatcher']->addSubscriber($app['http_cache.ssi_listener']);
     }
 }

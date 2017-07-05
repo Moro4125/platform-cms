@@ -3,6 +3,12 @@
  * Class ImageUpdateForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
+use \Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use \Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\NotBlank;
 use \Symfony\Component\Validator\Constraints\Regex;
@@ -20,11 +26,6 @@ class ImageUpdateForm extends AbstractContent
 	protected $_kinds;
 
 	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
 	 * @var bool
 	 */
 	protected $_useWatermark;
@@ -36,24 +37,32 @@ class ImageUpdateForm extends AbstractContent
 
 	/**
 	 * @param array $kinds
-	 * @param array $tags
-	 * @param bool $useWatermark
-	 * @param bool $useMask
+	 * @return $this
 	 */
-	public function __construct(array $kinds, array $tags, $useWatermark, $useMask)
+	public function setKinds(array $kinds)
 	{
 		$this->_kinds = $kinds;
-		$this->_tags = $tags;
-		$this->_useWatermark = $useWatermark;
-		$this->_useMask = $useMask;
+		return $this;
 	}
 
 	/**
-	 * @return string
+	 * @param bool $flag
+	 * @return $this
 	 */
-	public function getName()
+	public function setUseWatermarkFlag($flag)
 	{
-		return 'admin_update';
+		$this->_useWatermark = (bool)$flag;
+		return $this;
+	}
+
+	/**
+	 * @param bool $flag
+	 * @return $this
+	 */
+	public function setUseMaskFlag($flag)
+	{
+		$this->_useMask = (bool)$flag;
+		return $this;
 	}
 
 	/**
@@ -64,7 +73,7 @@ class ImageUpdateForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Название',
 			'constraints' => [
 				new NotBlank(['message' => 'Необходимо заполнить поле "Название".']),
@@ -82,13 +91,13 @@ class ImageUpdateForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('lead', 'text', [
+		$builder->add('lead', TextType::class, [
 			'label' => 'Описание',
 			'required' => false,
 			'attr' => ['placeholder' => 'Необязательное текстовое описание изображения'],
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_FILE,
 			'multiple' => true,
@@ -100,7 +109,7 @@ class ImageUpdateForm extends AbstractContent
 		{
 			if ($this->_useWatermark)
 			{
-				$builder->add('watermark'.$kind, 'choice', [
+				$builder->add('watermark'.$kind, ChoiceType::class, [
 					'label' => 'Логотип',
 					'choices' => [
 						'1' => 'верхний правый угол',
@@ -115,34 +124,34 @@ class ImageUpdateForm extends AbstractContent
 
 			if ($this->_useMask)
 			{
-				$builder->add('hide_mask'.$kind, 'checkbox', [
+				$builder->add('hide_mask'.$kind, CheckboxType::class, [
 					'label' => 'Не накладывать маску',
 					'required' => false,
 				]);
 			}
 
-			$builder->add('copy'.$kind, 'submit', [
+			$builder->add('copy'.$kind, SubmitType::class, [
 				'label' => 'Вырезать область',
 				'attr'  => ['title' => 'Вырезать выделенную область и сохранить в качестве нового изображения.'],
 			]);
-			$builder->add('append'.$kind, 'submit', [
+			$builder->add('append'.$kind, SubmitType::class, [
 				'label' => 'Добавить поля',
 				'attr'  => ['title' => 'Добавить поля так, что бы изображение полностью вписывалось в заданное соотношение сторон. Сохранить в качестве нового изображения.'],
 			]);
-			$builder->add('crop'.$kind.'_a', 'checkbox', [
+			$builder->add('crop'.$kind.'_a', CheckboxType::class, [
 				'label'    => '',
 				'required' => false,
 			]);
-			$builder->add('crop'.$kind.'_x', 'hidden', [
+			$builder->add('crop'.$kind.'_x', HiddenType::class, [
 				'label' => 'X',
 			]);
-			$builder->add('crop'.$kind.'_y', 'hidden', [
+			$builder->add('crop'.$kind.'_y', HiddenType::class, [
 				'label' => 'Y',
 			]);
-			$builder->add('crop'.$kind.'_w', 'hidden', [
+			$builder->add('crop'.$kind.'_w', HiddenType::class, [
 				'label' => 'W',
 			]);
-			$builder->add('crop'.$kind.'_h', 'hidden', [
+			$builder->add('crop'.$kind.'_h', HiddenType::class, [
 				'label' => 'H',
 			]);
 		}

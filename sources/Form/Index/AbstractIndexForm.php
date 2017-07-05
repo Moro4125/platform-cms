@@ -4,6 +4,8 @@
  */
 namespace Moro\Platform\Form\Index;
 use \Symfony\Component\Form\AbstractType;
+use \Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 
@@ -29,15 +31,33 @@ class AbstractIndexForm extends AbstractType
 	protected $_application;
 
 	/**
-	 * @param \Moro\Platform\Model\Implementation\Content\EntityContent[] $list
-	 * @param null|boolean $withoutCreate
-	 * @param null|\Moro\Platform\Application $application
+	 * @param array $list
+	 * @return $this
 	 */
-	public function __construct(array $list, $withoutCreate = null, $application = null)
+	public function setList(array $list)
 	{
 		$this->_list = $list;
-		$this->_withoutCreate = (bool)$withoutCreate;
+		return $this;
+	}
+
+	/**
+	 * @param bool $flag
+	 * @return $this
+	 */
+	public function setWithoutCreate($flag)
+	{
+		$this->_withoutCreate = (bool)$flag;
+		return $this;
+	}
+
+	/**
+	 * @param \Moro\Platform\Application $application
+	 * @return $this
+	 */
+	public function setApplication($application)
+	{
 		$this->_application = $application;
+		return $this;
 	}
 
 	/**
@@ -58,7 +78,7 @@ class AbstractIndexForm extends AbstractType
 
 		foreach ($this->_list as $code => $entity)
 		{
-			$builder->add($code, 'checkbox', [
+			$builder->add($code, CheckboxType::class, [
 				'label'    => ' ',
 				'required' => false,
 			]);
@@ -66,7 +86,7 @@ class AbstractIndexForm extends AbstractType
 
 		if (empty($this->_withoutCreate))
 		{
-			$builder->add('create', 'submit', [
+			$builder->add('create', SubmitType::class, [
 				'label' => 'Добавить',
 				'attr' => [
 					'title' => 'Создать новый элемент и перейти к его редактированию.',
@@ -74,21 +94,21 @@ class AbstractIndexForm extends AbstractType
 			]);
 		}
 
-		$builder->add('update', 'submit', [
+		$builder->add('update', SubmitType::class, [
 			'label' => 'Редактировать',
 			'attr' => [
 				'title' => 'Перейти к редактированию выделенных элементов списка.',
 			],
 		]);
 
-		$builder->add('delete', 'submit', [
+		$builder->add('delete', SubmitType::class, [
 			'label' => 'Удалить',
 			'attr' => [
 				'title' => 'Удалить выделенные элементы списка.',
 			],
 		]);
 
-		$builder->add('bind', 'submit', [
+		$builder->add('bind', SubmitType::class, [
 			'label' => ' ',
 			'attr' => [
 				'title' => 'Назначение или удаление ярлыков у записей.',

@@ -3,10 +3,12 @@
  * Class SubscribersForm
  */
 namespace Moro\Platform\Form;
+use \Moro\Platform\Form\Type\TagsChoiceType;
+use \Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use \Symfony\Component\Form\Extension\Core\Type\TextType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Symfony\Component\Validator\Constraints\Regex;
 use \Moro\Platform\Form\Constraints\UniqueField;
-use \Moro\Platform\Model\Implementation\Users\UsersInterface;
 use \Moro\Platform\Model\Implementation\Subscribers\SubscribersInterface;
 use \Moro\Platform\Application;
 
@@ -17,34 +19,6 @@ use \Moro\Platform\Application;
 class SubscribersForm extends AbstractContent
 {
 	/**
-	 * @var integer
-	 */
-	protected $_id;
-
-	/**
-	 * @var array
-	 */
-	protected $_tags;
-
-	/**
-	 * @param int $id
-	 * @param array $tags
-	 */
-	public function __construct($id, array $tags)
-	{
-		$this->_id = $id;
-		$this->_tags = $tags;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_update';
-	}
-
-	/**
 	 * @param FormBuilderInterface $builder
 	 * @param array $options
 	 */
@@ -52,7 +26,7 @@ class SubscribersForm extends AbstractContent
 	{
 		$builder->setMethod('POST');
 
-		$builder->add('name', 'text', [
+		$builder->add('name', TextType::class, [
 			'label' => 'Имя',
 			'constraints' => [
 				new Regex([
@@ -66,7 +40,7 @@ class SubscribersForm extends AbstractContent
 			],
 		]);
 
-		$builder->add('email', 'text', [
+		$builder->add('email', TextType::class, [
 			'label' => 'E-mail',
 			'constraints' => [
 				new UniqueField([
@@ -80,12 +54,12 @@ class SubscribersForm extends AbstractContent
 			'required' => true,
 		]);
 
-		$builder->add('active', 'checkbox', [
+		$builder->add('active', CheckboxType::class, [
 			'label'    => 'Активен',
 			'required' => false,
 		]);
 
-		$builder->add('tags', 'choice_tags', [
+		$builder->add('tags', TagsChoiceType::class, [
 			'label'    => 'Ярлыки',
 			'filter'   => 'service:'.Application::SERVICE_SUBSCRIBERS,
 			'multiple' => true,

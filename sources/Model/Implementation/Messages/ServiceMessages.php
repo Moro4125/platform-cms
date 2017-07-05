@@ -179,8 +179,15 @@ class ServiceMessages extends AbstractService implements ContentActionsInterface
 	{
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
+		$application->extend(MessagesIndexForm::class, function (MessagesIndexForm $form, $app) use ($list) {
+			$form->setApplication($app);
+			$form->setList($list);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new MessagesIndexForm($list), array_fill_keys(array_keys($list), false));
+		$dataArr = array_fill_keys(array_keys($list), false);
+		$builder = $service->createNamedBuilder('admin_list', MessagesIndexForm::class, $dataArr);
 
 		return $builder->getForm();
 	}
@@ -203,7 +210,13 @@ class ServiceMessages extends AbstractService implements ContentActionsInterface
 			'text' => isset($args['text']) ? $args['text'] : '',
 		];
 
-		return $application->getServiceFormFactory()->createBuilder(new MessagesForm($entity->getId(), $tags), $data)->getForm();
+		$application->extend(MessagesForm::class, function (MessagesForm $form) use ($entity, $tags) {
+			$form->setId($entity->getId());
+			$form->setTags($tags);
+			return $form;
+		});
+
+		return $application->getServiceFormFactory()->createNamedBuilder('admin_update', MessagesForm::class, $data)->getForm();
 	}
 
 	/**

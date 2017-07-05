@@ -54,14 +54,20 @@ trait FileAttachTrait
 	public function createAdminUploadForm(Application $app, EntityInterface $entity = null)
 	{
 		$action = $app->url($this->_attachRoute , ['id' => $entity ? $entity->getId() : 0]);
-		return $app->getServiceFormFactory()->createBuilder(new AjaxUploadForm($action), [])->getForm();
+
+		$app->extend(AjaxUploadForm::class, function (AjaxUploadForm $form) use ($action) {
+			$form->setAction($action);
+			return $form;
+		});
+
+		return $app->getServiceFormFactory()->createBuilder(AjaxUploadForm::class, [])->getForm();
 	}
 
 	/**
 	 * @param Application $app
 	 * @param Form $form
 	 * @param int $id
-	 * @return array
+	 * @return array|string
 	 */
 	public function applyAdminUploadForm(Application $app, Form $form, $id)
 	{

@@ -4,7 +4,7 @@
  */
 namespace Moro\Platform\Provider;
 use \Silex\Provider\FormServiceProvider as CFormServiceProvider;
-use \Silex\Application;
+use \Pimple\Container;
 use \Moro\Platform\Form\Type\Extension\FieldsetExtension;
 use \Moro\Platform\Form\Type\ArticleChoiceType;
 use \Moro\Platform\Form\Type\ImageChoiceType;
@@ -18,9 +18,9 @@ use \Moro\Platform\Form\Type\RolesChoiceType;
 class FormServiceProvider extends CFormServiceProvider
 {
 	/**
-	 * @param Application|\Moro\Platform\Application $app
+	 * @param Container|\Moro\Platform\Application $app
 	 */
-	public function register(Application $app)
+	public function register(Container $app)
 	{
 		CFormServiceProvider::register($app);
 

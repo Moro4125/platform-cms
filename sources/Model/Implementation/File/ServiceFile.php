@@ -456,8 +456,16 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	{
 		$list = $this->selectEntitiesForAdminListForm($offset, $count, $order, $where, $value);
 
+		$application->extend(ImagesIndexForm::class, function(ImagesIndexForm $form, $app) use ($list) {
+			$form->setApplication($app);
+			$form->setList($list);
+			$form->setWithoutCreate(true);
+			return $form;
+		});
+
 		$service = $application->getServiceFormFactory();
-		$builder = $service->createBuilder(new ImagesIndexForm($list, true, $application), array_fill_keys(array_keys($list), false));
+		$dataArr = array_fill_keys(array_keys($list), false);
+		$builder = $service->createNamedBuilder('admin_list', ImagesIndexForm::class, $dataArr);
 
 		return $builder->getForm();
 	}
@@ -472,7 +480,14 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	{
 		$service = $application->getServiceFormFactory();
 		$fromUrl = $application->url('admin-content-images-upload', array_filter(['tags' => $tags, 'back' => $back]));
-		$builder = $service->createBuilder(new ImagesUploadForm($fromUrl));
+
+		$application->extend(ImagesUploadForm::class, function(ImagesUploadForm $form) use ($fromUrl) {
+			$form->setAction($fromUrl);
+			return $form;
+		});
+
+		// $builder = $service->createBuilder(new ImagesUploadForm($fromUrl));
+		$builder = $service->createNamedBuilder('admin_upload', ImagesUploadForm::class);
 
 		return $builder->getForm();
 	}
@@ -571,7 +586,7 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 	 * @param \Moro\Platform\Application $application
 	 * @param FileInterface|\Moro\Platform\Model\EntityInterface $entity
 	 * @param Request $request
-	 * @return Form
+	 * @return \Symfony\Component\Form\FormInterface
 	 */
 	public function createAdminUpdateForm(Application $application, EntityInterface $entity, Request $request)
 	{
@@ -614,8 +629,17 @@ class ServiceFile extends AbstractService implements ContentActionsInterface, Ta
 		}
 
 		$service = $application->getServiceFormFactory();
-		$form = new ImageUpdateForm(array_keys($this->_kinds), $tags, $useWatermark, $useMask);
-		$builder = $service->createBuilder($form, $data);
+		//$form = new ImageUpdateForm(array_keys($this->_kinds), $tags, $useWatermark, $useMask);
+
+		$application->extend(ImageUpdateForm::class, function(ImageUpdateForm $form) use ($tags, $useWatermark, $useMask) {
+			$form->setKinds(array_keys($this->_kinds));
+			$form->setTags($tags);
+			$form->setUseWatermarkFlag($useWatermark);
+			$form->setUseMaskFlag($useMask);
+			return $form;
+		});
+
+		$builder = $service->createNamedBuilder('admin_update', ImageUpdateForm::class, $data);
 
 		return $builder->getForm();
 	}

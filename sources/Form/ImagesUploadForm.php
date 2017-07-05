@@ -4,6 +4,7 @@
  */
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\AbstractType;
+use \Symfony\Component\Form\Extension\Core\Type\FileType;
 use \Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -19,18 +20,12 @@ class ImagesUploadForm extends AbstractType
 
 	/**
 	 * @param string $action
+	 * @return $this
 	 */
-	public function __construct($action)
+	public function setAction($action)
 	{
 		$this->_action = $action;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'admin_upload';
+		return $this;
 	}
 
 	/**
@@ -42,7 +37,7 @@ class ImagesUploadForm extends AbstractType
 		$builder->setMethod('POST');
 		$builder->setAction($this->_action);
 
-		$builder->add('uploads', 'file', [
+		$builder->add('uploads', FileType::class, [
 			'label' => 'Загрузка изображений на сервер',
 			'multiple' => true,
 			'required' => false,

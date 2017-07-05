@@ -4,6 +4,8 @@
  */
 namespace Moro\Platform\Form;
 use \Symfony\Component\Form\AbstractType;
+use \Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use \Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use \Symfony\Component\Form\FormBuilderInterface;
 use \Moro\Platform\Model\Implementation\Routes\EntityRoutes;
 
@@ -19,11 +21,13 @@ class RoutesForm extends AbstractType
 	protected $_list;
 
 	/**
-	 * @param EntityRoutes[] $list
+	 * @param array $list
+	 * @return $this
 	 */
-	public function __construct(array $list)
+	public function setList(array $list)
 	{
 		$this->_list = $list;
+		return $this;
 	}
 
 	/**
@@ -42,17 +46,17 @@ class RoutesForm extends AbstractType
 	{
 		foreach ($this->_list as $code => $entity)
 		{
-			$builder->add($code, 'checkbox', [
+			$builder->add($code, CheckboxType::class, [
 				'label'    => ' ',
 				'required' => false,
 			]);
 		}
 
-		$builder->add('compile', 'submit', [
+		$builder->add('compile', SubmitType::class, [
 			'label' => 'Скомпилировать',
 		]);
 
-		$builder->add('select_all', 'submit', [
+		$builder->add('select_all', SubmitType::class, [
 				'label' => 'Выбрать все',
 		]);
 	}
