@@ -128,12 +128,13 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			}
 
 			if (in_array($key, ['name', 'code', 'icon', 'parameters.link', 'parameters.chunks.count'])
+                || in_array($key, ['parameters.seo_title'])
 				|| strncmp($key, 'parameters.chunks.num', 21) === 0)
 			{
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergeSimple($key, $next, $prev, 'parameters.chunks.count');
 			}
-			elseif (in_array($key, ['parameters.lead', 'parameters.gallery_text']))
+			elseif (in_array($key, ['parameters.lead', 'parameters.seo_description', 'parameters.gallery_text']))
 			{
 				/** @noinspection PhpUndefinedMethodInspection Call history helper function. */
 				$this->historyMergePatch($key, $next, $prev);
@@ -283,6 +284,8 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			'gallery' => isset($args['gallery']) ? $args['gallery'] : [],
 			'gallery_text' => isset($args['gallery_text']) ? $args['gallery_text'] : '',
 			'articles' => isset($args['articles']) ? $args['articles'] : [],
+            'seo_title' => isset($args['seo_title']) ? $args['seo_title'] : '',
+            'seo_description' => isset($args['seo_description']) ? $args['seo_description'] : '',
 		];
 
 		$serviceFile = $application->getServiceFile();
@@ -374,6 +377,8 @@ class ServiceContent extends AbstractService implements ContentActionsInterface,
 			$parameters['gallery_text'] = $data['gallery_text'];
 			$parameters['articles']     = array_values($data['articles']);
 			$parameters['comment']      = $data['comment'];
+			$parameters['seo_title']    = $data['seo_title'];
+			$parameters['seo_description'] = $data['seo_description'];
 
 			$parameters['attachments']  = [];
 			foreach ($this->selectAttachmentByEntity($entity) as $attachment)

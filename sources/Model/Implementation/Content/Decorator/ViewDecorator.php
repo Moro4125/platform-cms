@@ -180,4 +180,28 @@ class ViewDecorator extends AbstractDecorator
 
 		return $text.$adds;
 	}
+
+    /**
+     * @return string
+     */
+	public function getSeoTitle()
+    {
+        $args = $this->getParameters();
+        $title = empty($args['seo_title']) ? $this->getTitle() : $args['seo_title'];
+
+        return $title;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSeoDescription()
+    {
+        $args = $this->getParameters();
+        $description = empty($args['seo_description'])
+            ?( empty($args['lead']) ? '' : $args['lead']
+            ): $args['seo_description'];
+
+        return $description;
+    }
 }

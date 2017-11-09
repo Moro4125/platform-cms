@@ -63,6 +63,18 @@ class ContentForm extends ChunkForm
 			'attr' => ['placeholder' => 'Только для внешней ссылки', 'title' => 'Ссылка, используемая в анонсе материала.'],
 		]);
 
-		parent::buildForm($builder, $options);
+        $builder->add('seo_title', 'text', [
+            'label'    => 'SEO',
+            'attr'     => ['placeholder' => 'SEO заголовок страницы'],
+            'required' => false,
+        ]);
+
+        $builder->add('seo_description', 'textarea', [
+            'label'    => '',
+            'attr'     => ['placeholder' => 'SEO описание страницы'],
+            'required' => false,
+        ]);
+
+        parent::buildForm($builder, $options);
 	}
 }

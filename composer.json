@@ -35,7 +35,7 @@
     "monolog/monolog": "~1.8",
     "twig/twig": "~1.18",
     "moro/team-migrations-silex": "~1.6",
-    "moro/platform-cms-installer": "~1.1.1",
+    "moro/platform-cms-installer": "~1.1",
     "fengyuanchen/cropperp": "~2.0",
     "components/jquery": "~1.9",
     "components/bootstrap": "~3.3",
@@ -43,13 +43,13 @@
     "michelf/php-markdown": "~1.5",
     "aptoma/twig-markdown": "~1.2",
     "kartik-v/bootstrap-fileinput": "~4.1",
-    "imagine/imagine": "~0.6.2",
+    "imagine/imagine": "~0.6",
     "select2/select2": "~4.0",
     "mustache/mustache-js": "~2.0",
     "jackmoore/autosize": "~3.0",
     "symfony/doctrine-bridge": "~2.7",
     "sentry/sentry": "~1.6",
-    "swiftmailer/swiftmailer": "~v5.4.1"
+    "swiftmailer/swiftmailer": "~v5.4"
   },
   "require-dev": {
     "hybridauth/hybridauth": "~2.6"
