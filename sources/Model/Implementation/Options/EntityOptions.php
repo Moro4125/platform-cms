@@ -50,11 +50,19 @@ class EntityOptions implements OptionsInterface
 	}
 
 	/**
-	 * @return string
+	 * @return mixed
 	 */
 	public function getValue()
 	{
-		return $this->_properties[self::PROP_VALUE];
+	    switch ($this->getType())
+        {
+            case 'checkbox':
+                return (bool)$this->_properties[self::PROP_VALUE];
+            case 'integer':
+                return (integer)$this->_properties[self::PROP_VALUE];
+            default:
+                return (string)$this->_properties[self::PROP_VALUE];
+        }
 	}
 
 	/**
