@@ -150,7 +150,7 @@ abstract class AbstractService implements SplSubject
 	 */
 	public function __destruct()
 	{
-		foreach ($this->_observers as $observer)
+		foreach ((array)$this->_observers as $observer)
 		{
 			$this->detach($observer);
 		}
