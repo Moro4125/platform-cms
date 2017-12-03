@@ -30,7 +30,7 @@ class Application extends CApplication
 	use \Silex\Application\MonologTrait;
 	use \Silex\Application\FormTrait;
 
-	const PLATFORM_VERSION = "2.4.0";
+	const PLATFORM_VERSION = "2.4.1";
 
 	const SERVICE_CONTROLLERS_FACTORY = 'controllers_factory';
 	const SERVICE_DATABASE            = 'db';
